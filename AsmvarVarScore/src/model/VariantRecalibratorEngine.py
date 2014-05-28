@@ -21,7 +21,7 @@ class VariantRecalibratorEngine :
         self.MIN_ACCEPTABLE_LOD_SCORE = -20000.0
         
     def GenerateModel ( self, data, maxGaussians ) :
-        if len(data)    == 0 : raise ValueError ( '[ERROR] No data found' )
+        if len(data)    == 0 : raise ValueError ( '[ERROR] No data found. The size is %d' %len(data) )
         if not isinstance(data[0], vd.VariantDatum) : 
             raise ValueError ('[ERROR] The data type should be "VariantDatum" in GenerateModel() of class VariantRecalibratorEngine(), but found %s'% str(type(data[0])) )
         if maxGaussians <= 0 : raise ValueError ( '[ERROR] maxGaussians must be a positive integer but found: %d' % maxGaussians )

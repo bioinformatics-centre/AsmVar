@@ -31,9 +31,9 @@ class VariantDataManager :
             for i, d in enumerate( self.data ) : self.data[i].annotations = np.array( self.data[i].annotations )
 
     def SetData (self, data) :
-        if not data or not isinstance(data[0],vd.VariantDatum): raise ValueError ('[ERROR] The data type should be "VariantDatum" in VariantDataManager(),but found %s' % str(type(data[0])) )
+        if not isinstance(data[0],vd.VariantDatum): raise ValueError ('[ERROR] The data type should be "VariantDatum" in VariantDataManager(),but found %s' % str(type(data[0])) )
         self.data = data
-        for i, d in enumerate( self.data ) : self.data[i].annotations = np.array( self.data[i].annotations )
+        for i, d in enumerate( self.data ) : self.data[i].annotations = np.array( d.annotations )
 
     def NormalizeData (self) :
         data = np.array( [ d.annotations for d in self.data ], dtype=float )
