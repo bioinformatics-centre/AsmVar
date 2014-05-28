@@ -1,0 +1,33 @@
+
+MATCH = 1, MISMATCH = -1, GAP OPEN = -10, GAP EXTEND = -1, INDEL
+
+First  seq [1,1000] =>      1000 nucs '20.2212950.20.2213043.DEL.113.+-,20:2212250-2213743'
+Second seq [1, 534] =>       534 nucs '20.2212950.20.2213043.DEL.113.+-.Contig2 534 20.97 20 I-4:9,-3:11, O 2 0'
+
+Score:         203
+Aligned:       203        nucs
+Identic:       203 (100%) nucs
+Gaps:            0 (  0%) nucs
+
+Alignment:
+ first  seq =>  [798,1000]
+ second seq =>  [  1, 203]
+
+      798 AAAGGGTATACGGTGAAGAGTCAGTCTCTTTTTTTCCTTAACAATTAGGCCCCTAGGTTC 857
+          ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+        1 aaagggtatacggtgaagagtcagtctctttttttccttaacaattaggcccctaggttc 60
+
+      858 CTTTCCCAGAGAAAACAACTGTTAACATCTTCTTTTAAATCTTTCTTTCTAAGTATATGC 917
+          ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+       61 ctttcccagagaaaacaactgttaacatcttcttttaaatctttctttctaagtatatgc 120
+
+      918 AAGCATAATTGTGTAGGAGCCTGTTTTTTTCAAAGCTCTTTTGATGAGAATTTATATCTA 977
+          ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+      121 aagcataattgtgtaggagcctgtttttttcaaagctcttttgatgagaatttatatcta 180
+
+      978 GAATCCTAAGACTTAAAAGTGCA 1000
+          |||||||||||||||||||||||
+      181 gaatcctaagacttaaaagtgca 203
+
+Alignment time is 0.041834 s
+

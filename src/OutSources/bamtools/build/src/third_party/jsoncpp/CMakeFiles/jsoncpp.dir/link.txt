@@ -1,0 +1,1 @@
+/home/siyang/Bin/software_pip/gcc-4.8.0/bin/g++  -fPIC -Wall -g -O2  -O3 -DNDEBUG   -shared -Wl,-soname,libjsoncpp.so.1.0.0 -o ../../../../lib/libjsoncpp.so.1.0.0 CMakeFiles/jsoncpp.dir/json_reader.cpp.o CMakeFiles/jsoncpp.dir/json_value.cpp.o CMakeFiles/jsoncpp.dir/json_writer.cpp.o 

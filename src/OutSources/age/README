@@ -1,0 +1,89 @@
+README file for AGE software distribution
+
+ABOUT
+Software AGE implements optimal algorithms for aligning genomic sequences with
+structural variations (SVs). Precise alignment allows for correct breakpoint
+determination. The algorithms are described in the publication
+Bioinformatics. 2011 Mar 1;27(5):595-603. Epub 2011 Jan 13. Additional info
+on importance of breakpoints can be obtained from 
+* Nat Biotechnol. 2010 Jan;28(1):47-55. Epub 2009 Dec 27.
+* Nature. 2011 Feb 3;470(7332):59-65.
+
+The software runs on linux based systems.
+
+
+1. Compilation
+==============
+
+$ make
+
+or (without parallel support)
+
+$ make OMP=no
+
+which ever works
+
+
+2. Running
+==========
+
+$ ./age_align file1.fa file2.fa
+
+The input files must be in FASTA format and can contain multiple sequences.
+The output is alignments for each pair of sequences with first sequence from
+the first file and second sequence from the second file.
+
+When aligning long read or assembled conting to a chromosome, useful options
+are -coor1 and -coor2. These options allow specifying region(s) of the
+inputed sequences, to be used in an alignment. For example, for a prediction of
+a deletion in the region chr12:11396601-11436500 and assembled conting for
+the allele containing this deletion, one may use the following command 
+
+./age_align chr12.fa conting.fa -coor1=11395601-11437500
+
+i.e. align conting to the the predicted region extended by 1 kb downstream and
+upstream.
+
+Help:
+$ ./age_align
+
+
+Options:
+
+-indel			assume deletion or insertion (default)
+-tdup			assume tandom duplication
+-invl			assume inversion with conting (second sequence)
+			spanning over left breakpoint
+-invr			assume inversion with conting (second sequence)
+			spanning over right breakpoint
+-inv			assume inversion; tries alignment over the left and
+			right breakpoints; report the best alignment
+-coor1=start-end	align subsequence of first sequence defined by given
+			coordinates
+-coor2=start-end	align subsequence of second sequence defined by given
+			coordinates
+-revcom1		align reverse complement of first sequence
+-revcom2		align reverse complement of second sequence
+-both			align first sequence to second one and its reverse
+			complement; report the best alignment
+-match			score for nucleotide match
+-mismatch		score for nucleotide mismatch
+-go=value		gap open penalty, negative value
+-ge=value		gap extend penalty, negative value
+
+
+Examples:
+
+./age_align -coor1=20-2350    file1.fa file2.fa
+./age_align -coor1=20-        file1.fa file2.fa
+./age_align -coor2=-240       file1.fa file2.fa
+./age_align -revcom1 -revcom2 file1.fa file2.fa
+./age_align -both             file1.fa file2.fa
+./age_align -inv  -both       file1.fa file2.fa
+./age_align -tdup -both       file1.fa file2.fa
+
+
+
+
+
+Please send your comments and suggestions to alexej.abyzov@yale.edu.

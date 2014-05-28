@@ -1,0 +1,46 @@
+# Del.+.NT_113920.23853.23864.12-C582835.58.58.1.age
+
+MATCH = 1, MISMATCH = -1, GAP OPEN = -10, GAP EXTEND = -1, INDEL
+
+First  seq [23353,24364] =>      1012 nucs 'NT_113920'
+Second seq [    1,  167] =>       167 nucs 'C582835'
+
+Score:          96
+Aligned:       160        nucs
+Identic:       128 ( 80%) nucs =>        82 ( 77%)        46 ( 87%)
+Gaps:            0 (  0%) nucs
+
+Alignment:
+ first  seq =>  [23813,23919] EXCISED REGION [23934,23986]
+ second seq =>  [    7,  113] EXCISED REGION [  115,  167]
+
+EXCISED REGION(S):
+ first  seq =>        14 nucs [23920,23933]
+ second seq =>         1 nucs [114,114]
+
+Identity at breakpoints: 
+ first  seq =>         0 nucs
+ second seq =>         1 nucs [114,114] to [115,115]
+Identity outside breakpoints: 
+ first  seq =>         0 nucs
+ second seq =>         0 nucs
+Identity inside breakpoints: 
+ first  seq =>         3 nucs [23920,23922] to [23931,23933]
+ second seq =>         0 nucs
+
+    23813 ATATATATATATATATATATATATATTTTTTTTTCTTTTTCTTGGTGGGAGGTGGGGACA 23872
+          ||||||||||||||||||||||||||.|.|.|.|.|.|||.||..|......|||.||||
+        7 ATATATATATATATATATATATATATATATATATATATTTTTTTTTTTTTTTTGGAGACA 66
+
+    23873 GAATCTCACTCTGTCACCCAGGCTGGAGTGCAATGACACACTCTCAG 23919
+          ||||||..|||||||||||||||||||||..||||...||.|.||||
+       67 GAATCTAGCTCTGTCACCCAGGCTGGAGTTAAATGCTGCAATTTCAG 113
+
+EXCISED REGION
+
+    23934 TGCCTCCCGGGTTCAAGTGATTCTCCTGCCTCAGCCTCCCAAGTATCTGGGAT 23986
+          ||||||||||.||||||...|||||||||||||||.||||||.||.|||||||
+      115 TGCCTCCCGGATTCAAGCTGTTCTCCTGCCTCAGCTTCCCAAATAGCTGGGAT 167
+
+Alignment time is 0.013156 s
+

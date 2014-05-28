@@ -1,0 +1,8 @@
+/home/siyang/Bin/software_pip/Tangram-master/src/OutSources/bamtools/build/src/api/CMakeFiles/APIHeaders.dir
+/home/siyang/Bin/software_pip/Tangram-master/src/OutSources/bamtools/build/src/api/CMakeFiles/AlgorithmsHeaders.dir
+/home/siyang/Bin/software_pip/Tangram-master/src/OutSources/bamtools/build/src/api/CMakeFiles/BamTools.dir
+/home/siyang/Bin/software_pip/Tangram-master/src/OutSources/bamtools/build/src/api/CMakeFiles/BamTools-static.dir
+/home/siyang/Bin/software_pip/Tangram-master/src/OutSources/bamtools/build/src/utils/CMakeFiles/BamTools-utils.dir
+/home/siyang/Bin/software_pip/Tangram-master/src/OutSources/bamtools/build/src/CMakeFiles/SharedHeaders.dir
+/home/siyang/Bin/software_pip/Tangram-master/src/OutSources/bamtools/build/src/toolkit/CMakeFiles/bamtools_cmd.dir
+/home/siyang/Bin/software_pip/Tangram-master/src/OutSources/bamtools/build/src/third_party/jsoncpp/CMakeFiles/jsoncpp.dir

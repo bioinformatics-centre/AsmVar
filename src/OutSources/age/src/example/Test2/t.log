@@ -1,0 +1,7 @@
+
+# [INFO] The parameter of this program: ../../age_align --indel --both --match=1 --mismatch=-1 --go=-10 --ge=-1 --target target.fa --query query.fa var.txt
+
+# [INFO] Target fa and Query fa are loaded successfully. Wed Apr  9 14:52:56 2014
+# [INFO] Variant regions are loaded successfully.        Wed Apr  9 14:52:56 2014
+
+******************** AGE ALL DONE ********************
