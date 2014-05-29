@@ -146,9 +146,10 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
             if re.search( r'^#', line) : continue
 
             fmat = { k:i for i,k in enumerate( col[8].split(':') ) } # Get Format
+            if 'QR' not in fmat: continue
+
             for tag in ['AA', 'QR', 'FN'] :
                 if tag not in fmat : raise ValueError ('[ERROR] The "Format" fields did not contian %s in VCF %s' %( tag, opt.vcfInfile) )
-
 
             annotations = []
             for i, sample in enumerate ( col[9:] ) : 
@@ -156,8 +157,9 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
                 if len( sample.split(':')[fmat['AA']].split(',') ) != 4 :
                     print >> sys.stderr,'[WARNING] %s\n%s' % (line, sample.split(':')[fmat['AA']])
                     continue
+                qr = sample.split(':')[fmat['QR']].split(',')[-1]
+                if qr == '.' : continue
 
-                qr  = sample.split(':')[fmat['QR']].split(',')[-1]
                 qId, qSta, qEnd = qr.split('-')
                 qSta = string.atoi(qSta)
                 qEnd = string.atoi(qEnd)
