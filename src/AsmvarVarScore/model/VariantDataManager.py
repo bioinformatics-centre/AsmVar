@@ -11,6 +11,7 @@ Date   : 2014-01-06 14:33:45
 import sys
 import string
 import re
+import os
 import numpy as np
 # My own class
 import VariantRecalibratorArgumentCollection as VRAC
