@@ -60,7 +60,7 @@ class VariantDataManager :
         if len(trainingData) > self.VRAC.MAX_NUM_TRAINING_DATA:
             print >> sys.stderr, '[WARING] Very large training set detected. Downsampling to %d training variants.' % self.VRAC.MAX_NUM_TRAINING_DATA
             np.random.shuffle(trainingData) # Random shuffling
-            return trainingData[ range(self.VRAC.MAX_NUM_TRAINING_DATA) ]
+            return [ trainingData[i] for i in range(self.VRAC.MAX_NUM_TRAINING_DATA) ]
         return trainingData 
 
     def SelectWorstVariants(self ) :
