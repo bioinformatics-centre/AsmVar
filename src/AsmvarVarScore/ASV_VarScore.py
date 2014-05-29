@@ -24,19 +24,20 @@ def main ( opt ) :
     vr.OnTraversalDone( dataSet )
 
     # Outputting the result as VCF format
-    hInfo.Add ('##FORMAT=<ID=VQ', '##FORMAT=<ID=VQ,Number=1,Type=String,Description="Variant Quality">')
+    hInfo.Add ('##INFO=<ID=VQ', '##INFO=<ID=VQ,Number=1,Type=String,Description="Variant Quality">')
+    hInfo.Add ('##INFO=<ID=culprit', '##INFO=<ID=culprit,Number=1,Type=String,Description="The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out">')
     for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
+
     for d in dataSet :
-        fmat = d.variantContext[8].split(':')
-        if 'VQ' not in fmat :
-            d.variantContext[8] += ':VQ' # Variant Quality
-            for i,samp in enumerate( d.variantContext[9:] ) :
-                d.variantContext[i+9] += ':' + str( int(d.lod+0.5) )
-        else :
-            for i,samp in enumerate( d.variantContext[9:] ) :
-                fi             = samp.split(':')
-                fi[fmat['VQ']] = str( int(d.lod+0.5) )
-                d.variantContext[i+9] = ':'.join( fi )
+        # Deal with the INFO line
+        vcfinfo = {}
+        for info in d.variantContext[7].split(';') : 
+            k = info.split('=')[0]
+            if k in vcfinfo: raise ValueError('[ERROR] The tag: %s double hits in the INFO column at %s'%(k, info))
+            vcfinfo[k] = info
+        vcfinfo['VQ']       = 'VQ=' + str( int(d.lod+0.5) )
+        vcfinfo['culprit']  = 'culprit=' + d.annoTexts[d.worstAnnotation]
+        d.variantContext[7] = ';'.join( sorted(vcfinfo.values()) )
         print '\t'.join( d.variantContext )
 
 if __name__ == '__main__' :

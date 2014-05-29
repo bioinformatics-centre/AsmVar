@@ -36,7 +36,7 @@ class VariantRecalibrator :
         print >> sys.stderr, '[INFO] The converged information of badModel is :', badModel.converged_
         self.engine.EvaluateData( self.dataManager.data, badModel, True )
 
-        if (not goodModel.converged_) or (not badModel.converged_) : raise ValueError ( '[ERROR] NaN LOD value assigned. Clustering with this few variants and these annotations is unsafe. Please consider raising the number of variants used to train the negative model (via --minNumBadVariants 5000, for example) or lowering the maximum number of Gaussians allowed for use in the model (via --maxGaussians 4, for example).' )
+        if (not goodModel.converged_) or (not badModel.converged_) : raise ValueError ( '[ERROR] NaN LOD value assigned. Clustering with these variants and these annotations is unsafe. Please consider raising the number of variants used to train the negative model or lowering the maximum number of Gaussians allowed for use in the model.' )
 
         # Find the VQSLOD cutoff values which correspond to the various tranches of calls requested by the user
         self.engine.CalculateWorstPerformingAnnotation( self.dataManager.data, goodModel, badModel )

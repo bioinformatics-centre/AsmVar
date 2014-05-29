@@ -16,6 +16,17 @@ class VCFHeader :
         self.header[key] = context
         return self
 
+class VCFInfo : 
+
+    def __init__ (self, info= None ) :
+        self.info = {}
+        if info and ( type(info) is not dict ) : raise ValueError ('The data type should be "dict" in class of "VCFInfo", but found %s' % str( type(info) ))
+        if info : self.info = info
+
+    def Add ( self, key, context ) :
+        self.info[key] = context
+        return self
+
 class VCFContext : 
 
     def __init__ (self) :

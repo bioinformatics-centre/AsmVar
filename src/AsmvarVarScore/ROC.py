@@ -67,17 +67,15 @@ def DrawFig ( figPrefix, data ) :
 
     fig = plt.figure()
     plt.title('ROC', fontsize = 14)
-    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot(fpr, tpr, 'ro-', label='ROC curve (area = %0.2f)' % roc_auc)
     plt.plot([0, 1], [0, 1], 'k--')
-    #plt.xlabel('Count of novel(not in HuRef dataset) events', fontsize = 14)
-    #plt.ylabel('Fraction of known(in HuRef dataset) events', fontsize = 14)
     plt.legend(loc="lower right")
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
 
-    plt.show()
+    #plt.show()
     fig.savefig(figPrefix + '.png')
-    fig.savefig(figPrefix + '.pdf')
+    #fig.savefig(figPrefix + '.pdf')
 
     for i in range( len(thresholds) ) :
         print '%f\t%f\t%f' % (thresholds[i], fpr[i], tpr[i])
