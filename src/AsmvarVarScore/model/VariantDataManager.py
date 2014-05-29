@@ -66,7 +66,7 @@ class VariantDataManager :
     def SelectWorstVariants(self ) :
 
         trainingData = [ d for d in self.data if (d.lod < self.VRAC.BAD_LOD_CUTOFF) and (not d.failingSTDThreshold) ]
-        print >> sys.stderr, '[INFO] "Training with worst %d scoring variants --> variants with LOD <= %.2f.' % ( len(trainingData), self.VRAC.BAD_LOD_CUTOFF )
+        print >> sys.stderr, '[INFO] Training with worst %d scoring variants --> variants with LOD <= %.2f.' % ( len(trainingData), self.VRAC.BAD_LOD_CUTOFF )
         return trainingData
 
 
