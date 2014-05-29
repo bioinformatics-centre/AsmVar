@@ -49,7 +49,7 @@ class VariantRecalibratorEngine :
 
         if not isinstance(data[0], vd.VariantDatum) : 
             raise ValueError ('[ERROR] The data type should be "VariantDatum" in EvaluateData() of class VariantRecalibratorEngine(), but found %s'% str(type(data[0])) )
-        print >> sys.stderr, '[INFO] Evaluating full set of', len(data), 'variants...'
+        print >> sys.stderr, '[INFO] Evaluating full set of', len(data), 'variants ...'
         for i,_ in enumerate( data ) : 
 
             thisLod = gmm.score( data[i].annotations[np.newaxis,:] ) / np.log(10)
