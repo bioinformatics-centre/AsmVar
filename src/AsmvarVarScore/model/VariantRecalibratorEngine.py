@@ -38,7 +38,7 @@ class VariantRecalibratorEngine :
             print >> sys.stderr, '[INFO] Trying %d gaussian in GMM process ...' % g.n_components
             g.fit( trainingData ); bic = g.bic( trainingData )
             bics.append(bic)
-            if bic != float('inf') or (bic < minBIC and g.converged_) : 
+            if bic == float('inf') or (bic < minBIC and g.converged_) : 
                 bestgmm, minBIC = g, bic
         print >> sys.stderr, '[INFO] All the BIC:', bics
         print >> sys.stderr, '[INFO] Model Training Done. And take the model with %d gaussiones which with BIC %f.' % ( len(bestgmm.means_), minBIC )
