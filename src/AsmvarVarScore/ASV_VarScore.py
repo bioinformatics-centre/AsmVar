@@ -19,7 +19,7 @@ import model.VariantRecalibrator as vror
 def main ( opt ) :
 
     traningSet     = vdm.LoadTrainingSiteFromVCF( opt.trainData ) # Just record the sites of training data
-    hInfo, dataSet = vdm.LoadDataSet( opt.vcfInfile, traningSet, vdm.LoadFaLen(opt.qFalen) ) # Identify the traning sites
+    hInfo, dataSet = vdm.LoadDataSet(opt.vcfInfile,traningSet,vdm.LoadFaLen(opt.qFalen)) # Identify the traning sites
     vr             = vror.VariantRecalibrator() # init VariantRecalibrator object
     vr.OnTraversalDone( dataSet ) # Traning model and calculate the VQ for all the dataSet
 
