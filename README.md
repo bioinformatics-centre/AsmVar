@@ -7,11 +7,9 @@ LICENSE
 Copyright &copy; 2014-2015
 
 __Author & contributors:__ Shujia Huang, Siyang Liu, Weijian Ye & Junhua Rao <br> </br>
-__Contact              :__ huangshujia@genomics.cn
-__Institute            :__ BGI
-<br>
-__Last Version         :__ 2014-05-30 10:00:01
-</br>
+__Contact              :__ huangshujia@genomics.cn <br> </br>
+__Institute            :__ BGI                     <br> </br>
+__Last Version         :__ 2014-05-30 10:00:01     <br> </br>
 
 1. Overview
 2. How to use SoapAsmvar
