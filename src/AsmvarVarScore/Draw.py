@@ -15,8 +15,8 @@ def Draw ( know, novel, figname ) :
 
     numbins = 100
     fig     = plt.figure ()
-    if len(know) : plt.plot( know, numbins, normed = 0, facecolor = 'b', label = 'Know' )
-    if len(novel): plt.plot( know, numbins, normed = 0, facecolor = 'r', label = 'Novel')
+    if len(know) : plt.hist( know, numbins, normed = 0, facecolor = 'b', label = 'Know' )
+    if len(novel): plt.hist( know, numbins, normed = 0, facecolor = 'r', label = 'Novel')
     plt.legend('upper right')
     plt.xlabel('VQ Distribution')
     plt.ylabel('Number')
