@@ -15,11 +15,19 @@ def Draw ( know, novel, figname ) :
 
     numbins = 100
     fig     = plt.figure ()
+    plt.subplot(2,1,1)
     if len(know) : plt.hist( know , numbins, normed = 1, facecolor = 'b', label = 'Know' )
+    plt.legend(loc='upper left')
+    plt.xlim (-25, 10)
+    plt.ylabel('Number')
+
+    plt.subplot(2,1,2)
     if len(novel): plt.hist( novel, numbins, normed = 1, facecolor = 'r', label = 'Novel')
     plt.legend(loc='upper left')
+    plt.xlim (-25, 10)
     plt.xlabel('VQ Distribution')
     plt.ylabel('Number')
+
     fig.savefig( figname + '.png' )
 
 def main ( opt ) :

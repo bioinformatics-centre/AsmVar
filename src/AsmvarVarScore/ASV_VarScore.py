@@ -26,18 +26,35 @@ def main ( opt ) :
     # Outputting the result as VCF format
     hInfo.Add ('##INFO=<ID=VQ', '##INFO=<ID=VQ,Number=1,Type=String,Description="Variant Quality">')
     hInfo.Add ('##INFO=<ID=CU', '##INFO=<ID=CU,Number=1,Type=String,Description="The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out. It\'s the same tag as "culprit" in GATK">')
-    for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
+    hInfo.Add ('##INFO=<ID=NEGATIVE_TRAIN_SITE', '##INFO=<ID=NEGATIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the negative training set of bad variants">')
+    hInfo.Add ('##INFO=<ID=POSITIVE_TRAIN_SITE', '##INFO=<ID=POSITIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the positive training set of good variants">')
+    # For Record the Annnotations' values
+    hInfo.Add ('##INFO=<ID=Position', '##INFO=<ID=Position,Number=1,Type=Float,Description="Position on Assembly Scaffold">')
+    hInfo.Add ('##INFO=<ID=NRatio', '##INFO=<ID=NRatio,Number=1,Type=Float,Description="The median of N ratio of the query sequences">')
+    hInfo.Add ('##INFO=<ID=AlternatePerfect', '##INFO=<ID=AlternatePerfect,Number=1,Type=Float,Description="Depth of Alt_Perfect">')
+    hInfo.Add ('##INFO=<ID=BothImperfect', '##INFO=<ID=BothImperfect,Number=1,Type=Float,Description="Depth of Both_Imperfect">')
+        
 
+    for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
+    idx = {c:i for i,c in enumerate(['Position', 'NRatio', 'AlternatePerfect', 'BothImperfect']) }
     for d in dataSet :
         # Deal with the INFO line
         vcfinfo = {}
         for info in d.variantContext[7].split(';') : 
             k = info.split('=')[0]
-            if k in vcfinfo: raise ValueError('[ERROR] The tag: %s double hits in the INFO column at %s'%(k, info))
+            if k in vcfinfo: raise ValueError('[WARNING] The tag: %s double hits in the INFO column at %s'%(k, info))
             vcfinfo[k] = info
+
         vcfinfo['VQ'] = 'VQ=' + str( int(d.lod+0.5) )
         vcfinfo['CU'] = 'CU=' + d.annoTexts[d.worstAnnotation]
+        vcfinfo['Position']         = 'Position=' + str(d.annotations[ idx['Position'] ])
+        vcfinfo['NRatio'  ]         = 'NRatio=' + str(d.annotations[ idx['NRatio'] ])
+        vcfinfo['AlternatePerfect'] = 'AlternatePerfect=' + str(d.annotations[ idx['AlternatePerfect'] ])
+        vcfinfo['BothImperfect']    = 'BothImperfect=' + str(d.annotations[ idx['BothImperfect'] ])
+        if d.atTrainingSite     : vcfinfo['POSITIVE_TRAIN_SITE'] = 'POSITIVE_TRAIN_SITE'
+        if d.atAntiTrainingSite : vcfinfo['NEGATIVE_TRAIN_SITE'] = 'NEGATIVE_TRAIN_SITE'
         d.variantContext[7] = ';'.join( sorted(vcfinfo.values()) )
+
         print '\t'.join( d.variantContext )
 
 if __name__ == '__main__' :
