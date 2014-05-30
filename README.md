@@ -6,7 +6,7 @@ LICENSE:
 
 Copyright(c) 2014-2015
 
-Author & contributors: Shujia Huang, Weijian Ye, Junhua Rao & Siyang Liu
+Author & contributors: Siyang Liu , Shujia Huang, Weijian Ye & Junhua Rao
 
 Contact              : huangshujia@genomics.cn
 
