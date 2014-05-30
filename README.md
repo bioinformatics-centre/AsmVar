@@ -6,8 +6,10 @@ LICENSE
 --------
 Copyright &copy; 2014-2015
 
+__BOLD__
 Author & contributors: Shujia Huang, Siyang Liu, Weijian Ye & Junhua Rao
 <br>
+__BOLD__
 Contact              : huangshujia@genomics.cn
 </br>
 Institute            : BGI
