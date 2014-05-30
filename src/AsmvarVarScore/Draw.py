@@ -15,9 +15,9 @@ def Draw ( know, novel, figname ) :
 
     numbins = 100
     fig     = plt.figure ()
-    if len(know) : plt.hist( know, numbins, normed = 0, facecolor = 'b', label = 'Know' )
-    if len(novel): plt.hist( know, numbins, normed = 0, facecolor = 'r', label = 'Novel')
-    plt.legend('upper right')
+    if len(know) : plt.hist( know , numbins, normed = 0, facecolor = 'b', label = 'Know' )
+    if len(novel): plt.hist( novel, numbins, normed = 0, facecolor = 'r', label = 'Novel')
+    plt.legend(loc='upper left')
     plt.xlabel('VQ Distribution')
     plt.ylabel('Number')
     fig.savefig( figname + '.png' )
@@ -41,10 +41,10 @@ def main ( opt ) :
             col= line.strip('\n').split()
             vq = string.atoi( re.search(r';VQ=([^;]+)', col[7]).group(1) )
             if col[2][:2] == 'rs' : 
-                know.append( vq )
+                know.append(vq)
                 print '1\t',vq
             else : 
-                novel.append(vq )
+                novel.append(vq)
                 print '0\t',vq
 
     I.close()
