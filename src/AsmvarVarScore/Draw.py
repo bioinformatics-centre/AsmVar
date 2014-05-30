@@ -34,7 +34,8 @@ def main ( opt ) :
     while 1 :
 
         lines = I.readlines( 100000 )
-        if not lines : continue
+        if not lines : break
+
         for line in lines :
             if re.search(r'^#', line) : continue
             col= line.strip('\n').split()
