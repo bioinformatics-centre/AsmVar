@@ -7,8 +7,11 @@ LICENSE:
 Copyright(c) 2014-2015
 
 Author & contributors: Shujia Huang, Weijian Ye, Junhua Rao & Siyang Liu
+
 Contact              : huangshujia@genomics.cn
+
 Institute            : BGI
+
 Last Version         : 2014-05-30 10:00:01
 
 1. Overview
