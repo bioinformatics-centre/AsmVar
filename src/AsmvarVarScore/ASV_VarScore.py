@@ -29,10 +29,10 @@ def main ( opt ) :
     hInfo.Add ('##INFO=<ID=NEGATIVE_TRAIN_SITE', '##INFO=<ID=NEGATIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the negative training set of bad variants">')
     hInfo.Add ('##INFO=<ID=POSITIVE_TRAIN_SITE', '##INFO=<ID=POSITIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the positive training set of good variants">')
     # For Record the Annnotations' values
-    hInfo.Add ('##INFO=<ID=Position', '##INFO=<ID=Position,Number=1,Type=Float,Description="Position on Assembly Scaffold">')
+    hInfo.Add ('##INFO=<ID=Position', '##INFO=<ID=Position,Number=1,Type=Float,Description="The median of Position on Assembly Scaffold">')
     hInfo.Add ('##INFO=<ID=NRatio', '##INFO=<ID=NRatio,Number=1,Type=Float,Description="The median of N ratio of the query sequences">')
-    hInfo.Add ('##INFO=<ID=AlternatePerfect', '##INFO=<ID=AlternatePerfect,Number=1,Type=Float,Description="Depth of Alt_Perfect">')
-    hInfo.Add ('##INFO=<ID=BothImperfect', '##INFO=<ID=BothImperfect,Number=1,Type=Float,Description="Depth of Both_Imperfect">')
+    hInfo.Add ('##INFO=<ID=AlternatePerfect', '##INFO=<ID=AlternatePerfect,Number=1,Type=Float,Description="The median of Depth of Alt_Perfect">')
+    hInfo.Add ('##INFO=<ID=BothImperfect', '##INFO=<ID=BothImperfect,Number=1,Type=Float,Description="The median of Depth of Both_Imperfect">')
         
 
     for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
