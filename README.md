@@ -1,5 +1,6 @@
 SoapAsmvar
 ==========
+![Test gigure](http://img01.36krcnd.com/thumbs/w_720/h_480/wp-content/uploads/2011/11/github-profile1.png)
 SoapAsmvar is a software for detecting variants, including Indel & SV, base on long sequence(or de novo Assembly) alignement.
 
 LICENSE 
