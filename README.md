@@ -4,7 +4,7 @@ SoapAsmvar is a software for detecting variants, including Indel & SV, base on l
 
 LICENSE: 
 --------
-Copyright &copy 2014-2015
+Copyright &copy; 2014-2015
 
 Author & contributors: Shujia Huang, Siyang Liu, Weijian Ye & Junhua Rao
 
