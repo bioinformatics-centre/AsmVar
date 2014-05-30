@@ -11,7 +11,7 @@ import string
 import numpy as np
 import matplotlib.pyplot as plt
 
-def Draw ( know, novel, figname ) :
+def DrawOld ( know, novel, figname ) :
 
     numbins = 100
     fig     = plt.figure ()
@@ -29,6 +29,27 @@ def Draw ( know, novel, figname ) :
     plt.ylabel('Number')
 
     fig.savefig( figname + '.png' )
+def Draw ( newData, trainData, figname ) :
+
+    for k in newData.keys() :
+
+        newData[k]   = np.array( newData[k]   )
+        trainData[k] = np.array( trainData[k] )
+
+        fig = plt.figure ()
+        plt.subplot(2,1,1)
+        if len( trainData[k] ) : plt.scatter(trainData[k][:,0], trainData[k][:,1], c='r', marker='.', label = 'Training Data')
+        plt.legend(loc='upper left')
+        plt.ylabel( 'Evidence for ' + k )
+
+        plt.subplot(2,1,2)
+        if len(newData[k] ) : plt.scatter(newData[k][:,0], newData[k][:,1], c='g', marker='.', label = 'New Data')
+        plt.legend(loc='upper left')
+        plt.xlabel( 'VQ' )
+        plt.ylabel( 'Evidence for ' + k )
+
+        fig.savefig( figname + '.' + k + '.png' )
+    
 
 def main ( opt ) :
 
@@ -38,7 +59,7 @@ def main ( opt ) :
     else :
         I = open ( opt.vcfInfile )
 
-    know, novel = [], []
+    newdata,trainData = {}, {}
     while 1 :
 
         lines = I.readlines( 100000 )
@@ -47,19 +68,24 @@ def main ( opt ) :
         for line in lines :
             if re.search(r'^#', line) : continue
             col= line.strip('\n').split()
-            vq = string.atoi( re.search(r';VQ=([^;]+)', col[7]).group(1) )
-            if col[2][:2] == 'rs' : 
-                know.append(vq)
-                print '1\t',vq
-            else : 
-                novel.append(vq)
-                print '0\t',vq
+
+            vcfinfo = { d.split('=')[0] : d.split('=')[1] for d in col[7].split(';') if len(d.split('=')) == 2 }
+            vq      = string.atoi( vcfinfo['VQ'] )
+            culprit = string.atof( vcfinfo[ vcfinfo['CU'] ] )
+
+            if vcfinfo['CU'] not in newdata   : newdata[vcfinfo['CU']]   = []
+            if vcfinfo['CU'] not in trainData : trainData[vcfinfo['CU']] = []
+
+            if re.search(r'_TRAIN_SITE', col[7]) : 
+                trainData[vcfinfo['CU']].append( [vq, culprit] )
+            else :
+                newdata[vcfinfo['CU']].append( [vq, culprit] )
 
     I.close()
 
     figName = 'fig'
     if len(opt) > 1 : figName = opt[1]
-    Draw ( np.array(know), np.array(novel), figName )
+    Draw ( newdata, trainData, figName )
 
 if __name__ == '__main__' :
 
