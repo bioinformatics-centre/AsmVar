@@ -25,7 +25,7 @@ def main ( opt ) :
 
     # Outputting the result as VCF format
     hInfo.Add ('##INFO=<ID=VQ', '##INFO=<ID=VQ,Number=1,Type=String,Description="Variant Quality">')
-    hInfo.Add ('##INFO=<ID=culprit', '##INFO=<ID=culprit,Number=1,Type=String,Description="The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out">')
+    hInfo.Add ('##INFO=<ID=CU', '##INFO=<ID=CU,Number=1,Type=String,Description="The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out. It\'s the same tag as "culprit" in GATK">')
     for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
 
     for d in dataSet :
@@ -35,8 +35,8 @@ def main ( opt ) :
             k = info.split('=')[0]
             if k in vcfinfo: raise ValueError('[ERROR] The tag: %s double hits in the INFO column at %s'%(k, info))
             vcfinfo[k] = info
-        vcfinfo['VQ']       = 'VQ=' + str( int(d.lod+0.5) )
-        vcfinfo['culprit']  = 'culprit=' + d.annoTexts[d.worstAnnotation]
+        vcfinfo['VQ'] = 'VQ=' + str( int(d.lod+0.5) )
+        vcfinfo['CU'] = 'CU=' + d.annoTexts[d.worstAnnotation]
         d.variantContext[7] = ';'.join( sorted(vcfinfo.values()) )
         print '\t'.join( d.variantContext )
 
