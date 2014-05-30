@@ -2,7 +2,7 @@ SoapAsmvar
 ==========
 SoapAsmvar is a software for detecting variants, including Indel & SV, base on long sequence(or de novo Assembly) alignement.
 
-LICENSE: 
+LICENSE 
 --------
 Copyright &copy; 2014-2015
 
