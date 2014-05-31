@@ -30,11 +30,18 @@ def main ( opt ) :
 
             if re.search(r'^#', line) : continue
             col  = line.strip('\n').split()
-            flag = re.search(r';Novel=\(([^\|]+)\|', col[7]).group(1)
+            """
+            flag     = re.search(r';Novel=\(([^\|]+)\|', col[7]).group(1)
             if flag != 'Novel' and flag != 'ESame' and flag != 'Same' : continue
-            vq = string.atoi( re.search(r';VQ=([^;]+)', col[7]).group(1) )
+            vq = string.atof( re.search(r';VQ=([^;]+)', col[7]).group(1) )
             v  = 0
             if 'Same' in flag : v = 1
+            """
+            if not re.search(r'_TRAIN_SITE', col[7]) : continue
+            vq = string.atof( re.search(r';VQ=([^;]+)', col[7]).group(1) )
+            vq = int( vq + 0.5 )
+            v  = 1
+            if 'NEGATIVE_TRAIN_SITE' in col[7] : v = 0
             data.append([vq, v])
     I.close()
     DrawFig( opt.figure, np.array(data) )
