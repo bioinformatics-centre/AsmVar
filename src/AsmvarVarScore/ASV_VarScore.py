@@ -24,7 +24,7 @@ def main ( opt ) :
     vr.OnTraversalDone( dataSet ) # Traning model and calculate the VQ for all the dataSet
 
     # Outputting the result as VCF format
-    hInfo.Add ('##INFO=<ID=VQ', '##INFO=<ID=VQ,Number=1,Type=String,Description="Variant Quality">')
+    hInfo.Add ('##INFO=<ID=VQ', '##INFO=<ID=VQ,Number=1,Type=Float,Description="Variant Quality">')
     hInfo.Add ('##INFO=<ID=CU', '##INFO=<ID=CU,Number=1,Type=String,Description="The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out. It\'s the same tag as "culprit" in GATK">')
     hInfo.Add ('##INFO=<ID=NEGATIVE_TRAIN_SITE', '##INFO=<ID=NEGATIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the negative training set of bad variants">')
     hInfo.Add ('##INFO=<ID=POSITIVE_TRAIN_SITE', '##INFO=<ID=POSITIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the positive training set of good variants">')
@@ -45,7 +45,8 @@ def main ( opt ) :
             if k in vcfinfo: raise ValueError('[WARNING] The tag: %s double hits in the INFO column at %s'%(k, info))
             vcfinfo[k] = info
 
-        vcfinfo['VQ'] = 'VQ=' + str( int(d.lod+0.5) )
+        vcfinfo['VQ'] = 'VQ=' + str(d.lod)
+        #vcfinfo['VQ'] = 'VQ=' + str( int(d.lod+0.5) )
         vcfinfo['CU'] = 'CU=' + d.annoTexts[d.worstAnnotation]
         vcfinfo['Position']         = 'Position=' + str(d.annotations[ idx['Position'] ])
         vcfinfo['NRatio'  ]         = 'NRatio=' + str(d.annotations[ idx['NRatio'] ])

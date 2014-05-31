@@ -70,7 +70,7 @@ def main ( opt ) :
             col= line.strip('\n').split()
 
             vcfinfo = { d.split('=')[0] : d.split('=')[1] for d in col[7].split(';') if len(d.split('=')) == 2 }
-            vq      = string.atoi( vcfinfo['VQ'] )
+            vq      = string.atof( vcfinfo['VQ'] )
             culprit = string.atof( vcfinfo[ vcfinfo['CU'] ] )
 
             if vcfinfo['CU'] not in newdata   : newdata[vcfinfo['CU']]   = []

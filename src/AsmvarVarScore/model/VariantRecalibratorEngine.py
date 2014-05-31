@@ -53,6 +53,7 @@ class VariantRecalibratorEngine :
         for i,_ in enumerate( data ) : 
 
             thisLod = gmm.score( data[i].annotations[np.newaxis,:] ) / np.log(10)
+            thisLod = thisLod[0]
             if np.math.isnan( thisLod ) : 
                 gmm.converged_ = False
                 return
