@@ -34,6 +34,7 @@ struct Stats {
 	vector<int> refGC;
     vector<float> gc2cov;
 
+    //Coverage perfectMap;     // The reads which is proper pair and just with mismatch
 	Coverage properPair;     // This is not as the proper pair as bwa. We consider the aligment score at the same time
 	// UnproperPair : Include lowAlignScore,badInsertSizePair,WrongOrientation,
 	Coverage pLowAlignScore; // This is proper pair by bwa but with low aligment score.

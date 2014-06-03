@@ -184,7 +184,7 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
 
             datum                = vd.VariantDatum()
             datum.annotations    = np.median( annotations, axis = 0 )
-            datum.annoTexts      = ['Position', 'NRatio', 'AlternatePerfect', 'BothImperfect']
+            #datum.annoTexts      = ['Position', 'NRatio', 'AlternatePerfect', 'BothImperfect']
             datum.variantContext = col
             key                  = col[0] + ':' + col[1]
             if key in traningSet : datum.atTrainingSite = True
