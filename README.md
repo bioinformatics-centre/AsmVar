@@ -3,16 +3,16 @@ SoapAsmvar
 #![T gigure](http://img01.36krcnd.com/thumbs/w_720/h_480/wp-content/uploads/2011/11/github-profile1.png)
 #![P gigure](http://h.hiphotos.baidu.com/image/w%3D310/sign=618e3b7948ed2e73fce9802db703a16d/42166d224f4a20a411d7e83a92529822730ed006.jpg)
 
-SoapAsmvar is a software for detecting variants, including Indel & SV, base on long sequence(or de novo Assembly) alignement.
+#SoapAsmvar is a software for detecting variants, including Indel & SV, base on long sequence(or de novo Assembly) alignement.
 
 LICENSE 
 --------
 Copyright &copy; 2014-2015
 
-__Author & contributors:__ Shujia Huang, Siyang Liu, Weijian Ye & Junhua Rao   <br/>
-__Contact              :__ huangshujia@genomics.cn & liusiyang.ocean@gmail.com <br/>
-__Institute            :__ BGI & KU                                            <br/>
-__Last Version         :__ 2014-05-30                                          <br/>
+#__Author & contributors:__ Shujia Huang, Siyang Liu, Weijian Ye & Junhua Rao   <br/>
+#__Contact              :__ huangshujia@genomics.cn & liusiyang.ocean@gmail.com <br/>
+#__Institute            :__ BGI & KU                                            <br/>
+#__Last Version         :__ 2014-05-30                                          <br/>
 
 1. Overview
 2. How to use SoapAsmvar
