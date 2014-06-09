@@ -29,15 +29,19 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, aveIden, nr, aa, bb, tes
 
     plt.subplot(322)
     plt.title('Left Side', fontsize=16)
-    plt.plot(leftIden[:,0] , leftIden[:,2]/np.sum(leftIden[:,1])  , 'go-' )
-    plt.axis([0,100,0.0,1.0])
+    #plt.plot(leftIden[:,0] , leftIden[:,2]/np.sum(leftIden[:,1])  , 'go-' )
+    plt.plot(leftIden[:,0] , leftIden[:,1]/np.sum(leftIden[:,1])  , 'go-' )
+    #plt.axis([0,100,0.0,1.0])
+    plt.xlim( 0, 100)
     plt.xlabel('Left Side Identity of varints(<=%)', fontsize=16)
     plt.ylabel('% of Accumulate', fontsize=16)
 
     plt.subplot(323)
     plt.title('Right Side', fontsize=16)
-    plt.plot(rigthIden[:,0], rigthIden[:,2]/np.sum(rigthIden[:,1]), 'bo-' )
-    plt.axis([0,100,0.0,1.0])
+    #plt.plot(rigthIden[:,0], rigthIden[:,2]/np.sum(rigthIden[:,1]), 'bo-' )
+    plt.plot(rigthIden[:,0], rigthIden[:,1]/np.sum(rigthIden[:,1]), 'bo-' )
+    #plt.axis([0,100,0.0,1.0])
+    plt.xlim( 0, 100)
     plt.xlabel('Right Side Identity of varints(<=%)', fontsize=16)
     plt.ylabel('% of Accumulate', fontsize=16)
 
@@ -141,6 +145,7 @@ def main ( argv ) :
 
             #if re.search(r'^PASS', col[6] ) : continue
             if not re.search(r'^PASS', col[6] ) : continue
+            #if not re.search(r'_TRAIN_SITE', col[7]) : continue
 
             fmat = { k:i for i,k in enumerate( col[8].split(':') ) }
             if 'VS' not in fmat or 'QR' not in fmat: continue
@@ -171,12 +176,14 @@ def main ( argv ) :
                 n   = int(1000 * nn + 0.5) / 10.0
                 alt = string.atoi( sample.split(':')[fmat['AA']].split(',')[1] ) # Alternate perfect
                 bot = string.atoi( sample.split(':')[fmat['AA']].split(',')[3] ) # Both imperfect
-                annotations.append( [leg, n , alt, bot] )
+                pro = string.atoi( sample.split(':')[fmat['RP']].split(',')[0] ) # Proper Pair
+                ipr = string.atoi( sample.split(':')[fmat['RP']].split(',')[1] ) # ImProper Pair
+                annotations.append( [leg, n , alt, bot, pro, ipr] )
                 #break
 
-            #leg, n, alt, bot = np.mean( annotations, axis = 0 )
-            leg, n, alt, bot = np.median( annotations, axis = 0 )
-            leftIden, rightIden, aveIden = 0, 0, 0
+            #leg, n, alt, bot = np.median( annotations, axis = 0 )
+            leg, n, alt, bot, leftIden, rightIden = np.median( annotations, axis = 0 )
+            aveIden = 0
             if leg       not in distance : distance[leg]       = [0,0] 
             if leftIden  not in leftIdn  : leftIdn[leftIden]   = [0,0] 
             if rightIden not in rightIdn : rightIdn[rightIden] = [0,0] 

@@ -64,7 +64,7 @@ def main ( opt ) :
     ## Output Summary
     print >> sys.stderr, '\n[Summmary] Here is the cupprit summary information:'
     for k, v in sorted( culprit.items(), key = lambda k:k[0] ) :
-        print >> sys.stderr, '  ** %s: %.1f  %.2f' % ( k, v, v * 100.0 / tot )
+        print >> sys.stderr, '  ** %s: %d\t%.2f' % ( k, v, v * 100.0 / tot )
 
 if __name__ == '__main__' :
 

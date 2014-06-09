@@ -13,7 +13,7 @@ class VariantRecalibratorArgumentCollection :
         self.STD_THRESHOLD         = 10.0
         self.MIN_NUM_BAD_VARIANTS  = 1000
         self.MAX_NUM_TRAINING_DATA = 20000
-        self.BAD_LOD_CUTOFF        = 0.0
+        self.BAD_LOD_CUTOFF        = -3.0
         self.MAX_GAUSSIANS         = 8
         self.MAX_GAUSSIANS_FOR_NEGATIVE_MODEL = 4
 
