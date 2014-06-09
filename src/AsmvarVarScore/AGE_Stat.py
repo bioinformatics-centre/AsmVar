@@ -174,7 +174,8 @@ def main ( argv ) :
                 annotations.append( [leg, n , alt, bot] )
                 #break
 
-            leg, n, alt, bot = np.mean( annotations, axis = 0 )
+            #leg, n, alt, bot = np.mean( annotations, axis = 0 )
+            leg, n, alt, bot = np.median( annotations, axis = 0 )
             leftIden, rightIden, aveIden = 0, 0, 0
             if leg       not in distance : distance[leg]       = [0,0] 
             if leftIden  not in leftIdn  : leftIdn[leftIden]   = [0,0] 
