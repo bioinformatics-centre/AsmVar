@@ -35,11 +35,12 @@ class VariantRecalibratorEngine :
         trainingData = np.array([d.annotations for d in data])
         minBIC, bics = np.inf, []
         for g in gmms : 
-            print >> sys.stderr, '[INFO] Trying %d gaussian in GMM process ...' % g.n_components
+            print >> sys.stderr, '[INFO] Trying %d gaussian in GMM process training ...' % g.n_components
             g.fit( trainingData ); bic = g.bic( trainingData )
             bics.append(bic)
             if bic == float('inf') or (bic < minBIC and g.converged_) : 
                 bestgmm, minBIC = g, bic
+            print >> sys.stderr, '  -- Converge infomation of training process:', g.converged_
         print >> sys.stderr, '[INFO] All the BIC:', bics
         print >> sys.stderr, '[INFO] Model Training Done. And take the model with %d gaussiones which with BIC %f.' % ( len(bestgmm.means_), minBIC )
         
