@@ -71,7 +71,7 @@ class VariantDataManager :
             if (d.lod < self.VRAC.BAD_LOD_CUTOFF) and (not d.failingSTDThreshold) : 
                 trainingData.append( d )
                 self.data[i].atAntiTrainingSite = True
-        print >> sys.stderr, '[INFO] Training with worst %d scoring variants --> variants with LOD <= %.2f.' % ( len(trainingData), self.VRAC.BAD_LOD_CUTOFF )
+        print >> sys.stderr, '[INFO] Training with worst %d scoring variants --> variants with LOD < %.2f.' % ( len(trainingData), self.VRAC.BAD_LOD_CUTOFF )
         return trainingData
 
 
