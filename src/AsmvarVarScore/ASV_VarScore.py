@@ -34,7 +34,7 @@ def main ( opt ) :
     hInfo.Add ('##INFO=<ID=AlternatePerfect', '##INFO=<ID=AlternatePerfect,Number=1,Type=Float,Description="The median of Depth of Alt_Perfect">')
     hInfo.Add ('##INFO=<ID=BothImperfect', '##INFO=<ID=BothImperfect,Number=1,Type=Float,Description="The median of Depth of Both_Imperfect">')
     
-    culprit, tot = {}, 0.0
+    culprit, tot, good = {}, 0.0, 0.0
     for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
     idx = {c:i for i,c in enumerate(['Position', 'NRatio', 'AlternatePerfect', 'BothImperfect']) }
     for d in dataSet :
@@ -47,7 +47,7 @@ def main ( opt ) :
 
         tot += 1.0 # Record For summary
         culprit[d.annoTexts[d.worstAnnotation]] = culprit.get( d.annoTexts[d.worstAnnotation], 0.0 ) + 1.0 # For summary
-
+        if d.lod >= 4 : good += 1.0
         vcfinfo['VQ'] = 'VQ=' + str(d.lod)
         #vcfinfo['VQ'] = 'VQ=' + str( int(d.lod+0.5) )
         vcfinfo['CU'] = 'CU=' + d.annoTexts[d.worstAnnotation]
@@ -63,6 +63,7 @@ def main ( opt ) :
 
     ## Output Summary
     print >> sys.stderr, '\n[Summmary] Here is the cupprit summary information:'
+    print >> sys.stderr, '\n  ** Good Site : %d\t%0.2f' % ( good, good * 100 / tot)
     for k, v in sorted( culprit.items(), key = lambda k:k[0] ) :
         print >> sys.stderr, '  ** %s: %d\t%.2f' % ( k, v, v * 100.0 / tot )
 

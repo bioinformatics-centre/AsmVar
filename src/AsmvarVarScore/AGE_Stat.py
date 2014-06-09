@@ -33,8 +33,10 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, aveIden, nr, aa, bb, tes
     plt.plot(leftIden[:,0] , leftIden[:,1]/np.sum(leftIden[:,1])  , 'go-' )
     #plt.axis([0,100,0.0,1.0])
     plt.xlim( 0, 100)
-    plt.xlabel('Left Side Identity of varints(<=%)', fontsize=16)
-    plt.ylabel('% of Accumulate', fontsize=16)
+    plt.xlabel( 'Proper Depth', fontsize = 16 )
+    plt.ylabel( 'Number'      , fontsize = 16 )
+    #plt.xlabel('Left Side Identity of varints(<=%)', fontsize=16)
+    #plt.ylabel('% of Accumulate', fontsize=16)
 
     plt.subplot(323)
     plt.title('Right Side', fontsize=16)
@@ -42,8 +44,10 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, aveIden, nr, aa, bb, tes
     plt.plot(rigthIden[:,0], rigthIden[:,1]/np.sum(rigthIden[:,1]), 'bo-' )
     #plt.axis([0,100,0.0,1.0])
     plt.xlim( 0, 100)
-    plt.xlabel('Right Side Identity of varints(<=%)', fontsize=16)
-    plt.ylabel('% of Accumulate', fontsize=16)
+    plt.xlabel( 'ImProper Depth', fontsize = 16 )
+    plt.ylabel( 'Number'      , fontsize = 16 )
+    #plt.xlabel('Right Side Identity of varints(<=%)', fontsize=16)
+    #plt.ylabel('% of Accumulate', fontsize=16)
 
     plt.subplot(324)
     plt.title('Averge', fontsize=16)
@@ -72,7 +76,7 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, aveIden, nr, aa, bb, tes
     plt.ylabel('% of Accumulate', fontsize=16)
 
     fig.savefig(figureFile + '.png')
-    #fig.savefig(figureFile + '.pdf')
+    fig.savefig(figureFile + '.pdf')
 
 def Accum ( data, isBig = False) :
 

@@ -35,7 +35,7 @@ class VariantRecalibrator :
         print >> sys.stderr, '[INFO] Training the badModel ...'
         negativeTrainingData = self.dataManager.SelectWorstVariants()
         badModel             = self.engine.GenerateModel( negativeTrainingData, min(self.VRAC.MAX_GAUSSIANS_FOR_NEGATIVE_MODEL, self.VRAC.MAX_GAUSSIANS))
-        print >> sys.stderr, '[INFO] The converged information of badModel is:'   , badModel.converged_
+        print >> sys.stderr, '\n[INFO] The converged information of badModel is:' , badModel.converged_
         print >> sys.stderr, '[INFO] The means of gaussion of badModel is:\n'     , badModel.means_
         print >> sys.stderr, '[INFO] The covariance of gaussion of badModel is:\n', badModel.covars_, '\n'
         self.engine.EvaluateData( self.dataManager.data, badModel, True )
