@@ -33,8 +33,8 @@ def main ( opt ) :
     hInfo.Add ('##INFO=<ID=NRatio', '##INFO=<ID=NRatio,Number=1,Type=Float,Description="The median of N ratio of the query sequences">')
     hInfo.Add ('##INFO=<ID=AlternatePerfect', '##INFO=<ID=AlternatePerfect,Number=1,Type=Float,Description="The median of Depth of Alt_Perfect">')
     hInfo.Add ('##INFO=<ID=BothImperfect', '##INFO=<ID=BothImperfect,Number=1,Type=Float,Description="The median of Depth of Both_Imperfect">')
-        
-
+    
+    culprit, tot = {}, 0.0
     for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
     idx = {c:i for i,c in enumerate(['Position', 'NRatio', 'AlternatePerfect', 'BothImperfect']) }
     for d in dataSet :
@@ -44,6 +44,9 @@ def main ( opt ) :
             k = info.split('=')[0]
             if k in vcfinfo: raise ValueError('[WARNING] The tag: %s double hits in the INFO column at %s'%(k, info))
             vcfinfo[k] = info
+
+        tot += 1.0 # Record For summary
+        culprit[d.annoTexts[d.worstAnnotation]] = culprit.get( d.annoTexts[d.worstAnnotation], 0.0 ) + 1.0 # For summary
 
         vcfinfo['VQ'] = 'VQ=' + str(d.lod)
         #vcfinfo['VQ'] = 'VQ=' + str( int(d.lod+0.5) )
@@ -57,6 +60,11 @@ def main ( opt ) :
         d.variantContext[7] = ';'.join( sorted(vcfinfo.values()) )
 
         print '\t'.join( d.variantContext )
+
+    ## Output Summary
+    print >> sys.stderr, '\n[Summmary] Here is the cupprit summary information:'
+    for k, v in sorted( culprit.items(), lambda k:k[0] ) :
+        print >> sys.stderr, '  ** %s: %.1f  %.2f%' % ( k, v, v * 100.0 / tot )
 
 if __name__ == '__main__' :
 
