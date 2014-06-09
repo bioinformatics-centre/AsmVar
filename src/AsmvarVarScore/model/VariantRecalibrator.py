@@ -26,14 +26,18 @@ class VariantRecalibrator :
         positiveTrainingData = self.dataManager.GetTrainingData()
         print >> sys.stderr, '[INFO] Training the goodModel ...'
         goodModel            = self.engine.GenerateModel( positiveTrainingData, self.VRAC.MAX_GAUSSIANS )
-        print >> sys.stderr, '[INFO] The converged information of goodModel is :', goodModel.converged_
+        print >> sys.stderr, '[INFO] The converged information of goodModel is:'   , goodModel.converged_
+        print >> sys.stderr, '[INFO] The means of gaussion of goodModel is:\n'     , goodModel.means_
+        print >> sys.stderr, '[INFO] The covariance of gaussion of goodModel is:\n', goodModel.covars_, '\n'
         self.engine.EvaluateData ( self.dataManager.data, goodModel, False)
 
         # Generate the negative model using the worst performing data and evaluate each variant contrastively
         print >> sys.stderr, '[INFO] Training the badModel ...'
         negativeTrainingData = self.dataManager.SelectWorstVariants()
         badModel             = self.engine.GenerateModel( negativeTrainingData, min(self.VRAC.MAX_GAUSSIANS_FOR_NEGATIVE_MODEL, self.VRAC.MAX_GAUSSIANS))
-        print >> sys.stderr, '[INFO] The converged information of badModel is :', badModel.converged_
+        print >> sys.stderr, '[INFO] The converged information of badModel is:'   , badModel.converged_
+        print >> sys.stderr, '[INFO] The means of gaussion of badModel is:\n'     , badModel.means_
+        print >> sys.stderr, '[INFO] The covariance of gaussion of badModel is:\n', badModel.covars_, '\n'
         self.engine.EvaluateData( self.dataManager.data, badModel, True )
 
         if (not goodModel.converged_) or (not badModel.converged_) : raise ValueError ( '[ERROR] NaN LOD value assigned. Clustering with these variants and these annotations is unsafe. Please consider raising the number of variants used to train the negative model or lowering the maximum number of Gaussians allowed for use in the model.' )
