@@ -38,12 +38,12 @@ def Draw ( newData, trainData, figname ) :
 
         fig = plt.figure ()
         plt.subplot(2,1,1)
-        if len( trainData[k] ) : plt.scatter(trainData[k][:,0], trainData[k][:,1], c='r', marker='.', label = 'Training Data')
+        if len( trainData[k] ) : plt.scatter(trainData[k][:,0], trainData[k][:,1], c='r', marker='o',alpha = 0.4, linewidths = 0, label = 'Training Data')
         plt.legend(loc='upper left')
         plt.ylabel( 'Evidence for ' + k )
 
         plt.subplot(2,1,2)
-        if len(newData[k] ) : plt.scatter(newData[k][:,0], newData[k][:,1], c='g', marker='.', label = 'New Data')
+        if len(newData[k] ) : plt.scatter(newData[k][:,0], newData[k][:,1], c='g', marker='o',alpha=0.4,linewidths=0, label = 'New Data')
         plt.legend(loc='upper left')
         plt.xlabel( 'VQ' )
         plt.ylabel( 'Evidence for ' + k )

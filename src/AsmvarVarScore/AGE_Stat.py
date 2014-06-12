@@ -16,19 +16,26 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, nr, aa, bb ) :
 
     fig = plt.figure( num=None, figsize=(16, 18), facecolor='w', edgecolor='k' )
     
-    title  = ['Distance distribution', 'LeftIden', 'RigthIden', 'NRatio', 'Perfect Depth', 'Imperfect depth']
-    xlabel = ['The breakpoints of varints span on assemble sequence(%)', \
-              'Proper Depth', 'Improper Depth', 'N Ratio of varints', 'Perfect Depth', 'Both ImPerfect Depth']
-    for i, data in enumerate ( [ distance, leftIden, rigthIden, nr, aa, bb ] ) :
-        plt.subplot(3,2,i+1)
-        plt.title(title[i], fontsize=16)
+    title  = ['Distance distribution', 'NRatio', 'Perfect Depth', 'Imperfect depth']
+    ylabel = ['The position of breakpoint', \
+              'N Ratio of varints', 'Perfect Depth', 'Both ImPerfect Depth']
+    for i, data in enumerate ( [ distance, nr, aa, bb ] ) :
+        plt.subplot(4,2,2 * i + 1)
+        #plt.title(title[i], fontsize=16)
         P = data[:,0] == 1; N = data[:,0] == 2; X = data[:,0] == 3
-        plt.scatter(data[:,2][P] , data[:,1][P], marker='.' , c = 'g', alpha=0.5, linewidths = 0 )
-        plt.scatter(data[:,2][N] , data[:,1][N], marker='.' , c = 'r', alpha=0.5, linewidths = 0 )
-        plt.ylabel('Score', fontsize=16)
-        plt.xlabel(xlabel[i], fontsize=16)
+        plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.3, linewidths = 0 ) # Positive
+        plt.scatter(data[:,1][N], data[:,2][N], marker='o', c = 'r', alpha=0.3, linewidths = 0 ) # Negative
+        plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.3, linewidths = 0 ) # Positive->Negative
+        plt.xlabel('Score'  , fontsize=16)
+        plt.ylabel ( ylabel[i]  , fontsize=16 )
 
-    fig.savefig('test.png')
+        plt.subplot(4, 2, 2*i + 2)
+        good = data[:,1] >= 1.0; bad = data[:,1] < 1.0 
+        plt.scatter( data[:,1][good], data[:,2][good], marker='o', c = 'b', alpha=0.4, linewidths = 0 ) # good
+        plt.scatter( data[:,1][bad] , data[:,2][bad] , marker='o', c = 'm', alpha=0.4, linewidths = 0 ) # bad
+        plt.xlabel('Score'  , fontsize=16)
+
+    fig.savefig(figureFile + '.png')
     #fig.savefig(figureFile + '.pdf')
 
 def Accum ( data, isBig = False) :
@@ -136,7 +143,7 @@ def main ( argv ) :
                 leg = qSta
                 if 100 - qEnd < qSta : leg = qEnd
                 nn  = string.atof(sample.split(':')[fmat['FN']])
-                n   = int(1000 * nn + 0.5) / 10.0
+                n   = round( 1000 * nn ) / 10.0
                 alt = string.atoi( sample.split(':')[fmat['AA']].split(',')[1] ) # Alternate perfect
                 bot = string.atoi( sample.split(':')[fmat['AA']].split(',')[3] ) # Both imperfect
                 pro = string.atoi( sample.split(':')[fmat['RP']].split(',')[0] ) # Proper Pair
