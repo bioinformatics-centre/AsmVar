@@ -63,11 +63,11 @@ def main ( opt ) :
         print '\t'.join( d.variantContext )
 
     ## Output Summary
-    print >> sys.stderr, '\n[Summmary] Here is the cupprit summary information:\n'
+    print >> sys.stderr, '\n[Summmary] Here is the summary information:\n'
     for k, v in sorted (good.items(), key = lambda k:k[0]) : 
         print >> sys.stderr, '  ** Good Site score >= %d: %d\t%0.2f' % ( k, v, v * 100 / tot)
     for k, v in sorted( culprit.items(), key = lambda k:k[0] ) :
-        print >> sys.stderr, '  ** %s: %d\t%.2f' % ( k, v, v * 100.0 / tot )
+        print >> sys.stderr, '  ** Culprit by %s: %d\t%.2f' % ( k, v, v * 100.0 / tot )
 
 if __name__ == '__main__' :
 

@@ -12,63 +12,17 @@ import string
 import numpy as np
 import matplotlib.pyplot as plt
 
-def DrawFig( figureFile, distance, leftIden, rigthIden, aveIden, nr, aa, bb, test ) : 
+def DrawFig( figureFile, distance, leftIden, rigthIden, nr, aa, bb ) : 
 
     fig = plt.figure( num=None, figsize=(16, 18), facecolor='w', edgecolor='k' )
     plt.subplot(321)
-
     plt.title('Distance distribution', fontsize=16)
-    plt.plot(distance[:,0] , 100 * distance[:,1]/np.sum(distance[:,1])  , 'ro-' )
+    P = distance[:,0] == 1; N = distance[:,0] == 2; X = distance[:,0] == 3
+    plt.scatter(distance[:,1][P] , distance[:,2][P] )
     plt.xlabel('The breakpoints of varints span on assemble sequence(%)', fontsize=16)
     plt.ylabel('% of Number', fontsize=16)
 
-    plt.subplot(322)
-    plt.title('Left Side', fontsize=16)
-    plt.plot(leftIden[:,0] , leftIden[:,1]/np.sum(leftIden[:,1])  , 'go-' )
-    plt.xlim( 0, 100)
-    plt.xlabel( 'Proper Depth', fontsize = 16 )
-    plt.ylabel( 'Number'      , fontsize = 16 )
-    #plt.xlabel('Left Side Identity of varints(<=%)', fontsize=16)
-    #plt.ylabel('% of Accumulate', fontsize=16)
-
-    plt.subplot(323)
-    plt.title('Right Side', fontsize=16)
-    #plt.plot(rigthIden[:,0], rigthIden[:,2]/np.sum(rigthIden[:,1]), 'bo-' )
-    plt.plot(rigthIden[:,0], rigthIden[:,1]/np.sum(rigthIden[:,1]), 'bo-' )
-    #plt.axis([0,100,0.0,1.0])
-    plt.xlim( 0, 100)
-    plt.xlabel( 'ImProper Depth', fontsize = 16 )
-    plt.ylabel( 'Number'      , fontsize = 16 )
-    #plt.xlabel('Right Side Identity of varints(<=%)', fontsize=16)
-    #plt.ylabel('% of Accumulate', fontsize=16)
-
-    plt.subplot(324)
-    plt.title('Averge', fontsize=16)
-    plt.plot(aveIden[:,0]  , aveIden[:,2]/np.sum(aveIden[:,1])    , 'co-' )
-    plt.axis([0,100,0.0,1.0])
-    plt.xlabel('Averge Identity of varints(<=%)', fontsize=16)
-    plt.ylabel('% of Accumulate', fontsize=16)
-
-    plt.subplot(325)
-    plt.title('N Ratio', fontsize=16)
-    plt.plot(nr[:,0], nr[:,2]/np.sum(nr[:,1]), 'yo-' )
-    plt.axis([0,5,0.0,1.0])
-    plt.xlabel('N Ratio of varints\' regions(>=%)', fontsize=16)
-    plt.ylabel('% of Accumulate', fontsize=16)
-
-    plt.subplot(6,2,10)
-    plt.plot(aa[:,0], aa[:,2]/np.sum(aa[:,1]), 'mo-' )
-    plt.axis([0,100,0.0,1.0])
-    plt.xlabel('Perfect Depth(<=)', fontsize=12)
-    plt.ylabel('% of Accumulate', fontsize=16)
-
-    plt.subplot(6,2,12)
-    plt.plot(bb[:,0], bb[:,2]/np.sum(bb[:,1]), 'ko-' )
-    plt.axis([0,100,0.0,1.0])
-    plt.xlabel('Both ImPerfect Depth(<=)', fontsize=12)
-    plt.ylabel('% of Accumulate', fontsize=16)
-
-    fig.savefig(figureFile + '.png')
+    fig.savefig('test.png')
     #fig.savefig(figureFile + '.pdf')
 
 def Accum ( data, isBig = False) :
@@ -112,7 +66,6 @@ def LoadFaLen ( faLenLstFile ) :
     I.close()
     return data
 
-
 def main ( argv ) :
 
     qFaLen    = LoadFaLen( argv[1] )
@@ -147,14 +100,16 @@ def main ( argv ) :
             if 'VS' not in fmat or 'QR' not in fmat: continue
             if len(annotations) == 0 : annotations = [ [] for _ in col[9:] ]
 
+            vcfinfo = { d.split('=')[0] : d.split('=')[1] for d in col[7].split(';') if len(d.split('=')) == 2 }
+            vq      = string.atof( vcfinfo['VQ'] )
             if 'POSITIVE_TRAIN_SITE' in col[7] and 'NEGATIVE_TRAIN_SITE' in col[7] :
-                mark.append( 3 )
+                mark.append( [3, vq] )
             elif 'POSITIVE_TRAIN_SITE' in col[7] : 
-                mark.append( 1 )
+                mark.append( [1, vq] )
             elif 'NEGATIVE_TRAIN_SITE' in col[7] : 
-                mark.append( 2 )
+                mark.append( [2, vq] )
             else :
-                mark.append( 0 )
+                mark.append( [0, vq] )
 
             for i, sample in enumerate ( col[9:] ) :
                 sampleId = col2sam[9+i]
@@ -167,8 +122,8 @@ def main ( argv ) :
                 qSta = string.atoi(qSta)
                 qEnd = string.atoi(qEnd)
 
-                if sampleId not in qFaLen           : raise ValueError ('[ERROR] The sample name $s(in vcf) is not in the name of Fa list.' % sampleId )
-                if      qId not in qFaLen[sampleId] : raise ValueError ('[ERROR]', qId, 'is not been found in file', opt.qFalen, '\n' )
+                if sampleId not in qFaLen : raise ValueError ('[ERROR] The sample name $s(in vcf) is not in the name of Fa list.' % sampleId )
+                if qId not in qFaLen[sampleId] : raise ValueError ('[ERROR]', qId, 'is not been found in file', opt.qFalen, '\n' )
                 qSta= int( qSta * 100 / qFaLen[sampleId][qId] + 0.5 )
                 qEnd= int( qEnd * 100 / qFaLen[sampleId][qId] + 0.5 )
                 if qSta > 100 or qEnd > 100 : raise ValueError ('[ERROR] Query size Overflow! sample : %s; scaffold : %s' % (sampleId, qId) )
@@ -189,47 +144,43 @@ def main ( argv ) :
     for i in range( sampleNum ) : 
         if np.sum(annotations[i]) == 0: continue
         mean = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).mean(axis=0)
-        std  = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).std  (axis=0)
+        std  = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).std (axis=0)
         annotations[i] = np.array( np.round( (annotations[i] - mean)/std) )  # Normalization Per sample
         print >> sys.stderr, '# Sample NO.', i + 1,'\n', mean,'\n', std
 
-    data, distance, leftIdn, rightIdn, aveIdn, nr, aa, bb = [],[],[],[],[],[],[],[]
+    data, distance, leftIdn, rightIdn, nr, aa, bb = [],[],[],[],[],[],[]
     for i in range( len(annotations[0]) ) : 
 
-        if not mark[i] : continue # Next if makr[i] == 0
+        if not mark[i][0] : continue # Next if makr[i] == 0
 
         anno = np.array( [ annotations[s][i] for s in range( sampleNum ) if len(annotations[s][i][annotations[s][i]!=0]) > 0 ] ) # each person in the same position
         if len( anno ) == 0 : continue
         leg, n, alt, bot, leftIden, rightIden = np.median( anno, axis=0 )
 
-        distance.append( [leg      , mark[i] ] )
-        leftIdn.append ( [leftIden , mark[i] ] )
-        rightIdn.append( [rightIden, mark[i] ] )
-        aveIdn.append  ( [aveIden  , mark[i] ] )
-        nr.append      ( [n  , mark[i]] )
-        aa.append      ( [alt, makr[i]] )
-        bb.append      ( [bot, makr[i]] )
+        distance.append( [ mark[i][0], mark[i][1], leg       ] )
+        leftIdn.append ( [ mark[i][0], mark[i][1], leftIden  ] )
+        rightIdn.append( [ mark[i][0], mark[i][1], rightIden ] )
+        nr.append      ( [ mark[i][0], mark[i][1], n   ] )
+        aa.append      ( [ mark[i][0], mark[i][1], alt ] )
+        bb.append      ( [ mark[i][0], mark[i][1], bot ] )
  
-        data.append([leg, alt, leftIden, rightIden, aveIden, n, bot])
-        print leg, '\t', leftIden, '\t', rightIden, '\t', aveIden, '\t', n, '\t', alt, '\t', bot
+        data.append([leg, alt, leftIden, rightIden, n, bot])
+        print mark[i][0], mark[i][1], '\t', leg, '\t', leftIden, '\t', rightIden,'\t', n, '\t', alt, '\t', bot
+
     data = np.array(data)
     print >> sys.stderr, '\nPosition\tALTernatePerfect\tLeftIdentity\tRightIdentity\tAveIden\tNRatio\tBothImperfect'
     print >> sys.stderr, 'Means: ', data.mean(axis=0), '\nstd  : ', data.std(axis=0), '\nMedian: ', np.median( data, axis=0 ) 
     print >> sys.stderr, '25 Percentile:', np.percentile(data, 25,axis=0), '\n50 Percentile:', np.percentile(data, 50,axis=0), '\n75 Percentile:', np.percentile(data, 75,axis=0)
 
     DrawFig( figPrefix, \
-             np.array (Accum( distance )), \
-             np.array (Accum( leftIdn  )), \
-             np.array (Accum( rightIdn )), \
-             np.array (Accum( aveIdn   )), \
-             np.array (Accum( nr, True )), \
-             np.array (Accum( aa       )), \
-             np.array (Accum( bb       )), \
-             np.array ( data ) )
-
+             np.array (distance ), \
+             np.array (leftIdn  ), \
+             np.array (rightIdn ), \
+             np.array (nr       ), \
+             np.array (aa       ), \
+             np.array (bb       )  )
 
 if __name__ == '__main__' :
 
     main(sys.argv[1:])
-
 
