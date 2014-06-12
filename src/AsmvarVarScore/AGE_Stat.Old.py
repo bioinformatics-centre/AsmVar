@@ -17,6 +17,11 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, aveIden, nr, aa, bb, tes
     fig = plt.figure( num=None, figsize=(16, 18), facecolor='w', edgecolor='k' )
     plt.subplot(321)
 
+    """
+    from matplotlib.colors import LogNorm
+    plt.hist2d(test[:,4], test[:,5], bins=50, norm=LogNorm())
+    plt.plot(test[:,0], test[:,1], 'co')
+    """
     plt.title('Distance distribution', fontsize=16)
     plt.plot(distance[:,0] , 100 * distance[:,1]/np.sum(distance[:,1])  , 'ro-' )
     plt.xlabel('The breakpoints of varints span on assemble sequence(%)', fontsize=16)
@@ -24,7 +29,9 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, aveIden, nr, aa, bb, tes
 
     plt.subplot(322)
     plt.title('Left Side', fontsize=16)
+    #plt.plot(leftIden[:,0] , leftIden[:,2]/np.sum(leftIden[:,1])  , 'go-' )
     plt.plot(leftIden[:,0] , leftIden[:,1]/np.sum(leftIden[:,1])  , 'go-' )
+    #plt.axis([0,100,0.0,1.0])
     plt.xlim( 0, 100)
     plt.xlabel( 'Proper Depth', fontsize = 16 )
     plt.ylabel( 'Number'      , fontsize = 16 )
@@ -69,7 +76,7 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, aveIden, nr, aa, bb, tes
     plt.ylabel('% of Accumulate', fontsize=16)
 
     fig.savefig(figureFile + '.png')
-    #fig.savefig(figureFile + '.pdf')
+    fig.savefig(figureFile + '.pdf')
 
 def Accum ( data, isBig = False) :
 
@@ -123,7 +130,8 @@ def main ( argv ) :
     else :
         I = open ( argv[0] )
 
-    s, annotations, mark = set(), [], []
+    data, distance, leftIdn, rightIdn, aveIdn, nr, aa, bb = [],{},{},{},{},{},{},{}
+    s    = set()
     print '#Chr\tPosition\tDistance\tLeftIden\tRightIden\tAveIden\tN-Ratio\tAA'
     while 1 : # VCF format
 
@@ -140,28 +148,20 @@ def main ( argv ) :
             s.add(key)
 
             #if re.search(r'^PASS', col[6] ) : continue
-            #if not re.search(r'_TRAIN_SITE', col[7]) : continue
             if not re.search(r'^PASS', col[6] ) : continue
+            #if not re.search(r'_TRAIN_SITE', col[7]) : continue
 
             fmat = { k:i for i,k in enumerate( col[8].split(':') ) }
             if 'VS' not in fmat or 'QR' not in fmat: continue
-            if len(annotations) == 0 : annotations = [ [] for _ in col[9:] ]
 
-            if 'POSITIVE_TRAIN_SITE' in col[7] and 'NEGATIVE_TRAIN_SITE' in col[7] :
-                mark.append( 3 )
-            elif 'POSITIVE_TRAIN_SITE' in col[7] : 
-                mark.append( 1 )
-            elif 'NEGATIVE_TRAIN_SITE' in col[7] : 
-                mark.append( 2 )
-            else :
-                mark.append( 0 )
-
+            annotations = []
             for i, sample in enumerate ( col[9:] ) :
                 sampleId = col2sam[9+i]
-                qr = sample.split(':')[fmat['QR']].split(',')[-1]
-                if qr == '.' : 
-                    annotations[i].append( [0, 0, 0, 0, 0, 0] )
+                if len( sample.split(':')[fmat['AA']].split(',') ) != 4 :
+                    print >> sys.stderr,'[WARNING] %s\n%s' % (line, sample.split(':')[fmat['AA']])
                     continue
+                qr = sample.split(':')[fmat['QR']].split(',')[-1]
+                if qr == '.' : continue
 
                 qId, qSta, qEnd = qr.split('-')
                 qSta = string.atoi(qSta)
@@ -172,7 +172,9 @@ def main ( argv ) :
                 qSta= int( qSta * 100 / qFaLen[sampleId][qId] + 0.5 )
                 qEnd= int( qEnd * 100 / qFaLen[sampleId][qId] + 0.5 )
                 if qSta > 100 or qEnd > 100 : raise ValueError ('[ERROR] Query size Overflow! sample : %s; scaffold : %s' % (sampleId, qId) )
-                leg = qSta
+
+                #leg = min(qSta, 100 - qEnd)
+                leg  = qSta
                 if 100 - qEnd < qSta : leg = qEnd
                 nn  = string.atof(sample.split(':')[fmat['FN']])
                 n   = int(1000 * nn + 0.5) / 10.0
@@ -180,38 +182,31 @@ def main ( argv ) :
                 bot = string.atoi( sample.split(':')[fmat['AA']].split(',')[3] ) # Both imperfect
                 pro = string.atoi( sample.split(':')[fmat['RP']].split(',')[0] ) # Proper Pair
                 ipr = string.atoi( sample.split(':')[fmat['RP']].split(',')[1] ) # ImProper Pair
-                annotations[i].append( [leg, n, alt, bot, pro, ipr] )
-    I.close()
-    if len( mark ) != len( annotations[0] ) : raise ValueError ('[ERROR] The size is not match!')
-    annotations = np.array( annotations );
+                annotations.append( [leg, n , alt, bot, pro, ipr] )
+                #break
 
-    sampleNum = len( annotations )
-    for i in range( sampleNum ) : 
-        if np.sum(annotations[i]) == 0: continue
-        mean = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).mean(axis=0)
-        std  = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).std  (axis=0)
-        annotations[i] = np.array( np.round( (annotations[i] - mean)/std) )  # Normalization Per sample
-        print >> sys.stderr, '# Sample NO.', i + 1,'\n', mean,'\n', std
-
-    data, distance, leftIdn, rightIdn, aveIdn, nr, aa, bb = [],[],[],[],[],[],[],[]
-    for i in range( len(annotations[0]) ) : 
-
-        if not mark[i] : continue # Next if makr[i] == 0
-
-        anno = np.array( [ annotations[s][i] for s in range( sampleNum ) if len(annotations[s][i][annotations[s][i]!=0]) > 0 ] ) # each person in the same position
-        if len( anno ) == 0 : continue
-        leg, n, alt, bot, leftIden, rightIden = np.median( anno, axis=0 )
-
-        distance.append( [leg      , mark[i] ] )
-        leftIdn.append ( [leftIden , mark[i] ] )
-        rightIdn.append( [rightIden, mark[i] ] )
-        aveIdn.append  ( [aveIden  , mark[i] ] )
-        nr.append      ( [n  , mark[i]] )
-        aa.append      ( [alt, makr[i]] )
-        bb.append      ( [bot, makr[i]] )
+            #leg, n, alt, bot = np.median( annotations, axis = 0 )
+            leg, n, alt, bot, leftIden, rightIden = np.median( annotations, axis = 0 )
+            aveIden = 0
+            if leg       not in distance : distance[leg]       = [0,0] 
+            if leftIden  not in leftIdn  : leftIdn[leftIden]   = [0,0] 
+            if rightIden not in rightIdn : rightIdn[rightIden] = [0,0] 
+            if aveIden   not in aveIdn   : aveIdn[aveIden]     = [0,0] 
+            if n         not in nr       : nr[n]               = [0,0]
+            if alt       not in aa       : aa[alt]             = [0,0]
+            if bot       not in bb       : bb[bot]             = [0,0]
+            distance[leg][0]       += 1
+            leftIdn[leftIden][0]   += 1
+            rightIdn[rightIden][0] += 1
+            aveIdn[aveIden][0]     += 1
+            nr[n][0]               += 1
+            aa[alt][0]             += 1
+            bb[bot][0]             += 1
  
-        data.append([leg, alt, leftIden, rightIden, aveIden, n, bot])
-        print leg, '\t', leftIden, '\t', rightIden, '\t', aveIden, '\t', n, '\t', alt, '\t', bot
+            data.append([leg, alt, leftIden, rightIden, aveIden, n, bot])
+            print col[0], '\t', col[1], '\t', leg, '\t', leftIden, '\t', rightIden, '\t', aveIden, '\t', n, '\t', alt, '\t', bot
+    I.close()
+
     data = np.array(data)
     print >> sys.stderr, '\nPosition\tALTernatePerfect\tLeftIdentity\tRightIdentity\tAveIden\tNRatio\tBothImperfect'
     print >> sys.stderr, 'Means: ', data.mean(axis=0), '\nstd  : ', data.std(axis=0), '\nMedian: ', np.median( data, axis=0 ) 
