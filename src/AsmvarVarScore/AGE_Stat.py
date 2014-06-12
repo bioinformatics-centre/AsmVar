@@ -23,20 +23,23 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, nr, aa, bb ) :
         plt.subplot(4,2,2 * i + 1)
         #plt.title(title[i], fontsize=16)
         P = data[:,0] == 1; N = data[:,0] == 2; X = data[:,0] == 3
-        plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.3, linewidths = 0 ) # Positive
-        plt.scatter(data[:,1][N], data[:,2][N], marker='o', c = 'r', alpha=0.3, linewidths = 0 ) # Negative
-        plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.3, linewidths = 0 ) # Positive->Negative
+        plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.3, linewidths = 0, label = 'Positive' ) # Positive
+        plt.scatter(data[:,1][N], data[:,2][N], marker='o', c = 'r', alpha=0.3, linewidths = 0, label = 'Negative' ) # Negative
+        plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.3, linewidths = 0, label = 'Positive->Negative' ) # Positive->Negative
+        plt.legend(loc='upper right')
         plt.xlabel('Score'  , fontsize=16)
         plt.ylabel ( ylabel[i]  , fontsize=16 )
 
         plt.subplot(4, 2, 2*i + 2)
-        good = data[:,1] >= 1.0; bad = data[:,1] < 1.0 
-        plt.scatter( data[:,1][good], data[:,2][good], marker='o', c = 'b', alpha=0.4, linewidths = 0 ) # good
-        plt.scatter( data[:,1][bad] , data[:,2][bad] , marker='o', c = 'm', alpha=0.4, linewidths = 0 ) # bad
+        NEW  = data[:,0] == 0
+        good = data[:,1][NEW] >= 1.0; bad = data[:,1][NEW] < 1.0 
+        plt.scatter( data[:,1][NEW][good], data[:,2][NEW][good], marker='o', c = 'b', alpha=0.4, linewidths = 0, label = 'good' ) # good
+        plt.scatter( data[:,1][NEW][bad] , data[:,2][NEW][bad] , marker='o', c = 'm', alpha=0.4, linewidths = 0, label = 'bad' ) # bad
+        plt.legend(loc='upper right')
         plt.xlabel('Score'  , fontsize=16)
 
     fig.savefig(figureFile + '.png')
-    #fig.savefig(figureFile + '.pdf')
+    fig.savefig(figureFile + '.pdf')
 
 def Accum ( data, isBig = False) :
 
