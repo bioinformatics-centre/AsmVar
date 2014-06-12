@@ -15,12 +15,18 @@ import matplotlib.pyplot as plt
 def DrawFig( figureFile, distance, leftIden, rigthIden, nr, aa, bb ) : 
 
     fig = plt.figure( num=None, figsize=(16, 18), facecolor='w', edgecolor='k' )
-    plt.subplot(321)
-    plt.title('Distance distribution', fontsize=16)
-    P = distance[:,0] == 1; N = distance[:,0] == 2; X = distance[:,0] == 3
-    plt.scatter(distance[:,1][P] , distance[:,2][P] )
-    plt.xlabel('The breakpoints of varints span on assemble sequence(%)', fontsize=16)
-    plt.ylabel('% of Number', fontsize=16)
+    
+    title  = ['Distance distribution', 'LeftIden', 'RigthIden', 'NRatio', 'Perfect Depth', 'Imperfect depth']
+    xlabel = ['The breakpoints of varints span on assemble sequence(%)', \
+              'Proper Depth', 'Improper Depth', 'N Ratio of varints', 'Perfect Depth', 'Both ImPerfect Depth']
+    for i, data in enumerate ( [ distance, leftIden, rigthIden, nr, aa, bb ] ) :
+        plt.subplot(3,2,i+1)
+        plt.title(title[i], fontsize=16)
+        P = data[:,0] == 1; N = data[:,0] == 2; X = data[:,0] == 3
+        plt.scatter(data[:,2][P] , data[:,1][P], marker='.' , c = 'g', alpha=0.5, linewidths = 0 )
+        plt.scatter(data[:,2][N] , data[:,1][N], marker='.' , c = 'r', alpha=0.5, linewidths = 0 )
+        plt.ylabel('Score', fontsize=16)
+        plt.xlabel(xlabel[i], fontsize=16)
 
     fig.savefig('test.png')
     #fig.savefig(figureFile + '.pdf')
@@ -145,7 +151,7 @@ def main ( argv ) :
         if np.sum(annotations[i]) == 0: continue
         mean = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).mean(axis=0)
         std  = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).std (axis=0)
-        annotations[i] = np.array( np.round( (annotations[i] - mean)/std) )  # Normalization Per sample
+        annotations[i] = np.array( (annotations[i] - mean)/std )  # Normalization Per sample
         print >> sys.stderr, '# Sample NO.', i + 1,'\n', mean,'\n', std
 
     data, distance, leftIdn, rightIdn, nr, aa, bb = [],[],[],[],[],[],[]
