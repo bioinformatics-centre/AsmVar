@@ -1,1 +1,1 @@
-/home/siyang/USER/huangshujia/Bin/CppLib/i/gzstream.h
+/home/siyang/USER/huangshujia/Lib/i/cpp/gzstream.h

@@ -7,6 +7,7 @@
  */
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <getopt.h>
 #include "utility.h"
 #include "Variant.h"
@@ -52,10 +53,19 @@ int main ( int argc, char* argv[] ) {
         }
         cerr << "***#    Reading file : " << i + 1 << "\t" << infile[i] << "    #*** " << endl;
 		string tmp;
+        vector< string > vect; 
 		while ( 1 ) {
 		/*  1 chrM 16308 16389 Contig102837 1 81 + 5938
             CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAGTCAAATCCCTTCTCGTCCCCATGGATGACCCCCCTCAGATA
             CATAGCACATATAGTCATTCATCGTACATAGCACATTATAGTCAAATCATTTCTCGTCCCCACGGAT-ATCCCCCTCAGATA
+
+            # Header ...
+            # batch 1
+            a score=221 mismap=1e-10
+            s chr1        17032965 221 + 35477943 AGTTCTAAGGGCTCCAGTGTACACACATTGCAGAAAC
+            s scaffold665   120623 221 -   130124 AGTTCTAAGGGCTCCAGTGTACACACATTGCAGAAAC
+            p                                     }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+            p                                     2567777777777888888889999999:::::;;;;
 
 		*/
 			I >> tmp;
@@ -66,16 +76,29 @@ int main ( int argc, char* argv[] ) {
                 exit(1);
             }
 			if ( tmp[0] == '#' ){ getline ( I, tmp, '\n' ); continue; }
-			variant.id.assign(tmp); // 1
-			I >> variant.target.id >> variant.target.start >> variant.target.end; // chrM 16308 16389
-			I >> variant.query.id  >> variant.query.start  >> variant.query.end ; // Contig102837 1 81
-			I >> variant.strand    >> variant.score;                              // + 5938
-			getline ( I, tmp, '\n' );
-			getline ( I, variant.tarSeq, '\n' );  
-			getline ( I, variant.qrySeq, '\n' );
-			getline ( I, tmp, '\n' ); // Space line
+			if ( tmp[0] != 'a' ) { 
+				cerr << "[ERROR] Format crash. It's not the begin of a MAF alignment block\t" << tmp << endl; 
+				exit(1);
+			}
+            //score=221 mismap=1e-10
+            I >> tmp; split("=", tmp, vect); variant.score  = atoi( vect[1].c_str() ); // score=221
+            I >> tmp; split("=", tmp, vect); variant.mismap = atof( vect[1].c_str() ); // mismap=1e-10
+            getline ( I, tmp, '\n' );
+            I >> tmp >> variant.target.id >> variant.target.start >> variant.target.end  //Here variant.target.end is just the mapping length
+              >> tmp >> tmp >> variant.tarSeq; getline ( I, tmp, '\n' );
+            variant.target.end += variant.target.start; // Now variant.target.end is the end of mapping region
+            ++variant.target.start;                     // variant.target.start is 0-base , shift to 1-base
 
-			variant.CheckAxt();
+            I >> tmp >> variant.query.id  >> variant.query.start  >> variant.query.end
+              >> variant.strand >> tmp    >> variant.qrySeq; getline ( I, tmp, '\n' );
+            variant.query.end += variant.query.start;
+            ++variant.query.start;
+
+            do {
+				getline ( I, tmp, '\n' );
+			} while ( tmp[0] == 'p'); 
+
+			variant.CheckMAF();
 			variant.CallSNP ();
 			variant.CallInsertion(); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.
 			variant.CallDeletion (); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.

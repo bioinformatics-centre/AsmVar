@@ -12,15 +12,15 @@
 #include <fstream>
 #include <vector>
 #include <map>
-#include "maf.h"
+#include "Axt.h"
 #include "Region.h"
 #include "utility.h"
 
 using namespace std;
 
-unsigned int NLength ( string & str ); // Used to calculate the 'n' length in class 'VarUnit' and 'Variant'
+unsigned int NLength ( string & str ); // Used to calculate the 'n' length in class 'VarUnit' and 'AxtVar'
 
-class VarUnit { // Well, it looks like the class 'Axt/MAF', but no! Totally different! Use for record the varants.
+class VarUnit { // Well, it looks like the class 'Axt', but no! Totally different! Use for record the varants.
 
 private:
 	bool isClear;
@@ -45,7 +45,7 @@ public:
 	}
 
 	void ConvQryCoordinate ( unsigned int qrySeqLen ) { 
-	// This funtion just conversion the coordinate of Axt/MAF format creat by 'lastz'/'last ', which mapped to the '-' strand
+	// This funtion just conversion the coordinate of Axt format creat by 'lastz' or 'last ', which mapped to the '-' strand
 		if ( strand != '-' ) return;
 		unsigned int itemp = query.start;
         query.start = qrySeqLen - query.end + 1;
@@ -60,13 +60,11 @@ public:
 	bool Empty() { return isClear; } // Do not output if isClear==true
 
 public:
-    /*
 	void OutErrReg () { // Output the axt alignment to STDERR
         cerr<< target.id << "\t" << target.start << "\t" << target.end << "\t"
             << query.id  << "\t" << query.start  << "\t" << query.end  << "\t"
             << tarSeq    << "\t" << qrySeq       << "\t" << type       << endl;
     }
-    */
 	void OutStd ( unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream& O ) { // Output the axt alignment to STDERR
 
 		if ( tarSeq.empty() || qrySeq.empty() ) { cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); }
@@ -102,6 +100,9 @@ public:
 	char  strand;  // Mapping strand
 
 public: 
+	//MapReg ( const MapReg & M ) {
+	//	target = M.target; query = M.query; strand = M.strand;
+	//}
 	void OutErrReg() {
 		cerr << "# "   << target.id << "\t" << target.start << "\t" << target.end 
 			 << "\t"   << query.id  << "\t" << query.start  << "\t" << query.end  << "\t" << strand << endl;
@@ -109,7 +110,7 @@ public:
 };
 
 // Rename 2014-06-19 14:38:02
-class Variant : public MAF {
+class Variant : public Axt {
 
 private: 
 	vector< VarUnit > snp;           // Stored the SNP

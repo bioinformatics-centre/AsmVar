@@ -142,7 +142,7 @@ bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 void Variant::GetMapReg () {
 
 	// Call the query coverting function here to make the '-' strand coordinates of query be the same as '+' strand!
-	ConvQryCoordinate(); // ConvQryCoordinate() is a memerber function of class 'MAF'
+	ConvQryCoordinate(); // ConvQryCoordinate() is a memerber function of class 'Axt'
 
 	MapReg mpI;
 	mpI.target = target; mpI.query = query; mpI.strand = strand;
@@ -529,7 +529,7 @@ void Variant::OutputGap( string file ) {
 		// Get Inter scaffold gaps' regions
 		MapReg tmpMR = it->second[0];
 		for ( size_t i(1); i < it->second.size(); ++i ) {
-//it->second[i].OutErrAlg();
+//it->second[i].OutErrReg();
 			if ( tmpMR.query.id == it->second[i].query.id ) {
 				if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
 				continue;
