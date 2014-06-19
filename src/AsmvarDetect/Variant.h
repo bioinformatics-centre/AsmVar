@@ -109,7 +109,8 @@ public:
 	}
 };
 
-class AxtVar : public Axt {
+// Rename 2014-06-19 14:38:02
+class Variant : public Axt {
 
 private: 
 	vector< VarUnit > snp;           // Stored the SNP

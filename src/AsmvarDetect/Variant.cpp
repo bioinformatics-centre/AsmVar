@@ -11,7 +11,7 @@
 
 using namespace std;
 
-// Used to calculate the 'n' length in class 'VarUnit' and 'AxtVar'
+// Used to calculate the 'n' length in class 'VarUnit' and 'Variant'
 unsigned int NLength ( string & str ) {
 
 	uint len(0);
@@ -21,7 +21,7 @@ unsigned int NLength ( string & str ) {
 	return len;
 }
 
-void AxtVar::CallSNP () {
+void Variant::CallSNP () {
 
 	assert ( tarSeq.length() == qrySeq.length() );
 
@@ -53,7 +53,7 @@ void AxtVar::CallSNP () {
 	}
 }
 
-void AxtVar::CallInsertion () { 
+void Variant::CallInsertion () { 
 // Actually, we just have to call  the target gap regions.	
 // All the coordinate of query should be uniform to the positive strand!
 	vector< VarUnit > gap = CallGap ( target, tarSeq, query, qrySeq, strand, "Ins" );
@@ -67,7 +67,7 @@ void AxtVar::CallInsertion () {
 	}
 }
 
-void AxtVar::CallDeletion () { 
+void Variant::CallDeletion () { 
 // Actually, we just have to call  the query gap regions.
 // All the coordinate of query should be uniform to the positive strand!
 	vector< VarUnit > gap = CallGap ( query, qrySeq, target, tarSeq, strand, "Del" );
@@ -81,7 +81,7 @@ void AxtVar::CallDeletion () {
 	}
 }
 
-bool AxtVar::CallIversion( MapReg left, MapReg middle, MapReg right ) {
+bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
 
 	assert ( left.query.id == right.query.id && left.query.id == middle.query.id );
 
@@ -106,7 +106,7 @@ bool AxtVar::CallIversion( MapReg left, MapReg middle, MapReg right ) {
 	return flag;
 }
 
-bool AxtVar::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
+bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 
 	assert ( left.query.id == right.query.id && left.query.id  == middle.query.id );
 	bool flag(false);
@@ -139,7 +139,7 @@ bool AxtVar::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 	return flag;
 }
 
-void AxtVar::GetMapReg () {
+void Variant::GetMapReg () {
 
 	// Call the query coverting function here to make the '-' strand coordinates of query be the same as '+' strand!
 	ConvQryCoordinate(); // ConvQryCoordinate() is a memerber function of class 'Axt'
@@ -154,7 +154,7 @@ void AxtVar::GetMapReg () {
 	mapqry[query.id].push_back ( query  ); // stored the mapped query  regions here
 }
 
-map< string, vector<Region> > AxtVar::VarTarRegs() {
+map< string, vector<Region> > Variant::VarTarRegs() {
 
 	map< string, vector<Region> > varTarRegs;
 
@@ -180,7 +180,7 @@ map< string, vector<Region> > AxtVar::VarTarRegs() {
 	return varTarRegs;	
 }
 
-void AxtVar::CallSV () { // Call Stuctural variants, not indels!!! 
+void Variant::CallSV () { // Call Stuctural variants, not indels!!! 
 // Just use the memerber value 'mapreg' in this memerber function.
 // Should be debug carfully here!
 // All the coordinate of query should be uniform to the positive strand, then I can sort them!
@@ -253,7 +253,7 @@ void AxtVar::CallSV () { // Call Stuctural variants, not indels!!!
 	}
 }
 
-bool AxtVar::CallSimultan ( MapReg left, MapReg right ) {
+bool Variant::CallSimultan ( MapReg left, MapReg right ) {
 
 	bool success ( false );
 	VarUnit simulgap;
@@ -266,7 +266,7 @@ bool AxtVar::CallSimultan ( MapReg left, MapReg right ) {
 	return success;
 }
 
-void AxtVar::CallReg ( MapReg mapreg, string type, vector< VarUnit > & varReg ) {
+void Variant::CallReg ( MapReg mapreg, string type, vector< VarUnit > & varReg ) {
 	VarUnit reg;
 	reg.target = mapreg.target;
 	reg.query  = mapreg.query;
@@ -275,7 +275,7 @@ void AxtVar::CallReg ( MapReg mapreg, string type, vector< VarUnit > & varReg ) 
 	varReg.push_back( reg );
 }
 
-void AxtVar::CallClipReg () {
+void Variant::CallClipReg () {
 
 	if ( qryfa.fa.empty() ) { cerr << "[WARNING] No Clip regions. Because the query fa is empty!" << endl; return; }
 	VarUnit tmp;
@@ -309,7 +309,7 @@ void AxtVar::CallClipReg () {
 	return;
 }
 
-void AxtVar::CallNomadic () {
+void Variant::CallNomadic () {
 
 	if ( qryfa.fa.empty() ) { cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
 	VarUnit tmp;
@@ -326,7 +326,7 @@ void AxtVar::CallNomadic () {
 	return;
 }
 
-bool AxtVar::IsSameStrand ( vector<MapReg> & mapreg ) {
+bool Variant::IsSameStrand ( vector<MapReg> & mapreg ) {
 
 	bool same ( true );
 	char strand = mapreg[0].strand;
@@ -336,7 +336,7 @@ bool AxtVar::IsSameStrand ( vector<MapReg> & mapreg ) {
 	return same;
 }
 
-void AxtVar::Filter () {
+void Variant::Filter () {
 
 	map< string,vector<Region> > mapNosolution;
 	map<string, size_t> index;
@@ -365,7 +365,7 @@ void AxtVar::Filter () {
 	return;
 }
 
-void AxtVar::FilterReg( map< string,vector<Region> > tarregion, map<string, size_t> index, vector<VarUnit>& region ) {
+void Variant::FilterReg( map< string,vector<Region> > tarregion, map<string, size_t> index, vector<VarUnit>& region ) {
 // Just used in Filter() function
 
 	if ( region.empty() || tarregion.empty() ) return;
@@ -394,7 +394,7 @@ void AxtVar::FilterReg( map< string,vector<Region> > tarregion, map<string, size
 	return;
 }
 
-void AxtVar::Summary( string file ) {
+void Variant::Summary( string file ) {
 
 	summary["SNP"]     = snp.size();
 	summary["Ins"]     = insertion.size();
@@ -431,7 +431,7 @@ void AxtVar::Summary( string file ) {
 	O.close();
 }
 
-void AxtVar::Output ( string file ) {
+void Variant::Output ( string file ) {
 
 	ofstream O ( file.c_str() );
     if ( !O ) { cerr << "Cannot write to file : " << file << endl; exit(1); }
@@ -449,7 +449,7 @@ void AxtVar::Output ( string file ) {
 	return;
 }
 
-void AxtVar::Output ( vector< VarUnit > & R, ofstream& O ) {
+void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 
 	for ( size_t i(0); i < R.size(); ++i ) {
 		if ( R[i].Empty() ) continue;
@@ -468,7 +468,7 @@ void AxtVar::Output ( vector< VarUnit > & R, ofstream& O ) {
 	}
 }
 
-void AxtVar::OutputSNP ( string file ) {
+void Variant::OutputSNP ( string file ) {
 
 	ofstream O ( file.c_str() );
 	O <<  
@@ -509,7 +509,7 @@ void AxtVar::OutputSNP ( string file ) {
 	O.close();
 }
 
-void AxtVar::OutputGap( string file ) {
+void Variant::OutputGap( string file ) {
 // The inter-gaps between different scaffolds in the same chromosome need to calculate.
 // Abort : 2013-11-04 13:20:30 !!!
 
@@ -555,8 +555,8 @@ void AxtVar::OutputGap( string file ) {
 	O.close();
 }
 
-// friendship function in class 'AxtVar'
-unsigned int AxtVar::Covlength ( vector<Region> mapreg ) {
+// friendship function in class 'Variant'
+unsigned int Variant::Covlength ( vector<Region> mapreg ) {
 
 	if ( mapreg.empty() ) return 0;
 
@@ -579,7 +579,7 @@ unsigned int AxtVar::Covlength ( vector<Region> mapreg ) {
 	return length;
 }
 
-vector< VarUnit > AxtVar::CallGap ( Region & tar,    // chrM 16308 16389  or Contig102837 1 81
+vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Contig102837 1 81
                                     string & tarSeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
                                     Region & qry,    // Contig102837 1 81 or chrM 16308 16389
                                     string & qrySeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
@@ -619,7 +619,7 @@ vector< VarUnit > AxtVar::CallGap ( Region & tar,    // chrM 16308 16389  or Con
 
 
 
-VarUnit AxtVar::CallGap ( MapReg left, MapReg right ) { 
+VarUnit Variant::CallGap ( MapReg left, MapReg right ) { 
 // Call the simultaneous gap between 'left' mapped region and the 'right' one
 // 'left' and 'right' should be the same target id, the same query id and the same strand!
 	assert ( left.target.id == right.target.id && left.query.id == right.query.id && left.strand == right.strand );

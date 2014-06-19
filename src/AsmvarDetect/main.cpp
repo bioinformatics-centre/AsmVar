@@ -39,7 +39,7 @@ int main ( int argc, char* argv[] ) {
 	if ( !filelist.empty() ) ReadFileList( filelist.c_str(), infile );
 	if ( argc == 1 || infile.empty() || outFilePrefix.empty() || qryRef.empty() || tarRef.empty() ) Usage( argv[0] );
 
-	AxtVar variant;
+	Variant variant;
 	for ( size_t i (0); i < qryRef.size(); ++i ) { variant.qryfa.Load( qryRef[i] ); } // Load query sequence
 	for ( size_t i (0); i < tarRef.size(); ++i ) { variant.tarfa.Load( tarRef[i] ); } // Load query sequence
 
