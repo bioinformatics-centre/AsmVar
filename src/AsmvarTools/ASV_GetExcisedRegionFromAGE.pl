@@ -77,7 +77,6 @@ for my $file ( @ageFile ) {
 			die "[ERROR]Something unexpected found in you input file $file. maybe cause by the format problem!\n$_\n" if ( $flag );
 			@info     = split( /:/, basename((split /\s+/, $_)[1]) ); # Ins:+:220:1e-10:16:53183502:53183502:1-scaffold146175:3234:3234:1
         	my $index = 5;
-        	#if ($info[4] =~ m/^GL/ ) { ++$index; $info[4] .= ".1"; } # Reference ID is GL***.1
 			($ori_t, $ms, $miq, $ori_s, $ori_e, $qori_s,$qori_e) = @info[0, 2, 3, $index, $index+1, -3, -2];
 			die "[ERROR] Original start > Original End ($_) in file $file \n" if ( $ori_s > $ori_e );
 			%vcfFormat= ();
