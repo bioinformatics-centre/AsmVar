@@ -29,6 +29,8 @@ void Variant::CallSNP () {
     tmpgap.target.id = target.id;
     tmpgap.query.id  = query.id;
     tmpgap.strand    = strand;
+	tmpgap.score     = score;   // 2014-06-20 09:58:32
+	tmpgap.mismap    = mismap;  // 2014-06-20 09:58:39
     tmpgap.type      = "SNP";
 
 	int tarPos(target.start), qryPos(query.start);
@@ -56,7 +58,7 @@ void Variant::CallSNP () {
 void Variant::CallInsertion () { 
 // Actually, we just have to call  the target gap regions.	
 // All the coordinate of query should be uniform to the positive strand!
-	vector< VarUnit > gap = CallGap ( target, tarSeq, query, qrySeq, strand, "Ins" );
+	vector< VarUnit > gap = CallGap ( target, tarSeq, query, qrySeq, strand, score, mismap, "Ins" );
 	for ( size_t i(0); i < gap.size(); ++i ) { 
 
 		if ( !qryfa.fa.count(query.id) ) err("Missing some query id or query id can't match!!!\nThe unmatch query(main): " + query.id);
@@ -70,7 +72,7 @@ void Variant::CallInsertion () {
 void Variant::CallDeletion () { 
 // Actually, we just have to call  the query gap regions.
 // All the coordinate of query should be uniform to the positive strand!
-	vector< VarUnit > gap = CallGap ( query, qrySeq, target, tarSeq, strand, "Del" );
+	vector< VarUnit > gap = CallGap ( query, qrySeq, target, tarSeq, strand, score, mismap, "Del" );
 	for ( size_t i(0); i < gap.size(); ++i ) { 
 		gap[i].Swap(); // Swap query and target region!
 		if ( !qryfa.fa.count( query.id ) ) { err ("Missing some query id or query id can't match!!!\nThe unmatch query(main): "+query.id); } 
@@ -95,12 +97,14 @@ bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
 		 middle.target.start < rStart  ||
 		 middle.target.start > rEnd  ) return flag; // Just make sure the middle.target.start between [rStart,rEnd]
 
-	flag = true;
 	VarUnit reg;
-    reg.type = "Inv";
+	flag       = true;
+    reg.type   = "Inv";
     reg.target = middle.target;
 	reg.query  = middle.query ;
     reg.strand = middle.strand;
+	reg.score  = middle.score;  // 2014-06-20 10:35:21
+    reg.mismap = middle.mismap; // 2014-06-20 10:35:15
 	inversion.push_back( reg );
 
 	return flag;
@@ -128,6 +132,8 @@ bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 	reg.target = middle.target;
 	reg.query  = middle.query ;
 	reg.strand = middle.strand;
+	reg.score  = middle.score;  // 2014-06-20 10:35:21
+	reg.mismap = middle.mismap; // 2014-06-20 10:35:15
 	reg.type   = ( middle.target.id == left.target.id ) ? "Trans-Intra" : "Trans-Inter";
 	if ( middle.strand == left.strand ) {
 		reg.type += "1";
@@ -146,7 +152,8 @@ void Variant::GetMapReg () {
 
 	MapReg mpI;
 	mpI.target = target; mpI.query = query; mpI.strand = strand;
-	mapreg[query.id].push_back( mpI ); // The 'key' is query.id
+	mpI.score  = score ; mpI.mismap= mismap; // 2014-06-20 10:39:54
+	mapreg[query.id].push_back( mpI );       // The 'key' is query.id
 
 	target.info = query.id;
 	query.info  = target.id;
@@ -271,6 +278,8 @@ void Variant::CallReg ( MapReg mapreg, string type, vector< VarUnit > & varReg )
 	reg.target = mapreg.target;
 	reg.query  = mapreg.query;
 	reg.strand = mapreg.strand;
+	reg.score  = mapreg.score;  // 2014-06-20 10:37:45
+	reg.mismap = mapreg.mismap; // 2014-06-20 10:37:55
 	reg.type   = type;      // No solution
 	varReg.push_back( reg );
 }
@@ -580,11 +589,13 @@ unsigned int Variant::Covlength ( vector<Region> mapreg ) {
 }
 
 vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Contig102837 1 81
-                                    string & tarSeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
-                                    Region & qry,    // Contig102837 1 81 or chrM 16308 16389
-                                    string & qrySeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
-                                    char   strand,   // + or -
-                                    string type )    // insertion or deletion
+                                     string & tarSeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
+                                     Region & qry,    // Contig102837 1 81 or chrM 16308 16389
+                                     string & qrySeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
+                                     char   strand,   // + or -
+                                     long   score,    // 221 
+                                     double mismap,   // 1e-10
+                                     string type )    // insertion or deletion
 {
 // This function is just used to call the gap regions of 'tar' (not for 'qry'!!). which will be indel actually ( indels are gaps ).
 	assert ( tarSeq.length() == qrySeq.length() );
@@ -593,6 +604,8 @@ vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Co
 	tmpgap.target.id = tar.id;
 	tmpgap.query.id  = qry.id;
 	tmpgap.strand    = strand; 
+	tmpgap.score     = score;
+	tmpgap.mismap    = mismap;
 	tmpgap.type      = type;
 
 	vector< VarUnit > gap;
@@ -628,6 +641,8 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	gap.target.id = left.target.id;
 	gap.query.id  = left.query.id ;
 	gap.strand    = left.strand;
+	gap.score     = min(left.score , right.score ); // 2014-06-20 10:47:58
+	gap.mismap    = min(left.mismap, right.mismap); // 2014-06-20 10:48:06
 
 	gap.query.start = left.query.end;
 	gap.query.end   = right.query.start;
@@ -652,13 +667,13 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	}
 
 	if ( isTarOvlp && isQryOvlp ) { 
-		gap.type = "gap-3";
-	} else if ( isTarOvlp ) {
-		gap.type = "gap-2";
+		gap.type = "gap-X1";
 	} else if ( isQryOvlp ) {
+		gap.type = "gap-X2";
+	} else if ( isTarOvlp ) {
 		gap.type = "gap-1";
 	} else { // All not overlap
-		gap.type = "gap-n"; // This gap means the normal simultaneous gaps
+		gap.type = "gap-2"; // This gap means the normal simultaneous gaps
 	}
 
 	return gap;

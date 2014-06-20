@@ -1,8 +1,9 @@
-/* Author : Shujia Huang
+/* Author : Shujia Huang & Siyang Liu
  * Date   : 2013-12-30 10:12:53	Add gzstream to read file
  *          2013-10-18 15:25:18
  *
  * The main part of variant detection program
+ * 1-base system to output
  *
  */
 #include <iostream>
@@ -55,10 +56,7 @@ int main ( int argc, char* argv[] ) {
 		string tmp;
         vector< string > vect; 
 		while ( 1 ) {
-		/*  1 chrM 16308 16389 Contig102837 1 81 + 5938
-            CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAGTCAAATCCCTTCTCGTCCCCATGGATGACCCCCCTCAGATA
-            CATAGCACATATAGTCATTCATCGTACATAGCACATTATAGTCAAATCATTTCTCGTCCCCACGGAT-ATCCCCCTCAGATA
-
+		/*  
             # Header ...
             # batch 1
             a score=221 mismap=1e-10
@@ -75,16 +73,16 @@ int main ( int argc, char* argv[] ) {
                 cerr << "File read ERROR [I/O]!!\n" << tmp << endl;
                 exit(1);
             }
-			if ( tmp[0] == '#' ){ getline ( I, tmp, '\n' ); continue; }
+			if ( tmp[0] == '#' ) { getline ( I, tmp, '\n' ); continue; }
 			if ( tmp[0] != 'a' ) { 
 				cerr << "[ERROR] Format crash. It's not the begin of a MAF alignment block\t" << tmp << endl; 
 				exit(1);
 			}
-            //score=221 mismap=1e-10
-            I >> tmp; split("=", tmp, vect); variant.score  = atoi( vect[1].c_str() ); // score=221
-            I >> tmp; split("=", tmp, vect); variant.mismap = atof( vect[1].c_str() ); // mismap=1e-10
+            //a score=221 mismap=1e-10
+            I >> tmp; split("=", tmp, vect); variant.score  = atoi( vect[1].c_str() );  // score=221
+            I >> tmp; split("=", tmp, vect); variant.mismap = atof( vect[1].c_str() );  // mismap=1e-10
             getline ( I, tmp, '\n' );
-            I >> tmp >> variant.target.id >> variant.target.start >> variant.target.end  //Here variant.target.end is just the mapping length
+            I >> tmp >> variant.target.id >> variant.target.start >> variant.target.end //Here variant.target.end is just the mapping length
               >> tmp >> tmp >> variant.tarSeq; getline ( I, tmp, '\n' );
             variant.target.end += variant.target.start; // Now variant.target.end is the end of mapping region
             ++variant.target.start;                     // variant.target.start is 0-base , shift to 1-base
@@ -109,7 +107,7 @@ int main ( int argc, char* argv[] ) {
 	variant.CallSV(); // It's SV not Indel, which cannot be called by a single alignment. The most important part of these program!!
 	variant.CallClipReg();
 	variant.CallNomadic();
-	variant.Filter();        // Filter the indels' regions which in nosolution regions
+	variant.Filter();      // Filter the indels' regions which in nosolution regions
 
 	variant.Output   ( outFilePrefix + ".svd"     );
 	variant.Summary  ( outFilePrefix + ".summary" );

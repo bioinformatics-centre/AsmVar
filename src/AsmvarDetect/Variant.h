@@ -34,13 +34,20 @@ public:
 	char   strand;
 	string type;	
 
+	long score;
+    double mismap; // mismatch probability
+
 	Region exp_target; // Reserve target. Can only use in recording translocations. [Because Translocation have two target regions]
 	string exp_tarSeq;
 
 public:
-	VarUnit () { target.id = "-"; query.id = "-"; tarSeq = "-"; qrySeq = "-"; strand = '.', type = "." ; isClear = false; }
+	VarUnit () { 
+		target.id = "-"; query.id = "-"; tarSeq = "-"; qrySeq = "-"; strand = '.', type = "." ; isClear = false; 
+		score     = 0;   mismap   = 1.0;
+	}
 	VarUnit ( const VarUnit & V ) { 
-		target = V.target; query = V.query; tarSeq = V.tarSeq; qrySeq = V.qrySeq; strand = V.strand; type = V.type; isClear = V.isClear; 
+		target = V.target; query = V.query; tarSeq = V.tarSeq; qrySeq = V.qrySeq; strand = V.strand; 
+		type   = V.type; isClear = V.isClear; score= V.score;  mismap = V.mismap;
 		exp_target = V.exp_target;
 	}
 
@@ -60,13 +67,6 @@ public:
 	bool Empty() { return isClear; } // Do not output if isClear==true
 
 public:
-    /*
-	void OutErrReg () { // Output the axt alignment to STDERR
-        cerr<< target.id << "\t" << target.start << "\t" << target.end << "\t"
-            << query.id  << "\t" << query.start  << "\t" << query.end  << "\t"
-            << tarSeq    << "\t" << qrySeq       << "\t" << type       << endl;
-    }
-    */
 	void OutStd ( unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream& O ) { // Output the axt alignment to STDERR
 
 		if ( tarSeq.empty() || qrySeq.empty() ) { cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); }
@@ -76,7 +76,7 @@ public:
 		O   << target.id << "\t" << target.start << "\t" << target.end << "\t" << target.end - target.start + 1    << "\t"
 			<< double(tnl)/tarSeq.length()       << "\t" << tarSeqLen  << "\t" << query.id  << "\t" << query.start << "\t" 
 			<< query.end << "\t" << query.end  - query.start  + 1      << "\t" << double(qnl)/qrySeq.length()      << "\t"
-			<< qrySeqLen << "\t" << strand       << "\t" << type       << endl;
+			<< qrySeqLen << "\t" << strand       << "\t" << score      << "\t" << mismap    << "\t" << type        << endl;
 	}
 	void OutStd ( unsigned int tarSeqLen, unsigned int exp_tarSeqLen, unsigned int qrySeqLen, ofstream& O ) {
 		if ( exp_target.isEmpty() ) cerr << "[ERROR]exp_target is empty!\n";
@@ -88,9 +88,9 @@ public:
         unsigned int qnl = NLength ( qrySeq );
         unsigned int tnl = NLength ( exp_tarSeq );
         O   << exp_target.id << "\t" << exp_target.start << "\t" << exp_target.end << "\t" << exp_target.end - exp_target.start + 1 << "\t"
-            << double(tnl)/exp_tarSeq.length()           << "\t" << exp_tarSeqLen  << "\t" << query.id  << "\t" << query.start      << "\t"
-            << query.end << "\t" << query.end  - query.start  + 1      << "\t" << double(qnl)/qrySeq.length()   << "\t"
-            << qrySeqLen << "\t" << strand       << "\t" << type + "-E"<< endl;
+            << double(tnl)/exp_tarSeq.length()           << "\t" << exp_tarSeqLen  << "\t" << query.id  << "\t"   << query.start    << "\t"
+            << query.end << "\t" << query.end  - query.start  + 1          << "\t" << double(qnl)/qrySeq.length() << "\t"
+            << qrySeqLen << "\t" << strand <<"\t"<< score<< "\t" << mismap << "\t" << type + "-E" << endl;
 	}
 };
 
@@ -101,10 +101,13 @@ public:
 	Region query;  // the mapping one
 	char  strand;  // Mapping strand
 
+    long score;
+    double mismap; // mismatch probability
+
 public: 
 	void OutErrReg() {
-		cerr << "# "   << target.id << "\t" << target.start << "\t" << target.end 
-			 << "\t"   << query.id  << "\t" << query.start  << "\t" << query.end  << "\t" << strand << endl;
+		cerr << "# " << score    << "\t" << mismap << "\t" << target.id << "\t" << target.start << "\t" << target.end 
+			 << "\t" << query.id << "\t" << query.start  << "\t" << query.end  << "\t" << strand << endl;
 	}
 };
 
@@ -129,7 +132,7 @@ private:
 	bool CallTranslocat ( MapReg left, MapReg middle, MapReg right );
 	bool CallIversion   ( MapReg left, MapReg middle, MapReg right );
 	bool CallSimultan   ( MapReg left, MapReg right );
-	void CallNoSolution ( MapReg mapreg );
+	//void CallNoSolution ( MapReg mapreg );
 	bool IsSameStrand   ( vector<MapReg> & mapreg );
 	void FilterReg      ( map< string,vector<Region> >, map<string, size_t>, vector<VarUnit> & region );//just used in Filter ()
 	void Output         ( vector< VarUnit > &, ofstream& O );
@@ -151,7 +154,7 @@ public : // Just can be call when all the axt alignments have been read!
 	void CallSV        (); //It's SV not Indel, which cannot be called by a single alignment. simultaneous gaps,Inversion,translocation and no solution region 
 	void CallClipReg   ();
 	void CallNomadic   ();
-	void Filter ();  // Filter the variant regions which in nosolution
+	void Filter        ();  // Filter the variant regions which in nosolution
 	void Output   ( string file ); // Output to the stdout
 	void OutputSNP( string file ); // Output SNP
 	void Summary  ( string file ); // Output Summary information
@@ -159,7 +162,7 @@ public : // Just can be call when all the axt alignments have been read!
 
 	// Use for get the gap region, which actually would be the indel regions. can call deletion or insertion
 	// Friend ship functions, but I fail to use friend function here, and I don't have enough time to figure out.
-	vector< VarUnit > CallGap ( Region & tar, string & tarSeq, Region & qry, string & qrySeq, char strand, string type );
+	vector< VarUnit > CallGap (Region& tar, string& tarSeq, Region& qry, string& qrySeq, char strand, long scroe, double mismap, string type);
 	VarUnit CallGap ( MapReg left, MapReg right ); // call simultaneous gaps.
 	unsigned int Covlength ( vector<Region> mapreg );
 };
