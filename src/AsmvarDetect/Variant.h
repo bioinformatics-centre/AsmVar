@@ -115,6 +115,7 @@ public:
 class Variant : public MAF {
 
 private: 
+	string sample;                    // The name of sample
 	vector< VarUnit > snp;           // Stored the SNP
 	vector< VarUnit > intragap;      // Call the intra-scaffold-gap, just for the gaps which in alignment. Abort, 2014-02-27 19:28:42
 	vector< VarUnit > insertion;     //
@@ -145,6 +146,7 @@ public :
 	map< string, vector<Region> > VarTarRegs();// Return the target region of variants
 
 public : // Can be called per-axt alignment. And will be called in main function
+	void AssignSample  (string id) { sample = id; }
 	void CallSNP       ();
 	void CallInsertion ();
 	void CallDeletion  ();

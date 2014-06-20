@@ -423,6 +423,7 @@ void Variant::Summary( string file ) {
 
 	ofstream O ( file.c_str() );
     if ( !O ) { cerr << "Cannot write to file : " << file << endl; exit(1); }
+	O << "Summary Information for " << sample << "\n\n";
 	for ( map<string, unsigned int>::iterator pt( summary.begin() ); pt!= summary.end(); ++pt ) 
 		O << pt->first << "\t" << pt->second << "\n";
 	
@@ -489,7 +490,7 @@ void Variant::OutputSNP ( string file ) {
 ##FORMAT=<ID=QR,Number=1,Type=String,Description=\"Query Info\">            \n\
 ##FORMAT=<ID=MS,Number=2,Type=Integer,Description=\"Mapping Score\">        \n\
 ##FORMAT=<ID=MIP,Number=1,Type=Float,Description=\"Mismapped probability\"> \n\
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSample\n";
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + sample + "\n";
 	sort (snp.begin(), snp.end(), MySortByTarV);
     for ( size_t i(0); i < snp.size(); ++i ) {
         if ( snp[i].Empty() ) continue;

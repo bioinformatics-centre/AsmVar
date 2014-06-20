@@ -24,24 +24,28 @@ int main ( int argc, char* argv[] ) {
 	char c;
 	vector< string > infile, tarRef, qryRef;
 	string filelist, outFilePrefix;
-	while ( (c = getopt( argc, argv, "i:l:o:t:q:h" )) != -1 ) {
+	string sampleId;
+	while ( (c = getopt( argc, argv, "i:l:o:t:q:s:h" )) != -1 ) {
 		switch ( c ){
             case 'i' : infile.push_back(optarg); break; // lastz axt file
             case 't' : tarRef.push_back(optarg); break; // Target targeterence in axt result. [fa format]
             case 'q' : qryRef.push_back(optarg); break; // Query targeterence in axt result. [fa format]
 			case 'o' : outFilePrefix = optarg;   break;
             case 'l' : filelist      = optarg;   break; // lastz axt file list
+			case 's' : sampleId      = optarg;   break; // Sample ID
             case 'h' : Usage( argv[0] );
             default  :
                 cerr << "\n[ERROR]Unknow option: -" << c << "\n" << endl;
                 Usage( argv[0] );
         }
 	}
-	cerr << "Parameter : " << join(argv, argc) << "\n" << endl;
+	if (sampleId.empty()) { cerr << "[ERROR] You miss the sample ID by the parameter '-s [sampleId]'\n"; exit(1); }
+	cerr << "#Parameter : " << join(argv, argc) << "\n" << endl;
 	if ( !filelist.empty() ) ReadFileList( filelist.c_str(), infile );
 	if ( argc == 1 || infile.empty() || outFilePrefix.empty() || qryRef.empty() || tarRef.empty() ) Usage( argv[0] );
 
 	Variant variant;
+	variant.AssignSample(sampleId); // Assigne the name of sample into 'variant'
 	for ( size_t i (0); i < qryRef.size(); ++i ) { variant.qryfa.Load( qryRef[i] ); } // Load query sequence
 	for ( size_t i (0); i < tarRef.size(); ++i ) { variant.tarfa.Load( tarRef[i] ); } // Load query sequence
 
