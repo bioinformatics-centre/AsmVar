@@ -39,10 +39,11 @@ int main ( int argc, char* argv[] ) {
                 Usage( argv[0] );
         }
 	}
+	if ( argc == 1 || infile.empty() || outFilePrefix.empty() || qryRef.empty() || tarRef.empty() ) Usage( argv[0] );
 	if (sampleId.empty()) { cerr << "[ERROR] You miss the sample ID by the parameter '-s [sampleId]'\n"; exit(1); }
 	cerr << "#Parameter : " << join(argv, argc) << "\n" << endl;
+
 	if ( !filelist.empty() ) ReadFileList( filelist.c_str(), infile );
-	if ( argc == 1 || infile.empty() || outFilePrefix.empty() || qryRef.empty() || tarRef.empty() ) Usage( argv[0] );
 
 	Variant variant;
 	variant.AssignSample(sampleId); // Assigne the name of sample into 'variant'
@@ -156,6 +157,7 @@ void Usage ( const char* prog ) {
         << "       -o  [str]   Output file prefix. require!                                          \n"
         << "       -t  [str]   target sequence, fa format. require!                                  \n"
         << "       -q  [str]   Query  sequence, fa format. require!                                  \n"
+		<< "       -s  [str]   Sample ID. require!                                                   \n"
         << "       -h          Output this help information.                                         \n"
         << endl;
 
