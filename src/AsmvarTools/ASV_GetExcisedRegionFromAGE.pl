@@ -75,11 +75,14 @@ for my $file ( @ageFile ) {
 		if ( $_ =~ /^#/ ) {
 		
 			die "[ERROR]Something unexpected found in you input file $file. maybe cause by the format problem!\n$_\n" if ( $flag );
-			@info     = split( /\./, basename((split /\s+/, $_)[1]) ); #  '# Ins.+.16.53183502.53183502.1-scaffold146175.3234.3234.1.age'   '# Ins.+.220.1e-10.16.53183502.53183502.1-scaffold146175.3234.3234.1.age'
+			@info     = split( /:/, basename((split /\s+/, $_)[1]) ); # Ins:+:220:1e-10:16:53183502:53183502:1-scaffold146175:3234:3234:1
         	my $index = 5;
-        	if ($info[4] =~ m/^GL/ ) { ++$index; $info[4] .= ".1"; } # Reference ID is GL***.1
-			($ori_t, $ms, $miq, $ori_s, $ori_e, $qori_s,$qori_e) = @info[0, 2, 3, $index, $index+1, -4, -3 ];
+        	#if ($info[4] =~ m/^GL/ ) { ++$index; $info[4] .= ".1"; } # Reference ID is GL***.1
+			($ori_t, $ms, $miq, $ori_s, $ori_e, $qori_s,$qori_e) = @info[0, 2, 3, $index, $index+1, -3, -2];
 			die "[ERROR] Original start > Original End ($_) in file $file \n" if ( $ori_s > $ori_e );
+			%vcfFormat= ();
+			$vcfFormat{'MS'}  = $ms;  # Mapping score in LAST align
+			$vcfFormat{'MIQ'} = $miq; # Mismapped probability in LAST align
 		} elsif ($_ =~ m/^MATCH\s*=/ ) { # Start of the AGE mapping information
 
 			die "[ERROR]Something unexpected found in you input file $file .\n$_\n" if ( $flag );
@@ -93,7 +96,6 @@ for my $file ( @ageFile ) {
 
 			$flag = 1; # Now Turn the light on!
 			$vcfRefId =$tarId; $vcfId = "."; $vcfQuality = 255; $vcfFilter = "."; 
-			%vcfFormat= ();
 			$key      = "$qryId-$qori_s-$qori_e";
 		} elsif($_ =~ m/^Identic:\s*(\d+)\s*\(\s*(\d+)%\)\s*nucs\s*=>\s*(\d+)\s*\(\s*(\d+)%\)\s*(\d+)\s*\(\s*(\d+)%\)/) {
 		#Identic:       998 (100%) nucs =>       499 (100%)       499 (100%)		
@@ -304,7 +306,7 @@ for my $id ( @sort ) {
 				}
 			}
 			$output{$id}->[$i][7] =~ s/;SVTYPE=[^;]+;/;SVTYPE=$svtypeInfo;/;
-			$format->{'VT'} = $svtypeInfo;
+			$format->{'VT'}       = $svtypeInfo;
 		}
 		print $H join "\t", @{$output{$id}->[$i]}, join(":", "GT",@k), join(":",'./.', map{$format->{$_}} @k); print $H "\n";
 	}
@@ -375,6 +377,8 @@ sub VcfHeader {
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 ##FORMAT=<ID=AE,Number=1,Type=String,Description="AGE Information">
 ##FORMAT=<ID=FN,Number=1,Type=String,Description="N ratio of variants between downstream -100bp and upstream+100bp">
+##FORMAT=<ID=MIP,Number=1,Type=String,Description="Mismapping probability">
+##FORMAT=<ID=MS,Number=1,Type=String,Description="Mapping score or Alignement Score">
 ##FORMAT=<ID=QR,Number=1,Type=String,Description="Variant regions on personal assembly sequence">
 ##FORMAT=<ID=RR,Number=1,Type=String,Description="Variant regions on common huamn reference sequence">
 ##FORMAT=<ID=VS,Number=1,Type=String,Description="SV size.">
