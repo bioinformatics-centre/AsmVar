@@ -460,6 +460,7 @@ void Variant::Output ( string file ) {
 
 void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 
+	sort (R.begin(), R.end(), MySortByTarV);
 	for ( size_t i(0); i < R.size(); ++i ) {
 		if ( R[i].Empty() ) continue;
 
@@ -481,15 +482,14 @@ void Variant::OutputSNP ( string file ) {
 
 	ofstream O ( file.c_str() );
 	O <<  
-"##fileformat=VCFv4.1                                                    \n\
-##INFO=<ID=ST,Number=1,Type=String,Description=\"Mappind strand\">       \n\
-##INFO=<ID=VT,Number=1,Type=String,Description=\"Variant type\">         \n\
-##INFO=<ID=Q,Number=1,Type=String,Description=\"Query Info\">            \n\
-##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">           \n\
-##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Genotype Quality\">  \n\
-##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">        \n\
-##FORMAT=<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\"> \n\
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n";
+"##fileformat=VCFv4.1                                                       \n\
+##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">              \n\
+##FORMAT=<ID=ST,Number=1,Type=String,Description=\"Mappind strand\">        \n\
+##FORMAT=<ID=VT,Number=1,Type=String,Description=\"Variant type\">          \n\
+##FORMAT=<ID=QR,Number=1,Type=String,Description=\"Query Info\">            \n\
+##FORMAT=<ID=SQ,Number=2,Type=Integer,Description=\"Mapping Score\">        \n\
+##FORMAT=<ID=MIP,Number=1,Type=Float,Description=\"Mismapped probability\"> \n\
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSample\n";
 	sort (snp.begin(), snp.end(), MySortByTarV);
     for ( size_t i(0); i < snp.size(); ++i ) {
         if ( snp[i].Empty() ) continue;
@@ -508,11 +508,13 @@ void Variant::OutputSNP ( string file ) {
 		if ( snp[i].strand == '-' ) snp[i].qrySeq = ReverseAndComplementary( snp[i].qrySeq );
 		if ( snp[i].tarSeq == snp[i].qrySeq ) continue;
 		if ( !isNext ) {
-			O   << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t"
-		    	<< "VT=" + snp[i].type + ";ST=" << snp[i].strand << ";Q=" + snp[i].query.id + ":" + itoa(snp[i].query.start) << "\n";
+			O   << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:SQ:MIP\t"
+				<< "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
+                   + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		} else {
-			cerr << "#\t" << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t"
-                 << "VT=" + snp[i].type + ";ST=" << snp[i].strand << ";Q=" + snp[i].query.id + ":" + itoa(snp[i].query.start) << "\n";
+			cerr << "#\t"  << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:SQ:MIP\t"
+                 << "./.:" <<  snp[i].strand   <<  ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
+                   + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		}
     }
 	O.close();
@@ -538,7 +540,7 @@ void Variant::OutputGap( string file ) {
 		// Get Inter scaffold gaps' regions
 		MapReg tmpMR = it->second[0];
 		for ( size_t i(1); i < it->second.size(); ++i ) {
-//it->second[i].OutErrAlg();
+			//it->second[i].OutErrAlg();  // For Test
 			if ( tmpMR.query.id == it->second[i].query.id ) {
 				if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
 				continue;
@@ -678,25 +680,7 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 
 	return gap;
 }
-/*
-inline bool MySortByTarM ( MapReg  i, MapReg  j ) { 
-	if ( i.target.id == j.target.id ) {
-		return ( i.target.start < j.target.start ); 
-	} else {
-		return ( i.target.id <  j.target.id );
-	}
-}
-inline bool MySortByTarV ( VarUnit i, VarUnit j ) { 
-	if ( i.target.id == j.target.id ) {
-		return ( i.target.start < j.target.start ); 
-	} else {
-		return ( i.target.id < j.target.id );
-	}
-}
-inline bool MySortByQryM ( MapReg  i, MapReg  j ) { return ( i.query.start  < j.query.start  ); }
-inline bool MySortByQryV ( VarUnit i, VarUnit j ) { return ( i.query.start  < j.query.start  ); }
-inline bool SortRegion   ( Region  i, Region  j ) { return ( i.start < j.start  ); }
-*/
+
 unsigned int RegionMin   ( vector<Region> & region ) {
 
 	if ( region.empty() ) { cerr << "[ERROR] Region is empty, when you're calling RegionMin() function.\n"; exit(1); }
