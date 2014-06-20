@@ -1,4 +1,4 @@
-# Author : Shujia Huang
+# Author : Shujia Huang & Siyang Liu
 # Date   : 2013-05-26
 # Date	 : 2013-09-22 Siyang Liu
 #Last Modify : 
@@ -61,10 +61,7 @@ for my $file ( @ageFile ) {
 	my ( $qLeftStart, $qLeftEnd, $qRightStart, $qRightEnd );
 	my ( $ave_base,$ave_iden,$left_base,$left_iden,$right_base,$right_iden );
 
-	my ( @info, @info2, $ori_t,$ori_s,$ori_e, $qori_s,$qori_e, $key );
-	#@info=split(/[\.]/,basename($file));          #Just default if The age file didn't have: # Ins.+.16.53183502.53183502.1-scaffold146175.3234.3234.1.age'
-    #@info2=split(/-/,$info[4]);                   #Just default
-    #($ori_t,$ori_s,$ori_e)=(@info[0,3],$info2[0]);#Just default
+	my ( @info, @info2, $ori_t, $ms, $miq, $ori_s,$ori_e, $qori_s,$qori_e, $key );
 	my $flag = 0; # A marker to monitor the process is accurate or not
 
 	print STDERR ">>>>>>>>>>> Reading $file <<<<<<<<<<<<\n";
@@ -78,11 +75,10 @@ for my $file ( @ageFile ) {
 		if ( $_ =~ /^#/ ) {
 		
 			die "[ERROR]Something unexpected found in you input file $file. maybe cause by the format problem!\n$_\n" if ( $flag );
-			@info     = split( /\./, basename((split /\s+/, $_)[1]) ); #  '# Ins.+.16.53183502.53183502.1-scaffold146175.3234.3234.1.age'
-        	my $index = 3;
-        	if ($info[2] =~ m/^GL/ ) { ++$index; $info[2] .= ".1"; } # Reference ID is GL***.1
-			($ori_t, $ori_s, $ori_e, $qori_s,$qori_e) = @info[0, $index, $index+1, -4, -3 ];
-			#($ori_t, $ori_s, $ori_e, $qori_s,$qori_e) = @info[0, $index, $index+1, $index+3, $index+4 ];
+			@info     = split( /\./, basename((split /\s+/, $_)[1]) ); #  '# Ins.+.16.53183502.53183502.1-scaffold146175.3234.3234.1.age'   '# Ins.+.220.1e-10.16.53183502.53183502.1-scaffold146175.3234.3234.1.age'
+        	my $index = 5;
+        	if ($info[4] =~ m/^GL/ ) { ++$index; $info[4] .= ".1"; } # Reference ID is GL***.1
+			($ori_t, $ms, $miq, $ori_s, $ori_e, $qori_s,$qori_e) = @info[0, 2, 3, $index, $index+1, -4, -3 ];
 			die "[ERROR] Original start > Original End ($_) in file $file \n" if ( $ori_s > $ori_e );
 		} elsif ($_ =~ m/^MATCH\s*=/ ) { # Start of the AGE mapping information
 

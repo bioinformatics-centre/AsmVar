@@ -487,7 +487,7 @@ void Variant::OutputSNP ( string file ) {
 ##FORMAT=<ID=ST,Number=1,Type=String,Description=\"Mappind strand\">        \n\
 ##FORMAT=<ID=VT,Number=1,Type=String,Description=\"Variant type\">          \n\
 ##FORMAT=<ID=QR,Number=1,Type=String,Description=\"Query Info\">            \n\
-##FORMAT=<ID=SQ,Number=2,Type=Integer,Description=\"Mapping Score\">        \n\
+##FORMAT=<ID=MS,Number=2,Type=Integer,Description=\"Mapping Score\">        \n\
 ##FORMAT=<ID=MIP,Number=1,Type=Float,Description=\"Mismapped probability\"> \n\
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSample\n";
 	sort (snp.begin(), snp.end(), MySortByTarV);
@@ -508,11 +508,11 @@ void Variant::OutputSNP ( string file ) {
 		if ( snp[i].strand == '-' ) snp[i].qrySeq = ReverseAndComplementary( snp[i].qrySeq );
 		if ( snp[i].tarSeq == snp[i].qrySeq ) continue;
 		if ( !isNext ) {
-			O   << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:SQ:MIP\t"
+			O   << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
 				<< "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
                    + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		} else {
-			cerr << "#\t"  << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:SQ:MIP\t"
+			cerr << "#\t"  << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
                  << "./.:" <<  snp[i].strand   <<  ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
                    + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		}
