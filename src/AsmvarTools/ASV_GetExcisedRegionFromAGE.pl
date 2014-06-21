@@ -213,6 +213,7 @@ for my $file ( @ageFile ) {
 					$vcfFilter = "FALSE";
 				}
 				$vcfInfo = "CIPOS=$CIPos;CIEND=$CIEnd;SVTYPE=$varType;SVSIZE=$varLen;TSTART=$varTstart;TEND=$varTend;Q=$qryId;QSTART=$varQstart;QEND=$varQend;STRAND=$strand;NR=$nratio;AGE=$AGEInfo;ORITYPE=$ori_t;ORITSTART=$ori_s;ORITEND=$ori_e";
+				$AGEInfo = $strand.':'.$AGEInfo;
 
 				$vcfFormat{'RR'} = "$tarId-$varTstart-$varTend";
                 $vcfFormat{'QR'} = "$qryId-$varQstart-$varQend";
@@ -233,6 +234,8 @@ for my $file ( @ageFile ) {
 				$vcfFilter = "FALSE";
 				$vcfQuality= 0;
 				$vcfInfo   = "CIPOS=0,0;CIEND=0,0;SVTYPE=NULL;SVSIZE=0;TSTART=0;TEND=0;Q=$qryId;QSTART=0;QEND=0;STRAND=NULL;NR=$nratio;AGE=$AGEInfo;ORITYPE=$ori_t;ORITSTART=$ori_s;ORITEND=$ori_e";
+				$AGEInfo = 'NULL:'.$AGEInfo;
+
 				$vcfFormat{'RR'} = "$tarId-0-0";
 				$vcfFormat{'QR'} = "$qryId-0-0";
                 $vcfFormat{'VT'} = "NULL"; $vcfFormat{'VS'} = 0;
