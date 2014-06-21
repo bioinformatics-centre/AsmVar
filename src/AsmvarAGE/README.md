@@ -86,4 +86,4 @@ Examples:
 
 
 
-Please send your comments and suggestions to alexej.abyzov@yale.edu.
+Please send your comments and suggestions to huangshujia@genomics.cn / alexej.abyzov@yale.edu.
