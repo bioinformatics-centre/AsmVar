@@ -50,39 +50,37 @@ $ ./age_align
 
 Options:
 
--indel			assume deletion or insertion (default)
--tdup			assume tandom duplication
--invl			assume inversion with conting (second sequence)
-			spanning over left breakpoint
--invr			assume inversion with conting (second sequence)
-			spanning over right breakpoint
--inv			assume inversion; tries alignment over the left and
-			right breakpoints; report the best alignment
--coor1=start-end	align subsequence of first sequence defined by given
-			coordinates
--coor2=start-end	align subsequence of second sequence defined by given
-			coordinates
--revcom1		align reverse complement of first sequence
--revcom2		align reverse complement of second sequence
--both			align first sequence to second one and its reverse
-			complement; report the best alignment
--match			score for nucleotide match
--mismatch		score for nucleotide mismatch
--go=value		gap open penalty, negative value
--ge=value		gap extend penalty, negative value
+-indel			assume deletion or insertion (default)						<br/>
+-tdup			assume tandom duplication									<br/>
+-invl			assume inversion with conting (second sequence)				<br/>
+			spanning over left breakpoint									
+-invr			assume inversion with conting (second sequence)				<br/>
+			spanning over right breakpoint									
+-inv			assume inversion; tries alignment over the left and			<br/>
+			right breakpoints; report the best alignment					
+-coor1=start-end	align subsequence of first sequence defined by given	<br/>
+			coordinates														
+-coor2=start-end	align subsequence of second sequence defined by given	<br/>
+			coordinates														
+-revcom1		align reverse complement of first sequence					<br/>
+-revcom2		align reverse complement of second sequence					<br/>
+-both			align first sequence to second one and its reverse			<br/>
+			complement; report the best alignment							
+-match			score for nucleotide match									<br/>
+-mismatch		score for nucleotide mismatch								<br/>
+-go=value		gap open penalty, negative value							<br/>
+-ge=value		gap extend penalty, negative value							<br/>
 
 
 Examples:
 
-./age_align -coor1=20-2350    file1.fa file2.fa
-./age_align -coor1=20-        file1.fa file2.fa
-./age_align -coor2=-240       file1.fa file2.fa
-./age_align -revcom1 -revcom2 file1.fa file2.fa
-./age_align -both             file1.fa file2.fa
-./age_align -inv  -both       file1.fa file2.fa
-./age_align -tdup -both       file1.fa file2.fa
-
-
+./age_align -coor1=20-2350    file1.fa file2.fa <br/>
+./age_align -coor1=20-        file1.fa file2.fa <br/>
+./age_align -coor2=-240       file1.fa file2.fa <br/>
+./age_align -revcom1 -revcom2 file1.fa file2.fa <br/>
+./age_align -both             file1.fa file2.fa <br/>
+./age_align -inv  -both       file1.fa file2.fa <br/>
+./age_align -tdup -both       file1.fa file2.fa <br/>
 
 
 
