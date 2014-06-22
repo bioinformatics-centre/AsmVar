@@ -4,7 +4,7 @@ Use Guassion Misture Model to estimate SV genotype
 from population data. VCF Format
 ===================================================
 
-Author : Shujia Huang
+Author : Shujia Huang & Siyang Liu
 Date   : 2013-12-14 10:48:02
 Modify : 2013-12-16 13:58:57 Debuging
 

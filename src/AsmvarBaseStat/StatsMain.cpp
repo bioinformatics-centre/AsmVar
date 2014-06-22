@@ -1,5 +1,5 @@
 /*
- * Author : Shujia Huang
+ * Author : Shujia Huang & Siyang Liu
  * Date   : 2013-11-22 14:37:13
  *
  * Modfiy from '~/Bin/software_pip/Reapr/Reapr_1.0.16/src/task_stats.cpp' wrote by Matin Hunt

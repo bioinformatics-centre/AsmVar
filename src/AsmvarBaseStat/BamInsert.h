@@ -1,5 +1,5 @@
 /*
- * Author : Shujia Huang
+ * Author : Shujia Huang & Siyang Liu
  * Date   : 2013-11-22 14:37:13
  *
  * Caculate insertsize by different @RG
