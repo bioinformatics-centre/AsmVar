@@ -508,6 +508,11 @@ void Variant::OutputSNP ( string file ) {
         snp[i].qrySeq = qryfa.fa[snp[i].query.id].substr( snp[i].query.start - 1, snp[i].query.end - snp[i].query.start + 1 );
 		if ( snp[i].strand == '-' ) snp[i].qrySeq = ReverseAndComplementary( snp[i].qrySeq );
 		if ( snp[i].tarSeq == snp[i].qrySeq ) continue;
+
+		O << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
+          << "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":"
+          + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
+		/*
 		if ( !isNext ) {
 			O   << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
 				<< "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
@@ -517,6 +522,7 @@ void Variant::OutputSNP ( string file ) {
                  << "./.:" <<  snp[i].strand   <<  ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
                    + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		}
+		*/
     }
 	O.close();
 }
