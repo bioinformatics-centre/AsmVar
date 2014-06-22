@@ -303,7 +303,7 @@ void Variant::CallClipReg () {
 			exit(1);
 		}
 
-		if ( rStart == 1 && rEnd == qryfa.fa[it->first].length() ) summary["Full-Align"]++;
+		if ( rStart == 1 && rEnd == qryfa.fa[it->first].length() ) ++summary["Full-Align"];
 
 		tmp.query.id = it->first;
 		tmp.strand   = '.';
@@ -320,7 +320,7 @@ void Variant::CallClipReg () {
 
 void Variant::CallNomadic () {
 
-	if ( qryfa.fa.empty() ) { cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
+	if (qryfa.fa.empty()) { cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
 	VarUnit tmp;
 	for ( map<string, string>::iterator it( qryfa.fa.begin() ); it != qryfa.fa.end(); ++it ) {
 
@@ -560,6 +560,7 @@ void Variant::OutputGap( string file ) {
                   << tmpMR.query.id  + ":"   << tmpMR.query.start    << "-"  << tmpMR.query.end  << "#"
 				  << it->second[i].target.id + ":" << it->second[i].target.start << "-" << it->second[i].target.end << "|"
                   << it->second[i].query.id  + ":" << it->second[i].query.start  << "-" << it->second[i].query.end  << "\n";
+				summary["InterScaffoldGap"] += length;
 			}
 			if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
 		}
