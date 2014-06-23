@@ -427,8 +427,9 @@ void Variant::Summary( string file ) {
 	for ( map<string, unsigned int>::iterator pt( summary.begin() ); pt!= summary.end(); ++pt ) 
 		O << pt->first << "\t" << pt->second << "\n";
 	
-	O << "qryCovlength/querylength  " << double ( summary["qryCovlength"] ) / qryfa.length << "\n";
-	O << "tarCovlength/targetlength " << double ( summary["tarCovlength"] ) / tarfa.length << "\n";
+	O << "QryCovlength/querylength  " << double ( summary["qryCovlength"] ) / qryfa.length << "\n";
+	O << "TarCovlength/targetlength " << double ( summary["tarCovlength"] ) / tarfa.length << "\n";
+	O << "TarCovlength/targetlength(NO 'N') "<< double(summary["tarCovlength"])/(tarfa.length-tarfa.nsize) << "\n";
 	O << "SNP/querylength           " << double(summary["SNP"]) / qryfa.length  << "\n";
 	O << "SNP/targetlength          " << double(summary["SNP"]) / tarfa.length  << "\n";
 	O << "\n";
