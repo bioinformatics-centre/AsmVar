@@ -48,9 +48,9 @@ class VariantDataManager :
         for i, d in enumerate( data ) :
             self.data[i].annotations = (d - mean) / std 
             # trim data by standard deviation threshold and mark failing data for exclusion later
-            remove = False
-            if any( np.abs(self.data[i].annotations) > self.VRAC.STD_THRESHOLD ) : remove = True
-            self.data[i].failingSTDThreshold = remove
+            self.data[i].failingSTDThreshold = False
+            if any( np.abs(self.data[i].annotations) > self.VRAC.STD_THRESHOLD ) :
+                self.data[i].failingSTDThreshold = True
 
     def GetTrainingData (self) :
 
