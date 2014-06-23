@@ -377,7 +377,7 @@ sub VcfHeader {
 ##fileformat=VCFv4.1
 ##FILTER=<ID=FALSE,Description="NONAGE or HIGH N RATIO">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-##FORMAT=<ID=AE,Number=1,Type=String,Description="AGE Information">
+##FORMAT=<ID=AE,Number=1,Type=String,Description="AGE Information. Format: 'Strand,F/T,ave_base,ave_iden,left_base,left_iden,right_base,right_iden'">
 ##FORMAT=<ID=FN,Number=1,Type=String,Description="N ratio of variants between downstream -100bp and upstream+100bp">
 ##FORMAT=<ID=MIP,Number=1,Type=String,Description="Mismapping probability">
 ##FORMAT=<ID=MS,Number=1,Type=String,Description="Mapping score or Alignement Score">
