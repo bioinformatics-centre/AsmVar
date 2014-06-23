@@ -81,7 +81,7 @@ for my $file ( @ageFile ) {
 			die "[ERROR] Original start > Original End ($_) in file $file \n" if ( $ori_s > $ori_e );
 			%vcfFormat= ();
 			$vcfFormat{'MS'}  = $ms;  # Mapping score in LAST align
-			$vcfFormat{'MIQ'} = $miq; # Mismapped probability in LAST align
+			$vcfFormat{'MIP'} = $miq; # Mismapped probability in LAST align
 		} elsif ($_ =~ m/^MATCH\s*=/ ) { # Start of the AGE mapping information
 
 			die "[ERROR]Something unexpected found in you input file $file .\n$_\n" if ( $flag );
