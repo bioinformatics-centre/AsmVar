@@ -20,16 +20,16 @@ class VariantRecalibratorEngine :
         self.MIN_PROB_CONVERGENCE     = 2e-3
         self.MIN_ACCEPTABLE_LOD_SCORE = -20000.0
 
-    def ClassifyData ( data ) : 
+    def ClassifyData ( dataSize ) : 
         # Classify the data into TrainingSet, Cross-ValidationSet and TestSet. Reture the data indexes
         # Call in GenerateModel
-        trainSetSize = int ( np.round( self.VRAC.TRAIN_SIZE_RATE * len(data)) )
-        cvSetSize    = int ( np.round( self.VRAC.CV_SIZE_RATE * len(data))    )
-        testSetSize  = int ( np.round( self.VRAC.TEST_SIZE_RATE * len(data))  )
+        trainSetSize = int ( np.round( self.VRAC.TRAIN_SIZE_RATE * dataSize) )
+        cvSetSize    = int ( np.round( self.VRAC.CV_SIZE_RATE * dataSize)    )
+        testSetSize  = int ( np.round( self.VRAC.TEST_SIZE_RATE * dataSize)  )
 
         trainSetIdx  = range( trainSetSize )                           # The index array of training data
         cvSetIdx     = range( trainSetSize, cvSetSize + trainSetSize ) # The index array of cross-validation data
-        testSetIdx   = range( cvSetSize + trainSetSize, len(data)    ) # The index array of Test data
+        testSetIdx   = range( cvSetSize + trainSetSize, dataSize    ) # The index array of Test data
 
         return trainSetIdx, cvSetIdx, testSetIdx
         
@@ -47,7 +47,7 @@ class VariantRecalibratorEngine :
         gmms = [ mixture.GMM(n_components = n + 1, covariance_type='full', thresh = self.MIN_PROB_CONVERGENCE, 
                                    n_iter = self.VRAC.NITER , n_init = self.VRAC.NINIT, params='wmc', init_params='wmc') for n in range(maxGaussians) ]
         trainingData = np.array([d.annotations for d in data]); np.random.shuffle( trainingData ) # Random shuffling
-        #trainSetIdx, cvSetIdx, testSetIdx = self.ClassifyData( data )
+        #trainSetIdx, cvSetIdx, testSetIdx = self.ClassifyData( len(trainingData) )
 
         minBIC, bics = np.inf, []
         for g in gmms : 

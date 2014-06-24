@@ -12,15 +12,15 @@ import string
 import numpy as np
 import matplotlib.pyplot as plt
 
-def DrawFig( figureFile, distance, leftIden, rigthIden, nr, aa, bb ) : 
+def DrawFig( figureFile, distance, properDepth, imProperDepth, nr, aa, bb, mscore, misprob, aveIden ) : 
 
-    fig = plt.figure( num=None, figsize=(16, 18), facecolor='w', edgecolor='k' )
+    fig = plt.figure( num=None, figsize=(16, 30), facecolor='w', edgecolor='k' )
     
-    title  = ['Distance distribution', 'NRatio', 'Perfect Depth', 'Imperfect depth']
-    ylabel = ['The position of breakpoint', \
-              'N Ratio of varints', 'Perfect Depth', 'Both ImPerfect Depth']
-    for i, data in enumerate ( [ distance, nr, aa, bb ] ) :
-        plt.subplot(4,2,2 * i + 1)
+    title  = ['Distance distribution', 'NRatio', 'Perfect Depth', 'Imperfect depth', '', '', '']
+    ylabel = ['The position of breakpoint', 'N Ratio of varints', 'Perfect Depth', \
+              'Both ImPerfect Depth', 'Map score', 'Mismapping Probability', 'Average Identity', 'ProperReadDepth', 'ImProperReadDepth']
+    for i, data in enumerate ( [ distance, nr, aa, bb, mscore, misprob, aveIden, properDepth, imProperDepth ] ) :
+        plt.subplot(9,2,2 * i + 1)
         #plt.title(title[i], fontsize=16)
         P = data[:,0] == 1; N = data[:,0] == 2; X = data[:,0] == 3
         plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.3, linewidths = 0, label = 'Positive(%d)'%len(data[:,1][P]) ) # Positive
@@ -30,7 +30,7 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, nr, aa, bb ) :
         plt.xlabel( 'Score'  , fontsize=16 )
         plt.ylabel( ylabel[i], fontsize=16 )
 
-        plt.subplot(4, 2, 2*i + 2)
+        plt.subplot(9, 2, 2*i + 2)
         NEW  = data[:,0] == 0
         good = data[:,1][NEW] >= 2.0
         bad  = data[:,1][NEW] < 2.0 
@@ -42,6 +42,35 @@ def DrawFig( figureFile, distance, leftIden, rigthIden, nr, aa, bb ) :
 
     fig.savefig(figureFile + '.png')
     fig.savefig(figureFile + '.pdf')
+
+def DrawPhredScale ( figureFile, phredScal ) :
+
+    fig = plt.figure()
+
+    ylabel = ['Phred Scale']
+    for i, data in enumerate ( [ phredScal ] ) :
+        plt.subplot(2, 1, 2 * i + 1)
+        P = data[:,0] == 1; N = data[:,0] == 2; X = data[:,0] == 3
+        plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.3, linewidths = 0, label = 'Positive(%d)'%len(data[:,1][P]) ) # Positive
+        plt.scatter(data[:,1][N], data[:,2][N], marker='o', c = 'r', alpha=0.3, linewidths = 0, label = 'Negative(%d)'%len(data[:,1][N]) ) # Negative
+        plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.3, linewidths = 0, label = 'Positive->Negative(%d)' % len(data[:,1][X]) ) # Positive->Negative
+        plt.legend(loc='upper left')
+        plt.ylabel( ylabel[i], fontsize=16 )
+
+        plt.subplot(2, 1, 2*i + 2)
+        NEW  = data[:,0] == 0
+        good = data[:,1][NEW] >= 2.0
+        bad  = data[:,1][NEW] < 2.0
+
+        plt.scatter( data[:,1][NEW][good], data[:,2][NEW][good], marker='o', c = 'b', alpha=0.4, linewidths = 0, label = 'good(%d)' % len(data[:,1][NEW][good]) ) # good
+        plt.scatter( data[:,1][NEW][bad] , data[:,2][NEW][bad] , marker='o', c = 'm', alpha=0.4, linewidths = 0, label = 'bad(%d)' % len( data[:,1][NEW][bad] ) ) # bad
+        plt.legend(loc='upper left')
+        plt.xlabel('Score'  , fontsize=16)
+        plt.ylabel( ylabel[i], fontsize=16 )
+
+    fig.savefig(figureFile + '.png')
+    fig.savefig(figureFile + '.pdf')
+    
 
 def Accum ( data, isBig = False) :
 
@@ -130,10 +159,12 @@ def main ( argv ) :
                 mark.append( [0, vq] )
 
             for i, sample in enumerate ( col[9:] ) :
+
                 sampleId = col2sam[9+i]
-                qr = sample.split(':')[fmat['QR']].split(',')[-1]
-                if qr == '.' : 
-                    annotations[i].append( [0, 0, 0, 0, 0, 0] )
+
+                qr = sample.split(':')[fmat['QR']].split(',')[-1]                
+                if qr == '.' or sample.split(':')[fmat['MS']] == '.' : 
+                    annotations[i].append( [0, 0, 0, 0, 0, 0, 0, 0, 0] )
                     continue
 
                 qId, qSta, qEnd = qr.split('-')
@@ -148,42 +179,57 @@ def main ( argv ) :
                 leg = qSta
                 if 100 - qEnd < qSta : leg = qEnd
                 nn  = string.atof(sample.split(':')[fmat['FN']])
-                n   = round( 1000 * nn ) / 10.0
+                n   = round( 1000 * nn ) / 10.0                                  # N ratio
                 alt = string.atoi( sample.split(':')[fmat['AA']].split(',')[1] ) # Alternate perfect
                 bot = string.atoi( sample.split(':')[fmat['AA']].split(',')[3] ) # Both imperfect
                 pro = string.atoi( sample.split(':')[fmat['RP']].split(',')[0] ) # Proper Pair
                 ipr = string.atoi( sample.split(':')[fmat['RP']].split(',')[1] ) # ImProper Pair
-                annotations[i].append( [leg, n, alt, bot, pro, ipr] )
+                ms  = string.atoi( sample.split(':')[fmat['MS']]  )              # Mapping score 
+                mip = string.atof( sample.split(':')[fmat['MIP']] )              # Mismapping probability
+                aveI= string.atoi( sample.split(':')[fmat['AE']].split(',')[3] ) # ave_iden in AGE
+                annotations[i].append( [leg, n, alt, bot, pro, ipr, ms, mip, aveI] )
     I.close()
     print >> sys.stderr, '# Number of Positions: %d' % len( mark )
-    if len( mark ) != len( annotations[0] ) : raise ValueError ('[ERROR] The size is not match!')
-    annotations = np.array( annotations );
+    if len( mark ) != len( annotations[0] ) : raise ValueError ('[ERROR] The size is not match mark=%d, annotations=%d!' % (len(mark), len(annotations)) )
 
-    sampleNum = len( annotations )
+    annotations = np.array( annotations );
+    sampleNum   = len( annotations )
+
+    """ Extractly we don't have do such normalization
     for i in range( sampleNum ) : 
         if np.sum(annotations[i]) == 0: continue
-        mean = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).mean(axis=0)
-        std  = np.array( [ d for d in annotations[i] if np.sum(d) > 0 ] ).std (axis=0)
-        annotations[i] = np.array( (annotations[i] - mean)/std )  # Normalization Per sample
+        goodIndx  = [j for j, d in enumerate( annotations[i] ) if np.sum(d) > 0]
+        mean      = np.array( [d for d in annotations[i] if np.sum(d) > 0] ).mean(axis=0)
+        std       = np.array( [d for d in annotations[i] if np.sum(d) > 0] ).std (axis=0)
+        annotations[i][goodIndx] = np.abs( (annotations[i][goodIndx] - mean)/std )  # Normalization Per sample
+    """
 
-    data, distance, leftIdn, rightIdn, nr, aa, bb = [],[],[],[],[],[],[]
+    data, distance, properDepth, imProperDepth, nr, aa, bb, mscore, misprob, aveIden = [],[],[],[],[],[],[],[],[],[]
+    phredScal = []
     for i in range( len(annotations[0]) ) : 
 
-        #if not mark[i][0] : continue # Next if makr[i] == 0
+        anno    = np.array( [ annotations[s][i] for s in range(sampleNum) if len(annotations[s][i][annotations[s][i]!=0]) > 0 ] ) # each person in the same position
 
-        anno = np.array( [ annotations[s][i] for s in range( sampleNum ) if len(annotations[s][i][annotations[s][i]!=0]) > 0 ] ) # each person in the same position
+        score  = np.array( [ annotations[s][i][-3] for s in range(sampleNum) if annotations[s][i][-3] > 0 ] )
+        msprob = np.array( [ annotations[s][i][-2] for s in range(sampleNum) if annotations[s][i][-3] > 0 ] )
+        phred  = -10 * np.log10( 1.0 - score.sum() / np.sum( score/(1.0 - msprob) ) ) # Phred scale
+
         if len( anno ) == 0 : continue
-        leg, n, alt, bot, leftIden, rightIden = np.median( anno, axis=0 )
+        leg, n, alt, bot, pro,ipr, ms, mip, aveI = np.median( anno, axis=0 )
 
-        distance.append( [ mark[i][0], mark[i][1], leg       ] )
-        leftIdn.append ( [ mark[i][0], mark[i][1], leftIden  ] )
-        rightIdn.append( [ mark[i][0], mark[i][1], rightIden ] )
-        nr.append      ( [ mark[i][0], mark[i][1], n   ] )
-        aa.append      ( [ mark[i][0], mark[i][1], alt ] )
-        bb.append      ( [ mark[i][0], mark[i][1], bot ] )
+        distance.append      ( [ mark[i][0], mark[i][1], leg ] )
+        properDepth.append   ( [ mark[i][0], mark[i][1], pro ] )
+        imProperDepth.append ( [ mark[i][0], mark[i][1], ipr ] )
+        nr.append            ( [ mark[i][0], mark[i][1], n   ] )
+        aa.append            ( [ mark[i][0], mark[i][1], alt ] )
+        bb.append            ( [ mark[i][0], mark[i][1], bot ] )
+        mscore.append        ( [ mark[i][0], mark[i][1], ms  ] )
+        misprob.append       ( [ mark[i][0], mark[i][1], mip ] )
+        aveIden.append       ( [ mark[i][0], mark[i][1], aveI] )
+        phredScal.append     ( [ mark[i][0], mark[i][1], phred])
  
-        data.append([leg, alt, leftIden, rightIden, n, bot])
-        print mark[i][0], mark[i][1], '\t', leg, '\t', leftIden, '\t', rightIden,'\t', n, '\t', alt, '\t', bot
+        data.append([leg, alt, pro,ipr, n, bot])
+        print mark[i][0], mark[i][1], '\t', leg, '\t', pro, '\t', ipr,'\t', n, '\t', alt, '\t', bot
 
     data = np.array(data)
     print >> sys.stderr, '\nPosition\tALTernatePerfect\tLeftIdentity\tRightIdentity\tAveIden\tNRatio\tBothImperfect'
@@ -191,12 +237,16 @@ def main ( argv ) :
     print >> sys.stderr, '25 Percentile:', np.percentile(data, 25,axis=0), '\n50 Percentile:', np.percentile(data, 50,axis=0), '\n75 Percentile:', np.percentile(data, 75,axis=0)
 
     DrawFig( figPrefix, \
-             np.array (distance ), \
-             np.array (leftIdn  ), \
-             np.array (rightIdn ), \
-             np.array (nr       ), \
-             np.array (aa       ), \
-             np.array (bb       )  )
+             np.array (distance      ), \
+             np.array (properDepth   ), \
+             np.array (imProperDepth ), \
+             np.array (nr            ), \
+             np.array (aa            ), \
+             np.array (bb            ), \
+             np.array (mscore        ), \
+             np.array (misprob       ), \
+             np.array (aveIden       )  )
+    DrawPhredScale ( figPrefix + '.phred', np.array(phredScal) )
 
 if __name__ == '__main__' :
 
