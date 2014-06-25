@@ -6,6 +6,9 @@ Date   : 2014-05-23 11:21:53
 """
 
 import sys
+import matplotlib.pyplot as plt
+
+# My own class
 import VariantDataManager as vdm
 import VariantRecalibratorEngine as vre
 import VariantRecalibratorArgumentCollection as VRAC
@@ -14,9 +17,11 @@ class VariantRecalibrator :
 
     def __init__ (self) :
 
-        self.VRAC        = VRAC.VariantRecalibratorArgumentCollection()
-        self.dataManager = vdm.VariantDataManager()
-        self.engine      = vre.VariantRecalibratorEngine( self.VRAC )
+        self.VRAC          = VRAC.VariantRecalibratorArgumentCollection()
+        self.dataManager   = vdm.VariantDataManager()
+        self.engine        = vre.VariantRecalibratorEngine( self.VRAC )
+        self.badLodCutoff  = None
+        self.LodCumInTrain = []
     def OnTraversalDone (self, data ) :
 
         self.dataManager.SetData( data )
@@ -31,9 +36,11 @@ class VariantRecalibrator :
         print >> sys.stderr, '[INFO] The covariance of gaussion of goodModel is:\n', goodModel.covars_, '\n'
         self.engine.EvaluateData ( self.dataManager.data, goodModel, False)
 
+        self.badLodCutoff, self.LodCumInTrain = self.dataManager.CalculateWorstLodThreshold()
+
         # Generate the negative model using the worst performing data and evaluate each variant contrastively
         print >> sys.stderr, '[INFO] Training the badModel ...'
-        negativeTrainingData = self.dataManager.SelectWorstVariants()
+        negativeTrainingData = self.dataManager.SelectWorstVariants( self.badLodCutoff )
         badModel             = self.engine.GenerateModel( negativeTrainingData, min(self.VRAC.MAX_GAUSSIANS_FOR_NEGATIVE_MODEL, self.VRAC.MAX_GAUSSIANS))
         print >> sys.stderr, '\n[INFO] The converged information of badModel is:' , badModel.converged_
         print >> sys.stderr, '[INFO] The means of gaussion of badModel is:\n'     , badModel.means_
@@ -44,6 +51,19 @@ class VariantRecalibrator :
 
         # Find the VQSLOD cutoff values which correspond to the various tranches of calls requested by the user
         self.engine.CalculateWorstPerformingAnnotation( self.dataManager.data, goodModel, badModel )
+
+    def VisualizationLodVStrainingSet ( self, figName ) :
+
+        fig = plt.figure()
+        plt.title('LOD VS Positive training set', fontsize = 14)
+        plt.plot(self.LodCumInTrain[:,0], self.LodCumInTrain[:,1], 'ro-')
+        plt.plot([0, 1], [0, 1], 'k--')
+        plt.plot( [self.badLodCutoff, self.badLodCutoff], [0,1], 'g--' )
+        plt.xlabel('Score(Generating just by good model)', fontsize = 16 )
+        plt.ylabel('Rate of positive training set', fontsize = 16)
+
+        fig.savefig(figName + '.png')
+        fig.savefig(figName + '.pdf')
 
 
 

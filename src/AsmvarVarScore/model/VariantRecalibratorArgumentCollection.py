@@ -12,11 +12,11 @@ class VariantRecalibratorArgumentCollection :
         self.NINIT = 100
         self.STD_THRESHOLD         = 10.0
         self.MIN_NUM_BAD_VARIANTS  = 1000
-        self.MAX_NUM_TRAINING_DATA = 20000
+        self.MAX_NUM_TRAINING_DATA = 80000
         self.TRAIN_SIZE_RATE       = 0.6        # The ratio of Traing date set   
         self.CV_SIZE_RATE          = 0.2        # The ratio of cross validation data set    
         self.TEST_SIZE_RATE        = 0.2        # The ratio of test data set
-        self.BAD_LOD_CUTOFF        = -4.0
         self.MAX_GAUSSIANS         = 8
+        self.POSITIVE_TO_NEGATIVE_RATE        = 0.01  # The threshold that the positive training set -> negative
         self.MAX_GAUSSIANS_FOR_NEGATIVE_MODEL = 4
 

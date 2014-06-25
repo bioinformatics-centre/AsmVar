@@ -13,6 +13,7 @@ import string
 import re
 import os
 import numpy as np
+from sklearn.metrics import roc_curve
 # My own class
 import VariantRecalibratorArgumentCollection as VRAC
 import VariantDatum as vd
@@ -64,16 +65,32 @@ class VariantDataManager :
             return [ trainingData[i] for i in range(self.VRAC.MAX_NUM_TRAINING_DATA) ]
         return trainingData 
 
-    def SelectWorstVariants(self ) :
+    def SelectWorstVariants(self, badLod ) :
 
         trainingData = []
         for i,d in enumerate( self.data ) :
-            if (d.lod < self.VRAC.BAD_LOD_CUTOFF) and (not d.failingSTDThreshold) : 
+            if (d.lod < badLod) and (not d.failingSTDThreshold) :
                 trainingData.append( d )
-                self.data[i].atAntiTrainingSite = True
-        print >> sys.stderr, '[INFO] Training with worst %d scoring variants --> variants with LOD < %.2f.' % ( len(trainingData), self.VRAC.BAD_LOD_CUTOFF )
+                self.data[i].atAntiTrainingSite = True # I need the i order must be the same size as self.data 
+        print >> sys.stderr, '[INFO] Training with worst %d scoring variants --> variants with LOD < %.2f.' % ( len(trainingData), badLod )
         return trainingData
 
+    def CalculateWorstLodThreshold ( self ) :
+
+        lodThreshold, lodCum = None, []
+        if len(self.data) > 0 :
+            lodDist      = np.array([[d.atTrainingSite, d.lod] for d in self.data if (not d.failingSTDThreshold)])
+            trainSetSize = len( lodDist[ lodDist[:,0]==1 ] )
+            # I just use the 'roc_curve' function to calculate the worst LOD threshold, not use it to draw ROC curve
+            # And 'roc_curve' function will output the increse order, so that I don't have to sort it again
+            _ , tpr, thresholds = roc_curve( lodDist[:,0], lodDist[:,1] ) 
+            lodCum = [ [ thresholds[i], 1.0 - r ] for i,r in enumerate(tpr) ] # de-crease not increase
+            for i, r in enumerate( tpr ) :
+                if r > 1.0 - self.VRAC.POSITIVE_TO_NEGATIVE_RATE : 
+                    lodThreshold = round(thresholds[i])
+                    break
+
+        return lodThreshold, np.array(lodCum)
 
 def SampleFaLen ( faLenFile ) :
 

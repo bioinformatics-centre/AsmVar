@@ -33,19 +33,14 @@ class VariantRecalibratorEngine :
 
         return trainSetIdx, cvSetIdx, testSetIdx
         
-
     def GenerateModel ( self, data, maxGaussians ) :
         if len(data)    == 0 : raise ValueError ( '[ERROR] No data found. The size is %d' %len(data) )
         if not isinstance(data[0], vd.VariantDatum) : 
             raise ValueError ('[ERROR] The data type should be "VariantDatum" in GenerateModel() of class VariantRecalibratorEngine(), but found %s'% str(type(data[0])) )
         if maxGaussians <= 0 : raise ValueError ( '[ERROR] maxGaussians must be a positive integer but found: %d' % maxGaussians )
-        """
-        gmm = mixture.GMM( n_components = maxGaussians, covariance_type='full', thresh = self.MIN_PROB_CONVERGENCE, 
-                                 n_iter = self.VRAC.NITER , n_init = self.VRAC.NINIT, params='wmc', init_params='wmc' )
-        gmm.fit( [ d.annotations for d in data ] )
-        """
-        gmms = [ mixture.GMM(n_components = n + 1, covariance_type='full', thresh = self.MIN_PROB_CONVERGENCE, 
-                                   n_iter = self.VRAC.NITER , n_init = self.VRAC.NINIT, params='wmc', init_params='wmc') for n in range(maxGaussians) ]
+        gmms = [ mixture.GMM(n_components = n + 1, covariance_type = 'full', thresh = self.MIN_PROB_CONVERGENCE, 
+                                   n_iter = self.VRAC.NITER , n_init = self.VRAC.NINIT, params = 'wmc', 
+                              init_params = 'wmc') for n in range(maxGaussians) ]
         trainingData = np.array([d.annotations for d in data]); np.random.shuffle( trainingData ) # Random shuffling
         #trainSetIdx, cvSetIdx, testSetIdx = self.ClassifyData( len(trainingData) )
 
@@ -74,9 +69,10 @@ class VariantRecalibratorEngine :
             if np.math.isnan( thisLod ) : 
                 gmm.converged_ = False
                 return
-            if evaluateContrastively :
+            if evaluateContrastively : 
+                # data[i].lod must has been assigned by good model or something like that
                 # contrastive evaluation: (prior + positive model - negative model)
-                data[i].lod =  data[i].prior + data[i].lod - thisLod # Some problem to get understand of the data[i].prior
+                data[i].lod =  data[i].prior + data[i].lod - thisLod
                 if thisLod  == float( 'inf' ) : data[i].lod = self.MIN_ACCEPTABLE_LOD_SCORE * ( 1.0 + np.random.rand(1)[0] )
             else :
                 data[i].lod = thisLod # positive model only so set the lod and return

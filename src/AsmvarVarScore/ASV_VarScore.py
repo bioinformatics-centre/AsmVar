@@ -22,6 +22,7 @@ def main ( opt ) :
     hInfo, dataSet = vdm.LoadDataSet(opt.vcfInfile,traningSet,vdm.LoadFaLen(opt.qFalen)) # Identify the traning sites
     vr             = vror.VariantRecalibrator() # init VariantRecalibrator object
     vr.OnTraversalDone( dataSet ) # Traning model and calculate the VQ for all the dataSet
+    vr.VisualizationLodVStrainingSet( 'BadLodSelectInTraining' )
 
     # Outputting the result as VCF format
     hInfo.Add ('##INFO=<ID=VQ', '##INFO=<ID=VQ,Number=1,Type=Float,Description="Variant Quality">')
@@ -48,7 +49,7 @@ def main ( opt ) :
         tot += 1.0 # Record For summary
         culprit[d.annoTexts[d.worstAnnotation]] = culprit.get( d.annoTexts[d.worstAnnotation], 0.0 ) + 1.0 # For summary
         for lod in [0, 1, 2, 3, 4] :
-            if d.lod >= lod : good[lod] = good.get( lod, 0 ) + 1.0
+            if d.lod >= lod : good[lod] = good.get( lod, 0.0 ) + 1.0
         
         vcfinfo['VQ'] = 'VQ=' + str(d.lod)
         vcfinfo['CU'] = 'CU=' + d.annoTexts[d.worstAnnotation]
