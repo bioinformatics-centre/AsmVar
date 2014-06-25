@@ -25,6 +25,10 @@ class VariantDataManager :
         self.VRAC = VRAC.VariantRecalibratorArgumentCollection()
         self.annotationMean = None
         self.annotationSTD  = None
+        self.annoTexts      = [ ['Position', 'Float', 'The median of relative position on Assembly Scaffold'],\
+                                ['NRatio'  , 'Float', 'The median of N ratio of the query sequences' ], \
+                                ['AlternatePerfect' , 'Float', 'The median of Depth of Alt_Perfect'  ], \
+                                ['BothImperfect'    , 'Float', 'The median of Depth of Both_Imperfect'] ]
 
         self.data = [] # list < VariantDatum >
         if data : # data is not None
@@ -194,14 +198,13 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
 
                 leg = min(qSta, 100 - qEnd)
                 nn  = string.atof(sample.split(':')[fmat['FN']])
-                n   = int(1000 * nn + 0.5) / 10.0
+                n   = int(1000 * nn + 0.5) / 10.0 # range : [0, 100]
                 alt = string.atoi( sample.split(':')[fmat['AA']].split(',')[1] ) # Alternate perfect
                 bot = string.atoi( sample.split(':')[fmat['AA']].split(',')[3] ) # Both imperfect
                 annotations.append( [leg, n , alt, bot] )
 
             datum                = vd.VariantDatum()
             datum.annotations    = np.median( annotations, axis = 0 )
-            #datum.annoTexts      = ['Position', 'NRatio', 'AlternatePerfect', 'BothImperfect']
             datum.variantContext = col
             key                  = col[0] + ':' + col[1]
             if key in traningSet : datum.atTrainingSite = True

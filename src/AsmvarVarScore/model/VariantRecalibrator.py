@@ -56,9 +56,10 @@ class VariantRecalibrator :
 
         fig = plt.figure()
         plt.title('LOD VS Positive training set', fontsize = 14)
-        plt.plot(self.LodCumInTrain[:,0], self.LodCumInTrain[:,1], 'ro-')
-        plt.plot([0, 1], [0, 1], 'k--')
+        plt.plot(self.LodCumInTrain[:,0], self.LodCumInTrain[:,1], 'r-')
+        plt.scatter(self.LodCumInTrain[:,0], self.LodCumInTrain[:,1], c='r', marker='.', linewidth = 0, alpha = 0.5)
         plt.plot( [self.badLodCutoff, self.badLodCutoff], [0,1], 'g--' )
+        plt.ylim( 0, 1.0 )
         plt.xlabel('Score(Generating just by good model)', fontsize = 16 )
         plt.ylabel('Rate of positive training set', fontsize = 16)
 

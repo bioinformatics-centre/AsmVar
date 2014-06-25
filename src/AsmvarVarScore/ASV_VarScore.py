@@ -19,7 +19,7 @@ import model.VariantRecalibrator as vror
 def main ( opt ) :
 
     traningSet     = vdm.LoadTrainingSiteFromVCF( opt.trainData ) # Just record the sites of training data
-    hInfo, dataSet = vdm.LoadDataSet(opt.vcfInfile,traningSet,vdm.LoadFaLen(opt.qFalen)) # Identify the traning sites
+    hInfo, dataSet = vdm.LoadDataSet(opt.vcfInfile,traningSet,vdm.LoadFaLen(opt.qFalen)) #Identify the traning sites
     vr             = vror.VariantRecalibrator() # init VariantRecalibrator object
     vr.OnTraversalDone( dataSet ) # Traning model and calculate the VQ for all the dataSet
     vr.VisualizationLodVStrainingSet( 'BadLodSelectInTraining' )
@@ -30,14 +30,17 @@ def main ( opt ) :
     hInfo.Add ('##INFO=<ID=NEGATIVE_TRAIN_SITE', '##INFO=<ID=NEGATIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the negative training set of bad variants">')
     hInfo.Add ('##INFO=<ID=POSITIVE_TRAIN_SITE', '##INFO=<ID=POSITIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the positive training set of good variants">')
     # For Record the Annnotations' values
-    hInfo.Add ('##INFO=<ID=Position', '##INFO=<ID=Position,Number=1,Type=Float,Description="The median of Position on Assembly Scaffold">')
-    hInfo.Add ('##INFO=<ID=NRatio', '##INFO=<ID=NRatio,Number=1,Type=Float,Description="The median of N ratio of the query sequences">')
-    hInfo.Add ('##INFO=<ID=AlternatePerfect', '##INFO=<ID=AlternatePerfect,Number=1,Type=Float,Description="The median of Depth of Alt_Perfect">')
-    hInfo.Add ('##INFO=<ID=BothImperfect', '##INFO=<ID=BothImperfect,Number=1,Type=Float,Description="The median of Depth of Both_Imperfect">')
-    
+    for d in vr.dataManager.annoTexts :
+        k = '##INFO=<ID=' + d[0]
+        v = '##INFO=<ID=%s,Number=1,Type=%s,Description="%s">' % (d[0], d[1], d[2])
+        hInfo.Add( k, v )
+ 
     culprit, good, tot = {}, {}, 0.0
+
+    annoTexts = [ d[0] for d in vr.dataManager.annoTexts ]
+    idx = {c:i for i,c in enumerate( annoTexts ) }
+
     for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
-    idx = {c:i for i,c in enumerate(['Position', 'NRatio', 'AlternatePerfect', 'BothImperfect']) }
     for d in dataSet :
         # Deal with the INFO line
         vcfinfo = {}
@@ -47,18 +50,15 @@ def main ( opt ) :
             vcfinfo[k] = info
 
         tot += 1.0 # Record For summary
-        culprit[d.annoTexts[d.worstAnnotation]] = culprit.get( d.annoTexts[d.worstAnnotation], 0.0 ) + 1.0 # For summary
+        culprit[annoTexts[d.worstAnnotation]] = culprit.get(annoTexts[d.worstAnnotation], 0.0 ) + 1.0 # For summary
         for lod in [0, 1, 2, 3, 4] :
             if d.lod >= lod : good[lod] = good.get( lod, 0.0 ) + 1.0
         
-        vcfinfo['VQ'] = 'VQ=' + str(d.lod)
-        vcfinfo['CU'] = 'CU=' + d.annoTexts[d.worstAnnotation]
-        vcfinfo['Position']         = 'Position=' + str(d.annotations[ idx['Position'] ])
-        vcfinfo['NRatio'  ]         = 'NRatio=' + str(d.annotations[ idx['NRatio'] ])
-        vcfinfo['AlternatePerfect'] = 'AlternatePerfect=' + str(d.annotations[ idx['AlternatePerfect'] ])
-        vcfinfo['BothImperfect']    = 'BothImperfect=' + str(d.annotations[ idx['BothImperfect'] ])
         if d.atTrainingSite     : vcfinfo['POSITIVE_TRAIN_SITE'] = 'POSITIVE_TRAIN_SITE'
         if d.atAntiTrainingSite : vcfinfo['NEGATIVE_TRAIN_SITE'] = 'NEGATIVE_TRAIN_SITE'
+        vcfinfo['VQ'] = 'VQ=' + str(d.lod)
+        vcfinfo['CU'] = 'CU=' + annoTexts[d.worstAnnotation]
+        for text in annoTexts : vcfinfo[text] = text+'='+str(d.annotations[ idx[text] ])
         d.variantContext[7] = ';'.join( sorted(vcfinfo.values()) )
 
         print '\t'.join( d.variantContext )
