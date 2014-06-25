@@ -79,16 +79,18 @@ class VariantDataManager :
         print >> sys.stderr, '[INFO] Training with worst %d scoring variants --> variants with LOD < %.2f.' % ( len(trainingData), badLod )
         return trainingData
 
-    def CalculateWorstLodThreshold ( self ) :
+    def CalculateWorstLodCutoff ( self ) :
 
         lodThreshold, lodCum = None, []
         if len(self.data) > 0 :
-            lodDist      = np.array([[d.atTrainingSite, d.lod] for d in self.data if (not d.failingSTDThreshold)])
-            trainSetSize = len( lodDist[ lodDist[:,0]==1 ] )
+
+            lodDist = np.array([[d.atTrainingSite, d.lod] for d in self.data if (not d.failingSTDThreshold)])
+
             # I just use the 'roc_curve' function to calculate the worst LOD threshold, not use it to draw ROC curve
             # And 'roc_curve' function will output the increse order, so that I don't have to sort it again
             _ , tpr, thresholds = roc_curve( lodDist[:,0], lodDist[:,1] ) 
-            lodCum = [ [ thresholds[i], 1.0 - r ] for i,r in enumerate(tpr) ] # de-crease not increase
+            lodCum = [ [thresholds[i], 1.0 - r] for i, r in enumerate(tpr) ]
+
             for i, r in enumerate( tpr ) :
                 if r > 1.0 - self.VRAC.POSITIVE_TO_NEGATIVE_RATE : 
                     lodThreshold = round(thresholds[i])

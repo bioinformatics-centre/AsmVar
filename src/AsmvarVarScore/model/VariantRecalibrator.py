@@ -36,7 +36,7 @@ class VariantRecalibrator :
         print >> sys.stderr, '[INFO] The covariance of gaussion of goodModel is:\n', goodModel.covars_, '\n'
         self.engine.EvaluateData ( self.dataManager.data, goodModel, False)
 
-        self.badLodCutoff, self.LodCumInTrain = self.dataManager.CalculateWorstLodThreshold()
+        self.badLodCutoff, self.LodCumInTrain = self.dataManager.CalculateWorstLodCutoff()
 
         # Generate the negative model using the worst performing data and evaluate each variant contrastively
         print >> sys.stderr, '[INFO] Training the badModel ...'
@@ -57,11 +57,11 @@ class VariantRecalibrator :
         fig = plt.figure()
         plt.title('LOD VS Positive training set', fontsize = 14)
         plt.plot(self.LodCumInTrain[:,0], self.LodCumInTrain[:,1], 'r-')
-        plt.scatter(self.LodCumInTrain[:,0], self.LodCumInTrain[:,1], c='r', marker='.', linewidth = 0, alpha = 0.5)
+        #plt.scatter(self.LodCumInTrain[:,0], self.LodCumInTrain[:,1], c='r', marker='.', linewidth = 0, alpha = 0.5)
         plt.plot( [self.badLodCutoff, self.badLodCutoff], [0,1], 'g--' )
         plt.ylim( 0, 1.0 )
-        plt.xlabel('Score(Generating just by good model)', fontsize = 16 )
-        plt.ylabel('Rate of positive training set', fontsize = 16)
+        plt.xlabel('Variant score threshold for the bad model', fontsize = 16 )
+        plt.ylabel('Rate of Positive->Negative', fontsize = 16)
 
         fig.savefig(figName + '.png')
         fig.savefig(figName + '.pdf')

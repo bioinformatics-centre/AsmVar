@@ -46,7 +46,7 @@ def main ( opt ) :
         vcfinfo = {}
         for info in d.variantContext[7].split(';') : 
             k = info.split('=')[0]
-            if k in vcfinfo: raise ValueError('[WARNING] The tag: %s double hits in the INFO column at %s'%(k, info))
+            #if k in vcfinfo: raise ValueError('[WARNING] The tag: %s double hits in the INFO column at %s'%(k, info))
             vcfinfo[k] = info
 
         tot += 1.0 # Record For summary
