@@ -64,8 +64,8 @@ class VariantRecalibratorEngine :
         print >> sys.stderr, '[INFO] Evaluating full set of', len(data), 'variants ...'
         for i,_ in enumerate( data ) : 
 
-            thisLod = gmm.score( data[i].annotations[np.newaxis,:] ) / np.log(10)
-            thisLod = thisLod[0]
+            thisLod = gmm.score( data[i].annotations[np.newaxis,:] ) # log likelihood and the base is e
+            thisLod = -10 * np.log10( 1 - np.exp( thisLod[0] ) ) # change to phred scale : -10 * log10( P-error )
             if np.math.isnan( thisLod ) : 
                 gmm.converged_ = False
                 return
