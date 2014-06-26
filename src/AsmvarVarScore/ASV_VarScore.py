@@ -25,15 +25,12 @@ def main ( opt ) :
     vr.VisualizationLodVStrainingSet( 'BadLodSelectInTraining' )
 
     # Outputting the result as VCF format
-    hInfo.Add ('##INFO=<ID=VQ', '##INFO=<ID=VQ,Number=1,Type=Float,Description="Variant Quality">')
-    hInfo.Add ('##INFO=<ID=CU', '##INFO=<ID=CU,Number=1,Type=String,Description="The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out. It\'s the same tag as "culprit" in GATK">')
-    hInfo.Add ('##INFO=<ID=NEGATIVE_TRAIN_SITE', '##INFO=<ID=NEGATIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the negative training set of bad variants">')
-    hInfo.Add ('##INFO=<ID=POSITIVE_TRAIN_SITE', '##INFO=<ID=POSITIVE_TRAIN_SITE,Number=0,Type=Flag,Description="This variant was used to build the positive training set of good variants">')
+    hInfo.Add ( 'INFO', 'VQ', 1, 'Float' , 'Variant Quality' )
+    hInfo.Add ( 'INFO', 'CU', 1, 'String', 'The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out. It\'s the same tag as <culprit> in GATK' )
+    hInfo.Add ( 'INFO', 'NEGATIVE_TRAIN_SITE', 0, 'Flag', 'This variant was used to build the negative training set of bad variants')
+    hInfo.Add ( 'INFO', 'POSITIVE_TRAIN_SITE', 0, 'Flag', 'This variant was used to build the positive training set of good variants')
     # For Record the Annnotations' values
-    for d in vr.dataManager.annoTexts :
-        k = '##INFO=<ID=' + d[0]
-        v = '##INFO=<ID=%s,Number=1,Type=%s,Description="%s">' % (d[0], d[1], d[2])
-        hInfo.Add( k, v )
+    for d in vr.dataManager.annoTexts : hInfo.Add( 'INFO', d[0], 1, d[1], d[2] )
  
     culprit, good, tot = {}, {}, 0.0
 
@@ -41,12 +38,15 @@ def main ( opt ) :
     idx = {c:i for i,c in enumerate( annoTexts ) }
 
     for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
+    monitor = True
     for d in dataSet :
         # Deal with the INFO line
         vcfinfo = {}
         for info in d.variantContext[7].split(';') : 
             k = info.split('=')[0]
-            #if k in vcfinfo: raise ValueError('[WARNING] The tag: %s double hits in the INFO column at %s'%(k, info))
+            if monitor and k in vcfinfo: 
+               print >> sys.stderr, '[WARNING] The tag: %s double hits in the INFO column at %s'%(k, opt.vcfInfile)
+               monitor = False
             vcfinfo[k] = info
 
         tot += 1.0 # Record For summary

@@ -164,14 +164,12 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
         for line in lines :
 
             col = line.strip('\n').split()
-            if re.search (r'^##fileformat', line ) : hInfo.Add( '###', line.strip('\n') )
-            elif re.search( r'^#CHROM', line ) :
-                col2sam = { i+9:sam for i,sam in enumerate(col[9:]) }
-                hInfo.Add( '#CHROM', line.strip('\n') )
-            elif re.search(r'^#', line) :
-                tag = line.strip('\n').split(',')[0]
-                hInfo.Add( tag , line.strip('\n') )
-            if re.search( r'^#', line) : continue
+            if re.search( r'^#CHROM', line ) : col2sam = { i+9:sam for i,sam in enumerate(col[9:]) }
+
+            # Record the header information
+            if re.search(r'^#', line) :
+                hInfo.Record( line.strip('\n') )
+                continue
 
             fmat = { k:i for i,k in enumerate( col[8].split(':') ) } # Get Format
             if 'QR' not in fmat: continue
@@ -208,8 +206,8 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
             datum                = vd.VariantDatum()
             datum.annotations    = np.median( annotations, axis = 0 )
             datum.variantContext = col
-            key                  = col[0] + ':' + col[1]
-            if key in traningSet : datum.atTrainingSite = True
+            pos                  = col[0] + ':' + col[1]
+            if pos in traningSet : datum.atTrainingSite = True
             data.append( datum )
 
     I.close()

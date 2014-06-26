@@ -11,8 +11,6 @@ class VariantDatum :
 
     def __init__ ( self ) :
         self.annotations         = []
-        #self.annoTexts           = ['Position', 'NRatio', 'AlternatePerfect', 'BothImperfect']
-        #self.annoTexts           = [] # annoTexts is a 2D array : [ [ id, type, description ], ... ]
         self.lod                 = None 
         self.prior               = 2.0
         self.atTrainingSite      = False

@@ -4,6 +4,8 @@ A class for VCF format
 ===================================================
 """
 
+import re
+
 class VCFHeader :
 
     def __init__ ( self, hInfo = None ) : 
@@ -12,9 +14,18 @@ class VCFHeader :
         if hInfo and (type( hInfo ) is not dict ) : raise ValueError ('The data type should be "dict" in class of "VCFHeader", but found %s' % str( type(hInfo) ))
         if hInfo : self.header = hInfo
         
-    def Add ( self, key, context ) :
-        self.header[key] = context
+    def Add ( self, mark, id, num, type, description ) :
+        key = '##%s=<ID=%s' % (mark, id)
+        val = '##%s=<ID=%s,Number=%d,Type=%s,Description="%s">' % ( mark, id, num, type, description )
+        self.header[key] = val
         return self
+
+    def Record ( self, headline ) :
+
+        if   re.search ( r'^##fileformat', headline ) : tag = '###'
+        elif re.search ( r'^#CHROM'      , headline ) : tag = '#CHROM'
+        else : tag = headline.split(',')[0]
+        self.header[tag] = headline
 
 class VCFInfo : 
 
