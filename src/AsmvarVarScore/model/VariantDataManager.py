@@ -25,9 +25,9 @@ class VariantDataManager :
         self.VRAC = VRAC.VariantRecalibratorArgumentCollection()
         self.annotationMean = None
         self.annotationSTD  = None
-        self.annoTexts      = [ ['Position', 'Float', 'The median of relative position on Assembly Scaffold'],\
-                                ['NRatio'  , 'Float', 'The median of N ratio of the query sequences' ], \
-                                ['AlternatePerfect' , 'Float', 'The median of Depth of Alt_Perfect'  ], \
+        self.annoTexts      = [ ['Position', 'Float', 'The median of relative position on Assembly Scaffold'], \
+                                ['NRatio'  , 'Float', 'The median of N normal ratio of the query sequences' ], \
+                                ['AlternatePerfect' , 'Float', 'The median of Depth of Alt_Perfect'   ], \
                                 ['BothImperfect'    , 'Float', 'The median of Depth of Both_Imperfect'] ]
 
         self.data = [] # list < VariantDatum >
@@ -205,8 +205,8 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
 
             datum                = vd.VariantDatum()
             datum.annotations    = np.median( annotations, axis = 0 )
-            datum.variantContext = col
             pos                  = col[0] + ':' + col[1]
+            datum.variantOrder   = pos
             if pos in traningSet : datum.atTrainingSite = True
             data.append( datum )
 

@@ -33,35 +33,56 @@ def main ( opt ) :
     for d in vr.dataManager.annoTexts : hInfo.Add( 'INFO', d[0], 1, d[1], d[2] )
  
     culprit, good, tot = {}, {}, 0.0
-
     annoTexts = [ d[0] for d in vr.dataManager.annoTexts ]
     idx = {c:i for i,c in enumerate( annoTexts ) }
 
     for k,v in sorted (hInfo.header.items(), key = lambda d : d[0] ) : print v
-    monitor = True
-    for d in dataSet :
-        # Deal with the INFO line
-        vcfinfo = {}
-        for info in d.variantContext[7].split(';') : 
-            k = info.split('=')[0]
-            if monitor and k in vcfinfo: 
-               print >> sys.stderr, '[WARNING] The tag: %s double hits in the INFO column at %s'%(k, opt.vcfInfile)
-               monitor = False
-            vcfinfo[k] = info
+    if opt.vcfInfile[-3:] == '.gz' :
+        I = os.popen( 'gzip -dc %s' % opt.vcfInfile )
+    else :
+        I = open ( opt.vcfInfile )
 
-        tot += 1.0 # Record For summary
-        culprit[annoTexts[d.worstAnnotation]] = culprit.get(annoTexts[d.worstAnnotation], 0.0 ) + 1.0 # For summary
-        for lod in [0, 1, 2, 3, 4] :
-            if d.lod >= lod : good[lod] = good.get( lod, 0.0 ) + 1.0
+    j, monitor = 0, True
+    while 1 :
+
+       lines = I.readlines( 100000 )
+       if not lines : break
+
+       for line in lines :
+
+           if re.search(r'^#', line) : continue
+
+           col   = line.strip('\n').split()
+           order = col[0] + ':' + col[1]
+           d     = dataSet[j]
+           if d.variantOrder != order : 
+               raise ValueError( '[BUG] The order(%s) must be the same as dataSet(%s)' % (order, d.variantOrder) )
+
+           vcfinfo = {}
+           # Deal with the INFO line
+           for info in col[7].split(';') : 
+               k = info.split('=')[0]
+               if monitor and k in vcfinfo: 
+                   monitor = False
+                   print >>sys.stderr,'[WARNING] The tag: %s double hits in the INFO column at %s'%(k, opt.vcfInfile)
+               vcfinfo[k] = info
+
+           tot += 1.0 # Record For summary
+           culprit[annoTexts[d.worstAnnotation]] = culprit.get(annoTexts[d.worstAnnotation], 0.0) + 1.0 #For summary
+           for lod in [0, 1, 2, 3, 4] :
+               if d.lod >= lod : good[lod] = good.get( lod, 0.0 ) + 1.0
         
-        if d.atTrainingSite     : vcfinfo['POSITIVE_TRAIN_SITE'] = 'POSITIVE_TRAIN_SITE'
-        if d.atAntiTrainingSite : vcfinfo['NEGATIVE_TRAIN_SITE'] = 'NEGATIVE_TRAIN_SITE'
-        vcfinfo['VQ'] = 'VQ=' + str(d.lod)
-        vcfinfo['CU'] = 'CU=' + annoTexts[d.worstAnnotation]
-        for text in annoTexts : vcfinfo[text] = text+'='+str(d.annotations[ idx[text] ])
-        d.variantContext[7] = ';'.join( sorted(vcfinfo.values()) )
+           if d.atTrainingSite     : vcfinfo['POSITIVE_TRAIN_SITE'] = 'POSITIVE_TRAIN_SITE'
+           if d.atAntiTrainingSite : vcfinfo['NEGATIVE_TRAIN_SITE'] = 'NEGATIVE_TRAIN_SITE'
+           vcfinfo['VQ'] = 'VQ=' + str(d.lod)
+           vcfinfo['CU'] = 'CU=' + annoTexts[d.worstAnnotation]
+           for text in annoTexts : vcfinfo[text] = text+'='+str(d.annotations[ idx[text] ])
+           col[7] = ';'.join( sorted(vcfinfo.values()) )
 
-        print '\t'.join( d.variantContext )
+           print '\t'.join( col )
+           j += 1 # Increase the index of dataSet
+
+    I.close()
 
     ## Output Summary
     print >> sys.stderr, '\n[Summmary] Here is the summary information:\n'

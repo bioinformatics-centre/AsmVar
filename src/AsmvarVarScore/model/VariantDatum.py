@@ -17,5 +17,5 @@ class VariantDatum :
         self.atAntiTrainingSite  = False
         self.failingSTDThreshold = False
         self.worstAnnotation     = None
-        self.variantContext      = [] 
+        self.variantOrder        = None
 
