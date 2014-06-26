@@ -20,7 +20,7 @@ class VariantRecalibratorEngine :
         self.MIN_PROB_CONVERGENCE     = 2e-3
         self.MIN_ACCEPTABLE_LOD_SCORE = -20000.0
 
-    def ClassifyData ( dataSize ) : 
+    def ClassifyData ( self, dataSize ) : 
         # Classify the data into TrainingSet, Cross-ValidationSet and TestSet. Reture the data indexes
         # Call in GenerateModel
         trainSetSize = int ( np.round( self.VRAC.TRAIN_SIZE_RATE * dataSize) )
@@ -42,7 +42,7 @@ class VariantRecalibratorEngine :
                                    n_iter = self.VRAC.NITER , n_init = self.VRAC.NINIT, params = 'wmc', 
                               init_params = 'wmc') for n in range(maxGaussians) ]
         trainingData = np.array([d.annotations for d in data]); np.random.shuffle( trainingData ) # Random shuffling
-        #trainSetIdx, cvSetIdx, testSetIdx = self.ClassifyData( len(trainingData) )
+        trainSetIdx, cvSetIdx, testSetIdx = self.ClassifyData( len(trainingData) )
 
         minBIC, bics = np.inf, []
         for g in gmms : 
@@ -64,8 +64,8 @@ class VariantRecalibratorEngine :
         print >> sys.stderr, '[INFO] Evaluating full set of', len(data), 'variants ...'
         for i,_ in enumerate( data ) : 
 
-            thisLod = gmm.score( data[i].annotations[np.newaxis,:] ) # log likelihood and the base is e
-            thisLod = -10 * np.log10( 1 - np.exp( thisLod[0] ) ) # change to phred scale : -10 * log10( P-error )
+            thisLod = gmm.score( data[i].annotations[np.newaxis,:] ) / np.log(10) # log likelihood and the base is 10
+            thisLod = thisLod[0]
             if np.math.isnan( thisLod ) : 
                 gmm.converged_ = False
                 return
