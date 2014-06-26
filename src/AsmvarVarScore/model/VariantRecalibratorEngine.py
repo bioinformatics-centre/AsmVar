@@ -29,7 +29,7 @@ class VariantRecalibratorEngine :
 
         trainSetIdx  = range( trainSetSize )                           # The index array of training data
         cvSetIdx     = range( trainSetSize, cvSetSize + trainSetSize ) # The index array of cross-validation data
-        testSetIdx   = range( cvSetSize + trainSetSize, dataSize    ) # The index array of Test data
+        testSetIdx   = range( cvSetSize + trainSetSize, dataSize     ) # The index array of Test data
 
         return trainSetIdx, cvSetIdx, testSetIdx
         
@@ -41,8 +41,10 @@ class VariantRecalibratorEngine :
         gmms = [ mixture.GMM(n_components = n + 1, covariance_type = 'full', thresh = self.MIN_PROB_CONVERGENCE, 
                                    n_iter = self.VRAC.NITER , n_init = self.VRAC.NINIT, params = 'wmc', 
                               init_params = 'wmc') for n in range(maxGaussians) ]
-        trainingData = np.array([d.annotations for d in data]); np.random.shuffle( trainingData ) # Random shuffling
-        trainSetIdx, cvSetIdx, testSetIdx = self.ClassifyData( len(trainingData) )
+        trainingData = np.array([d.annotations for d in data]); 
+
+        #np.random.shuffle( trainingData ) # Random shuffling
+        #trainSetIdx, cvSetIdx, testSetIdx = self.ClassifyData( len(trainingData) )
 
         minBIC, bics = np.inf, []
         for g in gmms : 
