@@ -12,6 +12,13 @@ __Contact              :__ liusiyang.ocean@gmail.com & huangshujia@genomics.cn <
 __Institute            :__ BGI & KU                                            <br/>
 __Last Version         :__ 2014-05-30                                          <br/>
 
+Contribution
+------------
+
+The AsmVar is developed for the DanishPanGenome project in GenomeDK platform. This manuscript is written by Siyang Liu independently supervised by Anders Krogh.  The AsmVar software construction, applications, statistical methods and the evaluation protocols are established by Siyang Liu and Shujia Huang and with discussions from Junhua Rao and Weijian Ye.  The coding contributions for different modules are written in the source code title. Most of the initial codes are written in C++, python, perl by Shujia Huang and perl, python and R by Siyang Liu, Weijian Ye and Junhua Rao. Shujia Huang takes charge of the software architecture and greatly improves the efficiency of algorithms. The AsmVar is under active development at the moment, dedicated to provide population-scale exact breakpoint variants called from de novo assemblies or long read technology such as illumine molecule and CG LFR. 
+
+Usage
+-----
 1. Overview
 2. How to use Asmvar
 3. Speed and Memory required
