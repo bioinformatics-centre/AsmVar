@@ -2,7 +2,7 @@
 ========================================================
 Statistic the SV Stat after AGE Process
 ========================================================
-Author : Shujia Huang
+Author : Shujia Huang & Siyang Liu
 Date   : 2014-03-07 0idx:54:15
 """
 import sys

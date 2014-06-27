@@ -1,7 +1,7 @@
 """
 ===========================================
 ===========================================
-Author : Shujia Huang
+Author : Shujia Huang & Siyang Liu
 Date   : 2014-05-20 08:50:06
 """
 import sys

@@ -23,9 +23,9 @@ def DrawFig( figureFile, distance, properDepth, imProperDepth, nr, aa, bb, mscor
         plt.subplot(9,2,2 * i + 1)
         #plt.title(title[i], fontsize=16)
         P = data[:,0] == 1; N = data[:,0] == 2; X = data[:,0] == 3
-        plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.03, linewidths = 0, label = 'Positive(%d)'%len(data[:,1][P]) ) # Positive
-        plt.scatter(data[:,1][N], data[:,2][N], marker='o', c = 'r', alpha=0.03, linewidths = 0, label = 'Negative(%d)'%len(data[:,1][N]) ) # Negative
-        plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.03, linewidths = 0, label = 'Positive->Negative(%d)' % len(data[:,1][X]) ) # Positive->Negative
+        plt.scatter(data[:,1][N], data[:,2][N], marker='o', c = 'r', alpha=0.05, linewidths = 0, label = 'Negative(%d)'%len(data[:,1][N]) ) # Negative
+        plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.05, linewidths = 0, label = 'Positive(%d)'%len(data[:,1][P]) ) # Positive
+        plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.05, linewidths = 0, label = 'Positive->Negative(%d)' % len(data[:,1][X]) ) # Positive->Negative
         plt.legend(loc='upper left')
         plt.xlabel( 'Score'  , fontsize=16 )
         plt.ylabel( ylabel[i], fontsize=16 )
@@ -35,8 +35,8 @@ def DrawFig( figureFile, distance, properDepth, imProperDepth, nr, aa, bb, mscor
         good = data[:,1][NEW] >= 2.0
         bad  = data[:,1][NEW] < 2.0 
 
-        plt.scatter( data[:,1][NEW][good], data[:,2][NEW][good], marker='o', c = 'b', alpha=0.03, linewidths = 0, label = 'good(%d)' % len(data[:,1][NEW][good]) ) # good
-        plt.scatter( data[:,1][NEW][bad] , data[:,2][NEW][bad] , marker='o', c = 'm', alpha=0.03, linewidths = 0, label = 'bad(%d)' % len( data[:,1][NEW][bad] ) ) # bad
+        plt.scatter( data[:,1][NEW][bad] , data[:,2][NEW][bad] , marker='o', c = 'm', alpha=0.05, linewidths = 0, label = 'bad(%d)' % len( data[:,1][NEW][bad] ) ) # bad
+        plt.scatter( data[:,1][NEW][good], data[:,2][NEW][good], marker='o', c = 'b', alpha=0.05, linewidths = 0, label = 'good(%d)' % len(data[:,1][NEW][good]) ) # good
         plt.legend(loc='upper left')
         plt.xlabel('Score'  , fontsize=16)
 
@@ -51,9 +51,9 @@ def DrawPhredScale ( figureFile, phredScal ) :
     for i, data in enumerate ( [ phredScal ] ) :
         plt.subplot(2, 1, 2 * i + 1)
         P = data[:,0] == 1; N = data[:,0] == 2; X = data[:,0] == 3
-        plt.scatter(data[:,1][N], data[:,2][N], marker='o', c = 'r', alpha=0.05, linewidths = 0, label = 'Negative(%d)'%len(data[:,1][N]) ) # Negative
-        plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.05, linewidths = 0, label = 'Positive(%d)'%len(data[:,1][P]) ) # Positive
-        plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.05, linewidths = 0, label = 'Positive->Negative(%d)' % len(data[:,1][X]) ) # Positive->Negative
+        plt.scatter(data[:,1][N], data[:,2][N], marker='o', c = 'r', alpha=0.5, linewidths = 0, label = 'Negative(%d)'%len(data[:,1][N]) ) # Negative
+        plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.5, linewidths = 0, label = 'Positive(%d)'%len(data[:,1][P]) ) # Positive
+        plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.5, linewidths = 0, label = 'Positive->Negative(%d)' % len(data[:,1][X]) ) # Positive->Negative
         plt.legend(loc='upper left')
         plt.ylabel( ylabel[i], fontsize=16 )
 
@@ -62,8 +62,8 @@ def DrawPhredScale ( figureFile, phredScal ) :
         good = data[:,1][NEW] >= 2.0
         bad  = data[:,1][NEW] < 2.0
 
-        plt.scatter( data[:,1][NEW][bad] , data[:,2][NEW][bad] , marker='o', c = 'm', alpha=0.05, linewidths = 0, label = 'bad(%d)' % len( data[:,1][NEW][bad] ) ) # bad
-        plt.scatter( data[:,1][NEW][good], data[:,2][NEW][good], marker='o', c = 'b', alpha=0.05, linewidths = 0, label = 'good(%d)' % len(data[:,1][NEW][good]) ) # good
+        plt.scatter( data[:,1][NEW][bad] , data[:,2][NEW][bad] , marker='o', c = 'm', alpha=0.5, linewidths = 0, label = 'bad(%d)' % len( data[:,1][NEW][bad] ) ) # bad
+        plt.scatter( data[:,1][NEW][good], data[:,2][NEW][good], marker='o', c = 'b', alpha=0.5, linewidths = 0, label = 'good(%d)' % len(data[:,1][NEW][good]) ) # good
         plt.legend(loc='upper left')
         plt.xlabel('Score'  , fontsize=16)
         plt.ylabel( ylabel[i], fontsize=16 )
