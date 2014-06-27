@@ -1,7 +1,7 @@
-Asmvar
+AsmVar
 ==========
 
-Asmvar is a software for detecting variants, including Indel & SV, base on long sequence(or de novo Assembly) alignement.
+AsmVar is a software for detecting variants, including Indel & SV, base on long sequence(or de novo Assembly) alignement.
 
 LICENSE 
 --------
@@ -19,7 +19,7 @@ The AsmVar is developed for the DanishPanGenome project in GenomeDK platform. Th
 Usage
 -----
 1. Overview
-2. How to use Asmvar
+2. How to use AsmVar
 3. Speed and Memory required
 4. Install the software
 5. Run the software
