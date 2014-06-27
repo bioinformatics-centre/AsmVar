@@ -16,13 +16,6 @@ Contribution
 ------------
 The AsmVar is developed for the DanishPanGenome project in GenomeDK platform. This manuscript is written by [Siyang Liu](https://github.com/SiyangLiu) independently supervised by Anders Krogh.  The AsmVar software construction, applications, statistical methods and the evaluation protocols are established by [Siyang Liu](https://github.com/SiyangLiu) and Shujia Huang, Junhua Rao and Weijian Ye led by [Siyang Liu](https://github.com/SiyangLiu) and Shujia Huang.  The coding contributions for different modules are written in the source code title. Most of the initial codes are written in C++, python and perl by Shujia Huang and perl, python and R by [Siyang Liu](https://github.com/SiyangLiu), Weijian Ye and Junhua Rao. Shujia Huang takes charge of the software architecture and the efficiency of the algorithms. The AsmVar is under active development at the moment, dedicated to provide population-scale exact breakpoint variants called from de novo assemblies or long read technology such as illumine molecule and CG LFR. 
 
-Instant plans for further developments:<br/>
-1.	Evaluations of de novo assemblies with regards to continuity, completeness and accuracy.
-2.	Assign quality scores to de novo assemblies
-3.	Improve genotyping module and develop new approaches for greatest accuracy and flexibility.
-4.	Streamline the characterization of structural variants modules in AsmVar
-5.	Improvement of de novo assemblies
-
 Usage
 -----
 1. Overview
@@ -33,4 +26,12 @@ Usage
 6. Software output 
 7. Please cite the paper ..., if you need .
 8. Acknowledgement :
+
+Instant plans for further developments
+---------------------------------------
+1. Evaluations of de novo assemblies with regards to continuity, completeness and accuracy.
+2. Assign quality scores to de novo assemblies
+3. Improve genotyping module and develop new approaches for greatest accuracy and flexibility.
+4. Streamline the characterization of structural variants modules in AsmVar
+5. Improvement of de novo assemblies
 
