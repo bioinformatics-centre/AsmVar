@@ -27,16 +27,18 @@ def DrawFig( figureFile, distance, properDepth, imProperDepth, nr, aa, bb, mscor
         plt.scatter(data[:,1][P], data[:,2][P], marker='o', c = 'g', alpha=0.05, linewidths = 0, label = 'Positive(%d)'%len(data[:,1][P]) ) # Positive
         plt.scatter(data[:,1][X], data[:,2][X], marker='o', c = 'Y', alpha=0.05, linewidths = 0, label = 'Positive->Negative(%d)' % len(data[:,1][X]) ) # Positive->Negative
         plt.legend(loc='upper left')
+        plt.xlim( -20, 50 )
         plt.xlabel( 'Score'  , fontsize=16 )
         plt.ylabel( ylabel[i], fontsize=16 )
 
         plt.subplot(9, 2, 2*i + 2)
         NEW  = data[:,0] == 0
-        good = data[:,1][NEW] >= 2.0
-        bad  = data[:,1][NEW] < 2.0 
+        good = data[:,1][NEW] >= VQ_CUTOFF
+        bad  = data[:,1][NEW] <  VQ_CUTOFF
 
         plt.scatter( data[:,1][NEW][bad] , data[:,2][NEW][bad] , marker='o', c = 'm', alpha=0.05, linewidths = 0, label = 'bad(%d)' % len( data[:,1][NEW][bad] ) ) # bad
         plt.scatter( data[:,1][NEW][good], data[:,2][NEW][good], marker='o', c = 'b', alpha=0.05, linewidths = 0, label = 'good(%d)' % len(data[:,1][NEW][good]) ) # good
+        plt.xlim( -20, 50 )
         plt.legend(loc='upper left')
         plt.xlabel('Score'  , fontsize=16)
 
@@ -59,8 +61,8 @@ def DrawPhredScale ( figureFile, phredScal ) :
 
         plt.subplot(2, 1, 2*i + 2)
         NEW  = data[:,0] == 0
-        good = data[:,1][NEW] >= 2.0
-        bad  = data[:,1][NEW] < 2.0
+        good = data[:,1][NEW] >= VQ_CUTOFF
+        bad  = data[:,1][NEW] <  VQ_CUTOFF
 
         plt.scatter( data[:,1][NEW][bad] , data[:,2][NEW][bad] , marker='o', c = 'm', alpha=0.5, linewidths = 0, label = 'bad(%d)' % len( data[:,1][NEW][bad] ) ) # bad
         plt.scatter( data[:,1][NEW][good], data[:,2][NEW][good], marker='o', c = 'b', alpha=0.5, linewidths = 0, label = 'good(%d)' % len(data[:,1][NEW][good]) ) # good
@@ -250,5 +252,6 @@ def main ( argv ) :
 
 if __name__ == '__main__' :
 
+    VQ_CUTOFF = 3.0
     main(sys.argv[1:])
 
