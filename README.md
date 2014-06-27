@@ -3,6 +3,8 @@ AsmVar
 
 AsmVar is a software for detecting variants, including Indel & SV, base on long sequence(or de novo Assembly) alignement.
 
+How about rename to __ACTK:__ Assembly sequence variants calling tookit ?
+
 LICENSE 
 --------
 Copyright &copy; 2014-2015
