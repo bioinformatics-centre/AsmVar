@@ -11,22 +11,22 @@ import os
 import optparse
 import string
 # My own class
-import model.VariantDataManager as vdm
-import model.VariantRecalibratorEngine as vre
-import model.VariantRecalibratorArgumentCollection as VRAC
-import model.VariantRecalibrator as vror
+import modul.VariantDataManager as vdm
+import modul.VariantRecalibratorEngine as vre
+import modul.VariantRecalibratorArgumentCollection as VRAC
+import modul.VariantRecalibrator as vror
 
 def main ( opt ) :
 
     traningSet     = vdm.LoadTrainingSiteFromVCF( opt.trainData ) # Just record the sites of training data
     hInfo, dataSet = vdm.LoadDataSet(opt.vcfInfile,traningSet,vdm.LoadFaLen(opt.qFalen)) #Identify the traning sites
     vr             = vror.VariantRecalibrator() # init VariantRecalibrator object
-    vr.OnTraversalDone( dataSet ) # Traning model and calculate the VQ for all the dataSet
+    vr.OnTraversalDone( dataSet ) # Traning modul and calculate the VQ for all the dataSet
     vr.VisualizationLodVStrainingSet( 'BadLodSelectInTraining' )
 
     # Outputting the result as VCF format
     hInfo.Add ( 'INFO', 'VQ', 1, 'Float' , 'Variant Quality' )
-    hInfo.Add ( 'INFO', 'CU', 1, 'String', 'The annotation which was the worst performing in the Gaussian mixture model, likely the reason why the variant was filtered out. It\'s the same tag as <culprit> in GATK' )
+    hInfo.Add ( 'INFO', 'CU', 1, 'String', 'The annotation which was the worst performing in the Gaussian mixture modul, likely the reason why the variant was filtered out. It\'s the same tag as <culprit> in GATK' )
     hInfo.Add ( 'INFO', 'NEGATIVE_TRAIN_SITE', 0, 'Flag', 'This variant was used to build the negative training set of bad variants')
     hInfo.Add ( 'INFO', 'POSITIVE_TRAIN_SITE', 0, 'Flag', 'This variant was used to build the positive training set of good variants')
     # For Record the Annnotations' values

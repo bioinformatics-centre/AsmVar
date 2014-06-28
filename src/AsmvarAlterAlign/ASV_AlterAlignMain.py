@@ -72,7 +72,7 @@ def main ( opt ) :
             if col[2] == '.' : col[2] = 'V_' + col[0] + '_' + col[1]
 
             idx    = sam2col[sampleID]
-            if col[idx] == './.' : continue
+            #if col[idx] == './.' : continue
             fi     = col[idx].split(':')
             gt     = fi[0].split('/')
             if '|' in fi[0] : gt = fi[0].split('|')
