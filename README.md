@@ -13,9 +13,6 @@ __Contact              :__ liusiyang.ocean@gmail.com & huangshujia@genomics.cn <
 __Institute            :__ BGI & KU                                            <br/>
 __Last Version         :__ 2014-05-30                                          <br/>
 
-Contribution
-------------
-The AsmVar is developed for the DanishPanGenome project in GenomeDK platform. The AsmVar software construction, applications, statistical methods and the evaluation protocols are established by [Siyang Liu](https://github.com/SiyangLiu) and [Shujia Huang](https://github.com/ShujiaHuang), Junhua Rao and [Weijian Ye](https://github.com/WeijianYe) led by [Siyang Liu](https://github.com/SiyangLiu) and [Shujia Huang](https://github.com/ShujiaHuang).  The coding contributions for different modules are written in the source code title. Most of the initial codes are written in C++, python and perl by [Shujia Huang](https://github.com/ShujiaHuang) and perl, python and R by [Siyang Liu](https://github.com/SiyangLiu)(especially SV discovery and genotyping, heavily before Sep, 2013), Junhua Rao (especially SV mechanism), [Weijian Ye](https://github.com/WeijianYe) (especially Ancestral state and Novel sequence) . [Shujia Huang](https://github.com/ShujiaHuang) takes charge of the software architecture and the efficiency of the algorithms. The AsmVar is under active development at the moment, dedicated to provide population-scale exact breakpoint variants called from de novo assemblies or long read technology such as illumine molecule and CG LFR. This documentation is written by [Siyang Liu](https://github.com/SiyangLiu) independently supervised by Anders Krogh.
 
 Usage
 -----
@@ -36,3 +33,6 @@ Instant plans for further developments
 4. Streamline the characterization of structural variants modules in AsmVar
 5. Improvement of de novo assemblies
 
+Contribution
+------------
+The AsmVar is developed for the DanishPanGenome project in GenomeDK platform. The AsmVar software construction, applications, statistical methods and the evaluation protocols are established by [Siyang Liu](https://github.com/SiyangLiu) and [Shujia Huang](https://github.com/ShujiaHuang), Junhua Rao and [Weijian Ye](https://github.com/WeijianYe) led by [Siyang Liu](https://github.com/SiyangLiu) and [Shujia Huang](https://github.com/ShujiaHuang).  The coding contributions for different modules are written in the source code title. Most of the initial codes are written in C++, python and perl by [Shujia Huang](https://github.com/ShujiaHuang) and perl, python and R by [Siyang Liu](https://github.com/SiyangLiu)(especially SV discovery and genotyping, heavily before Sep, 2013), Junhua Rao (especially SV mechanism), [Weijian Ye](https://github.com/WeijianYe) (especially Ancestral state and Novel sequence) . [Shujia Huang](https://github.com/ShujiaHuang) takes charge of the software architecture and the efficiency of the algorithms. The AsmVar is under active development at the moment, dedicated to provide population-scale exact breakpoint variants called from de novo assemblies or long read technology such as illumine molecule and CG LFR. This documentation is written by [Siyang Liu](https://github.com/SiyangLiu) independently supervised by Anders Krogh.
