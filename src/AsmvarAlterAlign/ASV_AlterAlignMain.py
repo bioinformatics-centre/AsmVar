@@ -21,6 +21,7 @@ def main ( opt ) :
     bamInfile = opt.bamInfile
     faInfile  = opt.refInfile
     sampleID  = opt.sample
+    refId     = opt.refChrId
     outPrefix = opt.outPrefix
     mapq      = opt.mapq
     newID     = opt.exc
@@ -67,12 +68,12 @@ def main ( opt ) :
                 else : vcfOutHandle.write('%s\t%s\n' % ('\t'.join(col[:9]), sampleID) )
                 continue
 
+            if refId != 'ALL' and refId != col[0] : continue
             if len(col[3]) == len( col[4] ) and len(col[3]) == 1 : continue # SNP
 
             if col[2] == '.' : col[2] = 'V_' + col[0] + '_' + col[1]
 
             idx    = sam2col[sampleID]
-            #if col[idx] == './.' : continue
             fi     = col[idx].split(':')
             gt     = fi[0].split('/')
             if '|' in fi[0] : gt = fi[0].split('|')
@@ -87,13 +88,19 @@ def main ( opt ) :
                 zr,za,zc,zi = ATA.Align ( samInHandle, samOutHandle, fa, col[0], pos, col[2], col[3], altseq, mapq )
          
             format = { t:i for i,t in enumerate(col[8].split(':')) } # Get Format
-            if 'AA' not in format :
-                col[8]   += ':AA'
-                col[idx] += ':' + ','.join( str(a) for a in [zr,za,zc,zi] )
-            else :
-                fi               = col[idx].split(':')
-                fi[format['AA']] = ','.join( str(a) for a in [zr,za,zc,zi] )
-                col[idx]         = ':'.join( fi )
+            fi     = col[idx].split(':')
+            if col[idx] != './.' and len(fi) != len( format ) : 
+                raise ValueError ( '[ERROR] The format of "FORMAT" fields is not match sample %s in %s' % \
+                (col[idx], format) )
+
+            gt = fi[ format['GT'] ]; format.pop( 'GT', None )
+            for k, i in format.items() : 
+                if col[idx] != './.' : format[k] = fi[i]
+                else                 : format[k] = '.'
+            format['AA'] = ','.join( str(a) for a in [zr,za,zc,zi]  )
+            col[8]       = 'GT:' + ':'.join ( sorted(format.keys()) )
+            col[idx]     = gt + ':' + ':'.join( [ format[k] for k in sorted(format.keys()) ] )
+
             vcfOutHandle.write( '%s\t%s\n' % ( '\t'.join(col[:9]), col[idx] ) )
 
     I.close()
@@ -109,10 +116,11 @@ if __name__ == '__main__' :
 
     usage = "\nUsage : %prog [option] [-v vcfInfile] > Output"
     optp  = optparse.OptionParser(usage=usage)
-    optp.add_option("-v", "--vcf", dest="vcfInfile", metavar="VCF", help="Variants. VCF format.", default=[] )
-    optp.add_option("-b", "--bam", dest="bamInfile", metavar="BAM", help="Bam Alignment file. " , default=[] )
-    optp.add_option("-r", "--ref", dest="refInfile", metavar="REF", help="Reference fa format." , default=[] )
-    optp.add_option("-s", "--smp", dest="sample"   , metavar="SMP", help="Sample ID."           , default=[] )
+    optp.add_option("-v", "--vcf", dest="vcfInfile", metavar="VCF", help="Variants. VCF format.", default=[]   )
+    optp.add_option("-b", "--bam", dest="bamInfile", metavar="BAM", help="Bam Alignment file.  ", default=[]   )
+    optp.add_option("-c", "--chr", dest="refChrId" , metavar="CHR", help="The chr ID of Re."    , default='ALL')
+    optp.add_option("-r", "--ref", dest="refInfile", metavar="REF", help="Reference fa format. ", default=[]   )
+    optp.add_option("-s", "--smp", dest="sample"   , metavar="SMP", help="Sample ID."           , default=[]   )
     optp.add_option("-o", "--out", dest="outPrefix", metavar="OUT", help="The prefix of output. [out]"       , default = 'out' )
     optp.add_option("-q", "--qul", dest="mapq"     , metavar="QUL", help="Threshold of Mapping Quality. [20]", default = '20'  )
     optp.add_option("-e", "--exc", dest="exc"      , metavar="EXC", help="Change Sample ID(-s) to be -e in output", default=[] )
@@ -126,7 +134,7 @@ if __name__ == '__main__' :
     opt.mapq = string.atoi( opt.mapq )
     print >> sys.stderr, '# [INFO] Paraeters: python' , sys.argv[0], '\n\t-v', opt.vcfInfile, \
           '\n\t-b', opt.bamInfile, '\n\t-r', opt.refInfile, '\n\t-s', opt.sample, '\n\t-o', opt.outPrefix, \
-          '\n\t-q', opt.mapq
+          '\n\t-q', opt.mapq     , '\n\t-c', opt.refChrId 
     if len( opt.exc ) > 0 : print >> sys.stderr, '\t-e', opt.exc, '\n'
     else                  : print >> sys.stderr, '\n'
 
