@@ -169,9 +169,11 @@ def main ( argv ) :
                     annotations[i].append( [0, 0, 0, 0, 0, 0, 0, 0, 0] )
                     continue
 
-                qId, qSta, qEnd = qr.split('-')
-                qSta = string.atoi(qSta)
-                qEnd = string.atoi(qEnd)
+                qregion = np.array(qr.split('-'))
+                if len(qregion) > 3 : qId = qregion[0] + '-' + qregion[1]
+                else                : qId = qregion[0]
+                qSta = string.atoi( qregion[-2] )
+                qEnd = string.atoi( qregion[-1] )
 
                 if sampleId not in qFaLen : raise ValueError ('[ERROR] The sample name $s(in vcf) is not in the name of Fa list.' % sampleId )
                 if qId not in qFaLen[sampleId] : raise ValueError ('[ERROR]', qId, 'is not been found in file', opt.qFalen, '\n' )
