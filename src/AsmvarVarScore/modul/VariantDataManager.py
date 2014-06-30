@@ -180,15 +180,18 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
             annotations = []
             for i, sample in enumerate ( col[9:] ) : 
                 sampleId = col2sam[9+i]
-                if len( sample.split(':')[fmat['AA']].split(',') ) != 4 :
+                if sample == './.' : continue
+                if len(sample.split(':')[fmat['AA']].split(',')) != 4 :
                     print >> sys.stderr,'[WARNING] %s\n%s' % (line, sample.split(':')[fmat['AA']])
                     continue
                 qr = sample.split(':')[fmat['QR']].split(',')[-1]
                 if qr == '.' : continue
 
-                qId, qSta, qEnd = qr.split('-')
-                qSta = string.atoi(qSta)
-                qEnd = string.atoi(qEnd)
+                qregion = np.array(qr.split('-'))
+                if len(qregion) > 3 : qId = qregion[0] + '-' + qregion[1]
+                else                : qId = qregion[0]
+                qSta = string.atoi( qregion[-2] )
+                qEnd = string.atoi( qregion[-1] )
 
                 if sampleId not in qFaLen           : raise ValueError ('[ERROR] The sample name $s(in vcf) is not in the name of Fa list.' % sampleId )
                 if      qId not in qFaLen[sampleId] : raise ValueError ('[ERROR]', qId, 'is not been found in file', opt.qFalen, '\n' )
