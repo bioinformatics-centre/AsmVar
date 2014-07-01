@@ -454,6 +454,7 @@ is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VA
                 col[6] = 'FALSE_GENOTYPE'
                 clf.converged_ = False
 
+            """
             size = re.search ( r';SVSIZE=([^;]+)', col[7] )
             size = string.atoi(size.group(1))
             if size < 2000 : 
@@ -467,6 +468,7 @@ is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VA
                 if clf.converged_ : power[length][0] += 1
                 else              : power[length][1] += 1
                 ###
+            """
 
             if clf.converged_ : 
                 sm, sn, snum, _ = clf.Mendel( gnt, sam2col, family )

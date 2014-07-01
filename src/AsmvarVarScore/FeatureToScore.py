@@ -144,6 +144,10 @@ def main ( argv ) :
             #if re.search(r'^PASS', col[6] ) : continue
             #if not re.search(r'_TRAIN_SITE', col[7]) : continue
             #if not re.search(r'^PASS', col[6] ) : continue
+            isbad = False
+            for i, sample in enumerate ( col[9:] ) : 
+                if re.search(r'NULL', sample ) : isbad = True
+            if isbad : continue
 
             fmat = { k:i for i,k in enumerate( col[8].split(':') ) }
             if 'VS' not in fmat or 'QR' not in fmat: continue
@@ -160,15 +164,16 @@ def main ( argv ) :
             else :
                 mark.append( [0, vq] )
 
+            # GT:AA:AE:FN:MIP:MS:QR:RR:VS:VT 
             for i, sample in enumerate ( col[9:] ) :
 
                 sampleId = col2sam[9+i]
-
-                qr = sample.split(':')[fmat['QR']].split(',')[-1]                
-                if qr == '.' or sample.split(':')[fmat['MS']] == '.' : 
+                
+                if sample == './.' or sample.split(':')[fmat['QR']].split(',')[-1] == '.' or sample.split(':')[fmat['MS']] == '.' : 
                     annotations[i].append( [0, 0, 0, 0, 0, 0, 0, 0, 0] )
                     continue
 
+                qr = sample.split(':')[fmat['QR']].split(',')[-1]                
                 qregion = np.array(qr.split('-'))
                 if len(qregion) > 3 : qId = qregion[0] + '-' + qregion[1]
                 else                : qId = qregion[0]
@@ -180,17 +185,20 @@ def main ( argv ) :
                 qSta= int( qSta * 100 / qFaLen[sampleId][qId] + 0.5 )
                 qEnd= int( qEnd * 100 / qFaLen[sampleId][qId] + 0.5 )
                 if qSta > 100 or qEnd > 100 : raise ValueError ('[ERROR] Query size Overflow! sample : %s; scaffold : %s' % (sampleId, qId) )
+
                 leg = qSta
                 if 100 - qEnd < qSta : leg = qEnd
                 nn  = string.atof(sample.split(':')[fmat['FN']])
                 n   = round( 1000 * nn ) / 10.0                                  # N ratio
                 alt = string.atoi( sample.split(':')[fmat['AA']].split(',')[1] ) # Alternate perfect
                 bot = string.atoi( sample.split(':')[fmat['AA']].split(',')[3] ) # Both imperfect
-                pro = string.atoi( sample.split(':')[fmat['RP']].split(',')[0] ) # Proper Pair
-                ipr = string.atoi( sample.split(':')[fmat['RP']].split(',')[1] ) # ImProper Pair
+                #pro = string.atoi( sample.split(':')[fmat['RP']].split(',')[0] ) # Proper Pair
+                #ipr = string.atoi( sample.split(':')[fmat['RP']].split(',')[1] ) # ImProper Pair
+                pro, ipr = [0,0]
                 ms  = string.atoi( sample.split(':')[fmat['MS']]  )              # Mapping score 
                 mip = string.atof( sample.split(':')[fmat['MIP']] )              # Mismapping probability
                 aveI= string.atoi( sample.split(':')[fmat['AE']].split(',')[3] ) # ave_iden in AGE
+                
                 annotations[i].append( [leg, n, alt, bot, pro, ipr, ms, mip, aveI] )
     I.close()
     print >> sys.stderr, '# Number of Positions: %d' % len( mark )
