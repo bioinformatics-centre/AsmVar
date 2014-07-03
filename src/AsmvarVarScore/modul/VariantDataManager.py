@@ -178,15 +178,19 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
                 if tag not in fmat : raise ValueError ('[ERROR] The "Format" fields did not contian %s in VCF %s' %( tag, opt.vcfInfile) )
 
             annotations = []
+            atleastOne  = False
             for i, sample in enumerate ( col[9:] ) : 
                 sampleId = col2sam[9+i]
                 if sample == './.' : continue
                 if len(sample.split(':')[fmat['AA']].split(',')) != 4 :
                     print >> sys.stderr,'[WARNING] %s\n%s' % (line, sample.split(':')[fmat['AA']])
                     continue
-                qr = sample.split(':')[fmat['QR']].split(',')[-1]
+                field = sample.split(':')
+                if len(field) < fmat['QR'] + 1 : continue
+                qr    = field[fmat['QR']].split(',')[-1]
                 if qr == '.' : continue
 
+                atleastOne = True
                 qregion = np.array(qr.split('-'))
                 if len(qregion) > 3 : qId = qregion[0] + '-' + qregion[1]
                 else                : qId = qregion[0]
@@ -206,6 +210,7 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
                 bot = string.atoi( sample.split(':')[fmat['AA']].split(',')[3] ) # Both imperfect
                 annotations.append( [leg, n , alt, bot] )
 
+            if not atleastOne : raise ValueError('[ERROR] All the samples don\'t contain this variant.', col)
             datum                = vd.VariantDatum()
             datum.annotations    = np.median( annotations, axis = 0 )
             pos                  = col[0] + ':' + col[1]
