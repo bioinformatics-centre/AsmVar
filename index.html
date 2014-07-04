@@ -1,42 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <title>AsmVar by ShujiaHuang</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <title>AsmVar by ShujiaHuang</title>
   </head>
-
   <body>
-    <div id="container">
-      <div class="inner">
+    <div class="wrapper">
+      <header>
+        <h1 class="header">AsmVar</h1>
+        <p class="header"></p>
 
-        <header>
-          <h1>AsmVar</h1>
-          <h2></h2>
-        </header>
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/ShujiaHuang/AsmVar/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/ShujiaHuang/AsmVar/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/ShujiaHuang/AsmVar">View On GitHub</a></li>
+        </ul>
 
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/ShujiaHuang/AsmVar/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/ShujiaHuang/AsmVar/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/ShujiaHuang/AsmVar" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/ShujiaHuang">ShujiaHuang</a></p>
 
-        <hr>
 
-        <section id="main_content">
-          <h1>
+      </header>
+      <section>
+        <h1>
 <a name="asmvar" class="anchor" href="#asmvar"><span class="octicon octicon-link"></span></a>AsmVar</h1>
 
 <p>AsmVar is a software for discovery, genotyping and characterization of structural variants and novel sequence at single nucleotide resolution from de novo assemblies on a population scale</p>
 
-<p><strong>Author &amp; contributors:</strong> Shujia Huang, Siyang Liu, Junhua Rao &amp; Weijian Ye (Contribute equally)  <br><strong>Contact              :</strong> <a href="mailto:liusiyang.ocean@gmail.com">liusiyang.ocean@gmail.com</a> &amp; <a href="mailto:huangshujia@genomics.cn">huangshujia@genomics.cn</a> <br><strong>Institute            :</strong> BGI &amp; KU                                            <br><strong>Last Version         :</strong> 2014-05-30                                          <br></p>
+<p><strong>Author &amp; contributors:</strong> Shujia Huang, Siyang Liu, Junhua Rao &amp; Weijian Ye (Contribute equally)  <br><strong>Contact              :</strong> <a href="mailto:liusiyang@genomics.cn">liusiyang@genomics.cn</a>                           <br><strong>Institute            :</strong> BGI &amp; KU in GenomeDK consortium                 <br><strong>Last Version         :</strong> 2014-05-30                                      <br></p>
 
 <h2>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
@@ -48,36 +47,33 @@
 <li>Install the software</li>
 <li>Run the software</li>
 <li>Software output </li>
-<li>Please cite the paper ..., if you need .</li>
-<li>Acknowledgement :</li>
+<li>Please cite the paper: AsmVar: Discovery, genotyping and characterization of structural variants and novel sequence at single nucleotide resolution from de novo assemblies on a population scale (manuscript in preparation)</li>
+<li>Acknowledgement : Bioinformatics teams in GenomeDK consortium</li>
 </ol><h2>
 <a name="instant-plans-for-further-developments" class="anchor" href="#instant-plans-for-further-developments"><span class="octicon octicon-link"></span></a>Instant plans for further developments</h2>
 
 <ol>
-<li>Evaluations of de novo assemblies with regards to continuity, completeness and accuracy.</li>
+<li>Streamline evaluations of de novo assemblies with regards to continuity, completeness and accuracy.</li>
 <li>Assign quality scores to de novo assemblies</li>
 <li>Improve genotyping module and develop new approaches for greatest accuracy and flexibility.</li>
 <li>Streamline the characterization of structural variants modules in AsmVar</li>
-<li>Improvement of de novo assemblies</li>
+<li>Improvement of de novo assemblies </li>
 </ol><h2>
 <a name="contribution" class="anchor" href="#contribution"><span class="octicon octicon-link"></span></a>Contribution</h2>
 
-<p>The AsmVar is developed for the DanishPanGenome project in GenomeDK platform. The AsmVar software construction, applications, statistical methods and the evaluation protocols are established by <a href="https://github.com/SiyangLiu">Siyang Liu</a> and <a href="https://github.com/ShujiaHuang">Shujia Huang</a>, Junhua Rao and <a href="https://github.com/WeijianYe">Weijian Ye</a> led by <a href="https://github.com/SiyangLiu">Siyang Liu</a> and <a href="https://github.com/ShujiaHuang">Shujia Huang</a>.  The coding contributions for different modules are written in the source code title. Most of the initial codes are written in C++, python and perl by <a href="https://github.com/ShujiaHuang">Shujia Huang</a> and perl, python and R by <a href="https://github.com/SiyangLiu">Siyang Liu</a>(All modules especially SV discovery and genotyping), Junhua Rao (especially SV mechanism), <a href="https://github.com/WeijianYe">Weijian Ye</a> (especially Ancestral state and Novel sequence) . <a href="https://github.com/ShujiaHuang">Shujia Huang</a> and <a href="https://github.com/SiyangLiu">Siyang Liu</a> takes charge of the software architecture and the efficiency of the algorithms. The AsmVar is under active development at the moment, dedicated to provide population-scale exact breakpoint variants called from de novo assemblies or long read technology such as illumina molecule and CG LFR. This work is supervised by <a href="http://www.binf.ku.dk/staff/?pure=en/persons/8330">Anders Krogh</a>.</p>
+<p>The AsmVar is developed for the DanishPanGenome project in the GenomeDK platform. The AsmVar framework construction, applications, statistical methods and the evaluation protocols are established by <a href="https://github.com/SiyangLiu">Siyang Liu</a> and <a href="https://github.com/ShujiaHuang">Shujia Huang</a>, Junhua Rao and <a href="https://github.com/WeijianYe">Weijian Ye</a> led by <a href="https://github.com/SiyangLiu">Siyang Liu</a> and <a href="https://github.com/ShujiaHuang">Shujia Huang</a>.  The coding contributions for different modules are written in the source code title. Most of the initial codes are written in C++, python and perl by <a href="https://github.com/ShujiaHuang">Shujia Huang</a> and perl, python and R by <a href="https://github.com/SiyangLiu">Siyang Liu</a>(All modules especially SV discovery and genotyping), Junhua Rao (especially SV mechanism), <a href="https://github.com/WeijianYe">Weijian Ye</a> (especially Ancestral state and Novel sequence) . <a href="https://github.com/ShujiaHuang">Shujia Huang</a> and <a href="https://github.com/SiyangLiu">Siyang Liu</a> take charge of the software architecture and the efficiency of the algorithms. The AsmVar is under active development at the moment, dedicated to provide population-scale exact breakpoint variants called from de novo assemblies. This work is supervised by <a href="http://www.binf.ku.dk/staff/?pure=en/persons/8330">Anders Krogh</a>, Xun Xu, Jun Wang with critical input and suggestions from Mikkel Schierup, Simon Rasmussen, Palle V Fredsted and Soren Besenbacher.</p>
 
 <h2>
 <a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>LICENSE</h2>
 
 <p>Released under the <a href="http://www.opensource.org/licenses/MIT">MIT License</a>
 Copyright © 2014-2015</p>
-        </section>
-
-        <footer>
-          AsmVar is maintained by <a href="https://github.com/ShujiaHuang">ShujiaHuang</a><br>
-          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
-
-        
-      </div>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
     </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
   </body>
 </html>
