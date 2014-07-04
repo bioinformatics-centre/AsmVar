@@ -168,12 +168,12 @@ def main ( argv ) :
             for i, sample in enumerate ( col[9:] ) :
 
                 sampleId = col2sam[9+i]
-                
-                if sample == './.' or sample.split(':')[fmat['QR']].split(',')[-1] == '.' or sample.split(':')[fmat['MS']] == '.' : 
+
+                field = sample.split(':')
+                if sample == './.' or len(field) < fmat['QR'] + 1 or field[fmat['QR']].split(',')[-1] == '.' or field[fmat['MS']] == '.' : 
                     annotations[i].append( [0, 0, 0, 0, 0, 0, 0, 0, 0] )
                     continue
-
-                qr = sample.split(':')[fmat['QR']].split(',')[-1]                
+                qr      = field[fmat['QR']].split(',')[-1]
                 qregion = np.array(qr.split('-'))
                 if len(qregion) > 3 : qId = qregion[0] + '-' + qregion[1]
                 else                : qId = qregion[0]
