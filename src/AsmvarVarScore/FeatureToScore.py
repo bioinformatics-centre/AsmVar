@@ -262,6 +262,6 @@ def main ( argv ) :
 
 if __name__ == '__main__' :
 
-    VQ_CUTOFF = 3.0
+    VQ_CUTOFF = 2.0
     main(sys.argv[1:])
 

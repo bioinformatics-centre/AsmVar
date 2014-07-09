@@ -223,13 +223,16 @@ int main(int argc,char *argv[]) {
 	Fa tarSeq, qrySeq;
 	tarSeq.Load( ops.tarFaInfile );
 	qrySeq.Load( ops.qryFaInfile );
-	cerr << "# [INFO] Target fa and Query fa are loaded successfully. " << local_time();
+	cerr << "# [INFO] Target fa and Query fa are loaded successfully." << local_time();
 	
 	vector<VarReg> varReg = LoadVariantRegion ( ops.varInfile.c_str() );
-	cerr << "# [INFO] Variant regions are loaded successfully.        " << local_time();
-
+	cerr << "# [INFO] Variant regions are loaded successfully."        << local_time();
+	if  (varReg.size() == 0) cerr << "[WARNING] The variant list is empty!\n";
 	for ( size_t i(0); i < varReg.size(); ++i ) {
-		if ( (ops.selectTarId != "ALL") && (ops.selectTarId != toupper(varReg[i].target.id)) ) continue;
+
+		if ((toupper(ops.selectTarId) != "ALL") && (toupper(ops.selectTarId) != toupper(varReg[i].target.id))) 
+			continue;
+
 		if ( !tarSeq.fa.count(varReg[i].target.id) ) { 
 			cerr << "# [ERROR] " << varReg[i].target.id << " is not in " << ops.tarFaInfile << "\n";
 			exit(1);
