@@ -1,7 +1,7 @@
 example
+bin
 data
 git.sh
 rsync.sh
-LICENSE
 *.o
 .DS_Store
