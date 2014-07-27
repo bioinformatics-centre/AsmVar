@@ -37,3 +37,6 @@ The AsmVar is developed for the DanishPanGenome project in the GenomeDK platform
 Released under the [MIT License](http://opensource.org/licenses/MIT)
 Copyright &copy; 2014-2015
 
+
+
+
