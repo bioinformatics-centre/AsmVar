@@ -29,6 +29,8 @@ void Variant::CallSNP () {
     tmpgap.target.id = target.id;
     tmpgap.query.id  = query.id;
     tmpgap.strand    = strand;
+	tmpgap.score     = score;   // 2014-06-20 09:58:32
+	tmpgap.mismap    = mismap;  // 2014-06-20 09:58:39
     tmpgap.type      = "SNP";
 
 	int tarPos(target.start), qryPos(query.start);
@@ -56,7 +58,7 @@ void Variant::CallSNP () {
 void Variant::CallInsertion () { 
 // Actually, we just have to call  the target gap regions.	
 // All the coordinate of query should be uniform to the positive strand!
-	vector< VarUnit > gap = CallGap ( target, tarSeq, query, qrySeq, strand, "Ins" );
+	vector< VarUnit > gap = CallGap ( target, tarSeq, query, qrySeq, strand, score, mismap, "Ins" );
 	for ( size_t i(0); i < gap.size(); ++i ) { 
 
 		if ( !qryfa.fa.count(query.id) ) err("Missing some query id or query id can't match!!!\nThe unmatch query(main): " + query.id);
@@ -70,7 +72,7 @@ void Variant::CallInsertion () {
 void Variant::CallDeletion () { 
 // Actually, we just have to call  the query gap regions.
 // All the coordinate of query should be uniform to the positive strand!
-	vector< VarUnit > gap = CallGap ( query, qrySeq, target, tarSeq, strand, "Del" );
+	vector< VarUnit > gap = CallGap ( query, qrySeq, target, tarSeq, strand, score, mismap, "Del" );
 	for ( size_t i(0); i < gap.size(); ++i ) { 
 		gap[i].Swap(); // Swap query and target region!
 		if ( !qryfa.fa.count( query.id ) ) { err ("Missing some query id or query id can't match!!!\nThe unmatch query(main): "+query.id); } 
@@ -95,12 +97,14 @@ bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
 		 middle.target.start < rStart  ||
 		 middle.target.start > rEnd  ) return flag; // Just make sure the middle.target.start between [rStart,rEnd]
 
-	flag = true;
 	VarUnit reg;
-    reg.type = "Inv";
+	flag       = true;
+    reg.type   = "Inv";
     reg.target = middle.target;
 	reg.query  = middle.query ;
     reg.strand = middle.strand;
+	reg.score  = middle.score;  // 2014-06-20 10:35:21
+    reg.mismap = middle.mismap; // 2014-06-20 10:35:15
 	inversion.push_back( reg );
 
 	return flag;
@@ -128,6 +132,8 @@ bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 	reg.target = middle.target;
 	reg.query  = middle.query ;
 	reg.strand = middle.strand;
+	reg.score  = middle.score;  // 2014-06-20 10:35:21
+	reg.mismap = middle.mismap; // 2014-06-20 10:35:15
 	reg.type   = ( middle.target.id == left.target.id ) ? "Trans-Intra" : "Trans-Inter";
 	if ( middle.strand == left.strand ) {
 		reg.type += "1";
@@ -142,11 +148,12 @@ bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 void Variant::GetMapReg () {
 
 	// Call the query coverting function here to make the '-' strand coordinates of query be the same as '+' strand!
-	ConvQryCoordinate(); // ConvQryCoordinate() is a memerber function of class 'Axt'
+	ConvQryCoordinate(); // ConvQryCoordinate() is a memerber function of class 'MAF'
 
 	MapReg mpI;
 	mpI.target = target; mpI.query = query; mpI.strand = strand;
-	mapreg[query.id].push_back( mpI ); // The 'key' is query.id
+	mpI.score  = score ; mpI.mismap= mismap; // 2014-06-20 10:39:54
+	mapreg[query.id].push_back( mpI );       // The 'key' is query.id
 
 	target.info = query.id;
 	query.info  = target.id;
@@ -271,6 +278,8 @@ void Variant::CallReg ( MapReg mapreg, string type, vector< VarUnit > & varReg )
 	reg.target = mapreg.target;
 	reg.query  = mapreg.query;
 	reg.strand = mapreg.strand;
+	reg.score  = mapreg.score;  // 2014-06-20 10:37:45
+	reg.mismap = mapreg.mismap; // 2014-06-20 10:37:55
 	reg.type   = type;      // No solution
 	varReg.push_back( reg );
 }
@@ -294,7 +303,7 @@ void Variant::CallClipReg () {
 			exit(1);
 		}
 
-		if ( rStart == 1 && rEnd == qryfa.fa[it->first].length() ) summary["Full-Align"]++;
+		if ( rStart == 1 && rEnd == qryfa.fa[it->first].length() ) ++summary["Full-Align"];
 
 		tmp.query.id = it->first;
 		tmp.strand   = '.';
@@ -311,7 +320,7 @@ void Variant::CallClipReg () {
 
 void Variant::CallNomadic () {
 
-	if ( qryfa.fa.empty() ) { cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
+	if (qryfa.fa.empty()) { cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
 	VarUnit tmp;
 	for ( map<string, string>::iterator it( qryfa.fa.begin() ); it != qryfa.fa.end(); ++it ) {
 
@@ -414,11 +423,13 @@ void Variant::Summary( string file ) {
 
 	ofstream O ( file.c_str() );
     if ( !O ) { cerr << "Cannot write to file : " << file << endl; exit(1); }
+	O << "Summary Information for " << sample << "\n\n";
 	for ( map<string, unsigned int>::iterator pt( summary.begin() ); pt!= summary.end(); ++pt ) 
 		O << pt->first << "\t" << pt->second << "\n";
 	
-	O << "qryCovlength/querylength  " << double ( summary["qryCovlength"] ) / qryfa.length << "\n";
-	O << "tarCovlength/targetlength " << double ( summary["tarCovlength"] ) / tarfa.length << "\n";
+	O << "QryCovlength/querylength  " << double ( summary["qryCovlength"] ) / qryfa.length << "\n";
+	O << "TarCovlength/targetlength " << double ( summary["tarCovlength"] ) / tarfa.length << "\n";
+	O << "TarCovlength/targetlength(NO 'N') "<< double(summary["tarCovlength"])/(tarfa.length-tarfa.nsize) << "\n";
 	O << "SNP/querylength           " << double(summary["SNP"]) / qryfa.length  << "\n";
 	O << "SNP/targetlength          " << double(summary["SNP"]) / tarfa.length  << "\n";
 	O << "\n";
@@ -451,6 +462,7 @@ void Variant::Output ( string file ) {
 
 void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 
+	sort (R.begin(), R.end(), MySortByTarV);
 	for ( size_t i(0); i < R.size(); ++i ) {
 		if ( R[i].Empty() ) continue;
 
@@ -472,15 +484,14 @@ void Variant::OutputSNP ( string file ) {
 
 	ofstream O ( file.c_str() );
 	O <<  
-"##fileformat=VCFv4.1                                                    \n\
-##INFO=<ID=ST,Number=1,Type=String,Description=\"Mappind strand\">       \n\
-##INFO=<ID=VT,Number=1,Type=String,Description=\"Variant type\">         \n\
-##INFO=<ID=Q,Number=1,Type=String,Description=\"Query Info\">            \n\
-##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">           \n\
-##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Genotype Quality\">  \n\
-##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">        \n\
-##FORMAT=<ID=HQ,Number=2,Type=Integer,Description=\"Haplotype Quality\"> \n\
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n";
+"##fileformat=VCFv4.1                                                       \n\
+##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">              \n\
+##FORMAT=<ID=ST,Number=1,Type=String,Description=\"Mappind strand\">        \n\
+##FORMAT=<ID=VT,Number=1,Type=String,Description=\"Variant type\">          \n\
+##FORMAT=<ID=QR,Number=1,Type=String,Description=\"Query Info\">            \n\
+##FORMAT=<ID=MS,Number=2,Type=Integer,Description=\"Mapping Score\">        \n\
+##FORMAT=<ID=MIP,Number=1,Type=Float,Description=\"Mismapped probability\"> \n\
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + sample + "\n";
 	sort (snp.begin(), snp.end(), MySortByTarV);
     for ( size_t i(0); i < snp.size(); ++i ) {
         if ( snp[i].Empty() ) continue;
@@ -498,13 +509,21 @@ void Variant::OutputSNP ( string file ) {
         snp[i].qrySeq = qryfa.fa[snp[i].query.id].substr( snp[i].query.start - 1, snp[i].query.end - snp[i].query.start + 1 );
 		if ( snp[i].strand == '-' ) snp[i].qrySeq = ReverseAndComplementary( snp[i].qrySeq );
 		if ( snp[i].tarSeq == snp[i].qrySeq ) continue;
+
+		O << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
+          << "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":"
+          + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
+		/*
 		if ( !isNext ) {
-			O   << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t"
-		    	<< "VT=" + snp[i].type + ";ST=" << snp[i].strand << ";Q=" + snp[i].query.id + ":" + itoa(snp[i].query.start) << "\n";
+			O   << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
+				<< "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
+                   + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		} else {
-			cerr << "#\t" << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t"
-                 << "VT=" + snp[i].type + ";ST=" << snp[i].strand << ";Q=" + snp[i].query.id + ":" + itoa(snp[i].query.start) << "\n";
+			cerr << "#\t"  << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
+                 << "./.:" <<  snp[i].strand   <<  ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
+                   + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		}
+		*/
     }
 	O.close();
 }
@@ -529,7 +548,7 @@ void Variant::OutputGap( string file ) {
 		// Get Inter scaffold gaps' regions
 		MapReg tmpMR = it->second[0];
 		for ( size_t i(1); i < it->second.size(); ++i ) {
-//it->second[i].OutErrReg();
+			//it->second[i].OutErrAlg();  // For Test
 			if ( tmpMR.query.id == it->second[i].query.id ) {
 				if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
 				continue;
@@ -548,6 +567,7 @@ void Variant::OutputGap( string file ) {
                   << tmpMR.query.id  + ":"   << tmpMR.query.start    << "-"  << tmpMR.query.end  << "#"
 				  << it->second[i].target.id + ":" << it->second[i].target.start << "-" << it->second[i].target.end << "|"
                   << it->second[i].query.id  + ":" << it->second[i].query.start  << "-" << it->second[i].query.end  << "\n";
+				summary["InterScaffoldGap"] += length;
 			}
 			if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
 		}
@@ -580,11 +600,13 @@ unsigned int Variant::Covlength ( vector<Region> mapreg ) {
 }
 
 vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Contig102837 1 81
-                                    string & tarSeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
-                                    Region & qry,    // Contig102837 1 81 or chrM 16308 16389
-                                    string & qrySeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
-                                    char   strand,   // + or -
-                                    string type )    // insertion or deletion
+                                     string & tarSeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
+                                     Region & qry,    // Contig102837 1 81 or chrM 16308 16389
+                                     string & qrySeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
+                                     char   strand,   // + or -
+                                     long   score,    // 221 
+                                     double mismap,   // 1e-10
+                                     string type )    // insertion or deletion
 {
 // This function is just used to call the gap regions of 'tar' (not for 'qry'!!). which will be indel actually ( indels are gaps ).
 	assert ( tarSeq.length() == qrySeq.length() );
@@ -593,6 +615,8 @@ vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Co
 	tmpgap.target.id = tar.id;
 	tmpgap.query.id  = qry.id;
 	tmpgap.strand    = strand; 
+	tmpgap.score     = score;
+	tmpgap.mismap    = mismap;
 	tmpgap.type      = type;
 
 	vector< VarUnit > gap;
@@ -628,6 +652,8 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	gap.target.id = left.target.id;
 	gap.query.id  = left.query.id ;
 	gap.strand    = left.strand;
+	gap.score     = min(left.score , right.score ); // 2014-06-20 10:47:58
+	gap.mismap    = min(left.mismap, right.mismap); // 2014-06-20 10:48:06
 
 	gap.query.start = left.query.end;
 	gap.query.end   = right.query.start;
@@ -652,36 +678,18 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	}
 
 	if ( isTarOvlp && isQryOvlp ) { 
-		gap.type = "gap-3";
-	} else if ( isTarOvlp ) {
-		gap.type = "gap-2";
+		gap.type = "gap-X1";
 	} else if ( isQryOvlp ) {
+		gap.type = "gap-X2";
+	} else if ( isTarOvlp ) {
 		gap.type = "gap-1";
 	} else { // All not overlap
-		gap.type = "gap-n"; // This gap means the normal simultaneous gaps
+		gap.type = "gap-2"; // This gap means the normal simultaneous gaps
 	}
 
 	return gap;
 }
-/*
-inline bool MySortByTarM ( MapReg  i, MapReg  j ) { 
-	if ( i.target.id == j.target.id ) {
-		return ( i.target.start < j.target.start ); 
-	} else {
-		return ( i.target.id <  j.target.id );
-	}
-}
-inline bool MySortByTarV ( VarUnit i, VarUnit j ) { 
-	if ( i.target.id == j.target.id ) {
-		return ( i.target.start < j.target.start ); 
-	} else {
-		return ( i.target.id < j.target.id );
-	}
-}
-inline bool MySortByQryM ( MapReg  i, MapReg  j ) { return ( i.query.start  < j.query.start  ); }
-inline bool MySortByQryV ( VarUnit i, VarUnit j ) { return ( i.query.start  < j.query.start  ); }
-inline bool SortRegion   ( Region  i, Region  j ) { return ( i.start < j.start  ); }
-*/
+
 unsigned int RegionMin   ( vector<Region> & region ) {
 
 	if ( region.empty() ) { cerr << "[ERROR] Region is empty, when you're calling RegionMin() function.\n"; exit(1); }

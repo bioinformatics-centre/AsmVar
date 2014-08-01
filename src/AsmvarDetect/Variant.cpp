@@ -11,15 +11,17 @@
 
 using namespace std;
 
+/*
 // Used to calculate the 'n' length in class 'VarUnit' and 'Variant'
 unsigned int NLength ( string & str ) {
 
-	uint len(0);
+	unsigned int len(0);
 	for ( size_t i(0); i < str.size(); ++i )
 		if ( str[i] == 'N' || str[i] == 'n' ) ++len;
 
 	return len;
 }
+*/
 
 void Variant::CallSNP () {
 
@@ -242,7 +244,7 @@ void Variant::CallSV () { // Call Stuctural variants, not indels!!!
 					tmpreg.erase ( tmpreg.begin() );
 				}
 			} else if ( tmpreg.size() > 2 ) {
-				cerr << "\n[ERROR] Program bugs! " << endl;
+				std::cerr << "\n[ERROR] Program bugs! " << endl;
 			}
 			tmpreg.push_back( it->second[i] );
 		}
@@ -286,7 +288,7 @@ void Variant::CallReg ( MapReg mapreg, string type, vector< VarUnit > & varReg )
 
 void Variant::CallClipReg () {
 
-	if ( qryfa.fa.empty() ) { cerr << "[WARNING] No Clip regions. Because the query fa is empty!" << endl; return; }
+	if ( qryfa.fa.empty() ) { std::cerr << "[WARNING] No Clip regions. Because the query fa is empty!" << endl; return; }
 	VarUnit tmp;
 	unsigned int rStart, rEnd;
 	for ( map< string, vector<Region> >::iterator it( mapqry.begin() ); it != mapqry.end(); ++it ) {
@@ -296,9 +298,9 @@ void Variant::CallClipReg () {
 
 		if ( rStart == 0 || rEnd == 0 ) { 
 
-			cerr << "rStart == 0 || rEnd == 0" << "\nrStart: " << rStart << "\trEnd: " << rEnd << endl;
+			std::cerr << "rStart == 0 || rEnd == 0" << "\nrStart: " << rStart << "\trEnd: " << rEnd << endl;
 			for ( size_t i(0); i < it->second.size(); ++i )	
-				cerr << "Size: " << it->second.size() << "\tit->second: " << it->second[i].id 
+				std::cerr << "Size: " << it->second.size() << "\tit->second: " << it->second[i].id 
 					 << "\t" << it->second[i].start   << "\t" << it->second[i].end << endl;
 			exit(1);
 		}
@@ -320,7 +322,7 @@ void Variant::CallClipReg () {
 
 void Variant::CallNomadic () {
 
-	if (qryfa.fa.empty()) { cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
+	if (qryfa.fa.empty()) { std::cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
 	VarUnit tmp;
 	for ( map<string, string>::iterator it( qryfa.fa.begin() ); it != qryfa.fa.end(); ++it ) {
 
@@ -422,7 +424,7 @@ void Variant::Summary( string file ) {
 	for ( ; p != maptar.end(); ++p ) { summary["tarCovlength"] += Covlength( p->second ); tarCov[p->first] += Covlength( p->second ); }
 
 	ofstream O ( file.c_str() );
-    if ( !O ) { cerr << "Cannot write to file : " << file << endl; exit(1); }
+    if ( !O ) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
 	O << "Summary Information for " << sample << "\n\n";
 	for ( map<string, unsigned int>::iterator pt( summary.begin() ); pt!= summary.end(); ++pt ) 
 		O << pt->first << "\t" << pt->second << "\n";
@@ -445,7 +447,7 @@ void Variant::Summary( string file ) {
 void Variant::Output ( string file ) {
 
 	ofstream O ( file.c_str() );
-    if ( !O ) { cerr << "Cannot write to file : " << file << endl; exit(1); }
+    if ( !O ) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
 
 	Output ( insertion, O ); //
 	Output ( deletion,  O ); //
@@ -519,7 +521,7 @@ void Variant::OutputSNP ( string file ) {
 				<< "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
                    + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		} else {
-			cerr << "#\t"  << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
+			std::cerr << "#\t"  << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
                  << "./.:" <<  snp[i].strand   <<  ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
                    + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
 		}
@@ -533,7 +535,7 @@ void Variant::OutputGap( string file ) {
 // Abort : 2013-11-04 13:20:30 !!!
 
 	ofstream O ( file.c_str() );
-	if ( !O ) { cerr << "Cannot write to file : " << file << endl; exit(1); }
+	if ( !O ) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
 
 	map<string, vector<MapReg> > tmpmapreg;
 	for ( map<string, vector<MapReg> >::iterator it( mapreg.begin() ); it != mapreg.end(); ++it ) {
@@ -692,14 +694,14 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 
 unsigned int RegionMin   ( vector<Region> & region ) {
 
-	if ( region.empty() ) { cerr << "[ERROR] Region is empty, when you're calling RegionMin() function.\n"; exit(1); }
+	if ( region.empty() ) { std::cerr << "[ERROR] Region is empty, when you're calling RegionMin() function.\n"; exit(1); }
 	unsigned int pos = region[0].start;
 	for ( size_t i(0); i < region.size(); ++i ) { if (region[i].start < pos ) pos = region[i].start; }
 	return pos;
 }
 unsigned int RegionMax   ( vector<Region> & region ) {
 
-	if ( region.empty() ) { cerr << "[ERROR] Region is empty, when you're calling RegionMax() function.\n"; exit(1); }
+	if ( region.empty() ) { std::cerr << "[ERROR] Region is empty, when you're calling RegionMax() function.\n"; exit(1); }
 	unsigned int pos = region[0].end;
 	for ( size_t i(0); i < region.size(); ++i ) { if (region[i].end > pos ) pos = region[i].end; }
 	return pos;
