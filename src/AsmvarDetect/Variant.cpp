@@ -701,24 +701,6 @@ string ReverseAndComplementary ( string & seq ) {
 	string tmpstr;
 	for ( int i(seq.size() - 1); i >= 0; --i ) {
 
-		/*
-		if ( toupper( seq[i] ) == 'A' ) {
-
-			if ( seq[i] == 'a' ) tmpstr.push_back( 't' );
-			if ( seq[i] == 'A' ) tmpstr.push_back( 'T' );
-		} else if ( toupper( seq[i] ) == 'C' ) {
-			if ( seq[i] == 'c' ) tmpstr.push_back( 'g' );
-			if ( seq[i] == 'C' ) tmpstr.push_back( 'G' );
-		} else if ( toupper( seq[i] ) == 'G' ) {
-			if ( seq[i] == 'g' ) tmpstr.push_back( 'c' );
-			if ( seq[i] == 'G' ) tmpstr.push_back( 'C' );
-		} else if ( toupper( seq[i] ) == 'T' ) {
-			if ( seq[i] == 't' ) tmpstr.push_back( 'a' );
-			if ( seq[i] == 'T' ) tmpstr.push_back( 'A' );
-		} else {
-			tmpstr.push_back( seq[i] );
-		}
-		*/
 		switch(seq[i]) {
 
 			case 'a' : tmpstr.push_back( 't' ); break;
@@ -730,6 +712,7 @@ string ReverseAndComplementary ( string & seq ) {
 			case 't' : tmpstr.push_back( 'a' ); break;
 			case 'T' : tmpstr.push_back( 'A' ); break;
 			default  :
+				// Not 'A' 'T' 'C' 'G', then do not complementary
 				tmpstr.push_back(seq[i]);
 		}
 	}
