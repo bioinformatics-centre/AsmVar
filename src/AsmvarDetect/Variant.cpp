@@ -11,18 +11,6 @@
 
 using namespace std;
 
-/*
-// Used to calculate the 'n' length in class 'VarUnit' and 'Variant'
-unsigned int NLength ( string & str ) {
-
-	unsigned int len(0);
-	for ( size_t i(0); i < str.size(); ++i )
-		if ( str[i] == 'N' || str[i] == 'n' ) ++len;
-
-	return len;
-}
-*/
-
 void Variant::CallSNP () {
 
 	assert ( tarSeq.length() == qrySeq.length() );
@@ -189,7 +177,8 @@ map< string, vector<Region> > Variant::VarTarRegs() {
 	return varTarRegs;	
 }
 
-void Variant::CallSV () { // Call Stuctural variants, not indels!!! 
+void Variant::CallSV () { 
+// Call Stuctural variants, not indels!!! 
 // Just use the memerber value 'mapreg' in this memerber function.
 // Should be debug carfully here!
 // All the coordinate of query should be uniform to the positive strand, then I can sort them!
@@ -712,6 +701,7 @@ string ReverseAndComplementary ( string & seq ) {
 	string tmpstr;
 	for ( int i(seq.size() - 1); i >= 0; --i ) {
 
+		/*
 		if ( toupper( seq[i] ) == 'A' ) {
 
 			if ( seq[i] == 'a' ) tmpstr.push_back( 't' );
@@ -727,6 +717,20 @@ string ReverseAndComplementary ( string & seq ) {
 			if ( seq[i] == 'T' ) tmpstr.push_back( 'A' );
 		} else {
 			tmpstr.push_back( seq[i] );
+		}
+		*/
+		switch(seq[i]) {
+
+			case 'a' : tmpstr.push_back( 't' ); break;
+			case 'A' : tmpstr.push_back( 'T' ); break;
+			case 'c' : tmpstr.push_back( 'g' ); break;
+			case 'C' : tmpstr.push_back( 'G' ); break;
+			case 'g' : tmpstr.push_back( 'c' ); break;
+			case 'G' : tmpstr.push_back( 'C' ); break;
+			case 't' : tmpstr.push_back( 'a' ); break;
+			case 'T' : tmpstr.push_back( 'A' ); break;
+			default  :
+				tmpstr.push_back(seq[i]);
 		}
 	}
 
