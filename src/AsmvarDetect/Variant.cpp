@@ -11,17 +11,105 @@
 
 using namespace std;
 
+void Variant::CallnSeq() {
+
+	assert(tarSeq.length() == qrySeq.length());
+	VarUnit tmpnseq; 
+    tmpnseq.target.id = target.id;
+    tmpnseq.query.id  = query.id;
+    tmpnseq.strand    = strand;
+	tmpnseq.score     = score; 
+	tmpnseq.mismap    = mismap;
+    tmpnseq.type      = "N";
+	
+	int tarPos(target.start), qryPos(query.start);
+	int tarI(0), qryI(0);
+	vector< VarUnit > tmpVarVector;
+	for ( int i(0); i < tarSeq.length(); ++i ) {
+	// e.g. : tarSeq = "-ab-c-t--",
+	//        qrySeq = "aa-ccdcdt",
+		tarPos += tarI; qryPos += qryI;
+		tarI = tarSeq[i] == '-' ? 0 : 1;
+		qryI = qrySeq[i] == '-' ? 0 : 1;
+		if (tarI == 0 || qryI  == 0) continue; // target or query is '-' 
+		if (toupper(tarSeq[i]) != 'N' && toupper(qrySeq[i]) != 'N') continue;
+
+		tmpnseq.target.start = tarPos; tmpnseq.target.end = tarPos;
+		tmpnseq.query.start  = qryPos; tmpnseq.query.end  = qryPos;
+		if (toupper(tarSeq[i]) == 'N' && toupper(qrySeq[i]) != 'N') {
+			tmpnseq.tarSeq = 'N'; 
+			tmpnseq.qrySeq = '.';
+		} else if (toupper(tarSeq[i]) != 'N' && toupper(qrySeq[i]) == 'N') {
+			tmpnseq.tarSeq = '.'; 
+			tmpnseq.qrySeq = 'N';
+		} else { // tarSeq[i] and qrySeq[i] are 'N'
+			tmpnseq.tarSeq = 'N';
+			tmpnseq.qrySeq = 'N';
+		}
+		tmpVarVector.push_back(tmpnseq);
+	}
+	tmpVarVector = MergeVarUnit( tmpVarVector );
+	for (size_t i(0); i < tmpVarVector.size(); ++i) {
+		// coordinates uniform to the positive strand
+		tmpVarVector[i].ConvQryCoordinate(qryfa.fa[query.id].length());
+		nSeq.push_back(tmpVarVector[i]);
+	}
+
+	return;
+}
+
+void Variant::CallHomoRef () {
+    
+    assert(tarSeq.length() == qrySeq.length());                                       
+    VarUnit tmphseq; 
+    tmphseq.target.id = target.id; 
+    tmphseq.query.id  = query.id;
+    tmphseq.strand    = strand;
+    tmphseq.score     = score;
+	tmphseq.mismap    = mismap; 
+    tmphseq.type      = "Homo";
+
+    int tarPos(target.start), qryPos(query.start); 
+    int tarI(0), qryI(0);
+    vector< VarUnit > tmpVarVector;
+    for ( int i(0); i < tarSeq.length(); ++i ) {
+    // e.g. : tarSeq = "-ab-c-t--", 
+    //        qrySeq = "aa-ccdcdt",
+        tarPos += tarI; qryPos += qryI;
+        tarI = tarSeq[i] == '-' ? 0 : 1;
+        qryI = qrySeq[i] == '-' ? 0 : 1;
+        if (tarI == 0 || qryI  == 0) continue; // target or query is '-' 
+		if (toupper(tarSeq[i]) == 'N' || toupper(qrySeq[i]) == 'N') continue;
+
+		if ( toupper(tarSeq[i]) == toupper(qrySeq[i]) ) {
+			tmphseq.target.start = tarPos; tmphseq.target.end = tarPos;
+			tmphseq.query.start  = qryPos; tmphseq.query.end  = qryPos;
+			tmphseq.tarSeq = '.';
+			tmphseq.tarSeq = '.';
+        	tmpVarVector.push_back(tmphseq);
+		}
+    }
+    tmpVarVector = MergeVarUnit( tmpVarVector );
+    for (size_t i(0); i < tmpVarVector.size(); ++i){
+		// coordinates uniform to the positive strand!
+		tmpVarVector[i].ConvQryCoordinate(qryfa.fa[query.id].length());
+        homoRef.push_back(tmpVarVector[i]);
+	}
+
+    return;
+}
+
 void Variant::CallSNP () {
 
 	assert ( tarSeq.length() == qrySeq.length() );
 
-	VarUnit tmpgap;
-    tmpgap.target.id = target.id;
-    tmpgap.query.id  = query.id;
-    tmpgap.strand    = strand;
-	tmpgap.score     = score;   // 2014-06-20 09:58:32
-	tmpgap.mismap    = mismap;  // 2014-06-20 09:58:39
-    tmpgap.type      = "SNP";
+	VarUnit tmpsnp;
+    tmpsnp.target.id = target.id;
+    tmpsnp.query.id  = query.id;
+    tmpsnp.strand    = strand;
+	tmpsnp.score     = score;   // 2014-06-20 09:58:32
+	tmpsnp.mismap    = mismap;  // 2014-06-20 09:58:39
+    tmpsnp.type      = "SNP";
 
 	int tarPos(target.start), qryPos(query.start);
 	int tarI(0), qryI(0);
@@ -32,15 +120,14 @@ void Variant::CallSNP () {
 		qryPos += qryI;
 		tarI = tarSeq[i] == '-' ? 0 : 1;
 		qryI = qrySeq[i] == '-' ? 0 : 1;
-		if (tarI == 0 || qryI  == 0) continue;
+		if (tarI == 0 || qryI  == 0) continue; // target or query is '-'
 		if (toupper(tarSeq[i]) == 'N' || toupper(qrySeq[i]) == 'N') continue;
 
 		if ( toupper(tarSeq[i]) != toupper(qrySeq[i]) ) {
-
-			tmpgap.target.start = tarPos; tmpgap.target.end = tarPos;
-			tmpgap.query.start  = qryPos; tmpgap.query.end  = qryPos;
-			tmpgap.ConvQryCoordinate( qryfa.fa[query.id].length() ); // coordinates uniform to the positive strand!
-			snp.push_back( tmpgap );
+			tmpsnp.target.start = tarPos; tmpsnp.target.end = tarPos;
+			tmpsnp.query.start  = qryPos; tmpsnp.query.end  = qryPos;
+			tmpsnp.ConvQryCoordinate( qryfa.fa[query.id].length() ); // coordinates uniform to the positive strand!
+			snp.push_back( tmpsnp );
 		}
 	}
 }
@@ -265,6 +352,7 @@ bool Variant::CallSimultan ( MapReg left, MapReg right ) {
 }
 
 void Variant::CallReg ( MapReg mapreg, string type, vector< VarUnit > & varReg ) {
+
 	VarUnit reg;
 	reg.target = mapreg.target;
 	reg.query  = mapreg.query;
@@ -447,6 +535,9 @@ void Variant::Output ( string file ) {
 	Output ( nosolution,    O ); 
 	Output ( translocation, O );
 
+	Output ( homoRef, O );
+	Output ( nSeq   , O );
+
 	O.close();
 	return;
 }
@@ -504,17 +595,6 @@ void Variant::OutputSNP ( string file ) {
 		O << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
           << "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":"
           + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
-		/*
-		if ( !isNext ) {
-			O   << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
-				<< "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
-                   + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
-		} else {
-			std::cerr << "#\t"  << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
-                 << "./.:" <<  snp[i].strand   <<  ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":" 
-                   + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
-		}
-		*/
     }
 	O.close();
 }
@@ -632,8 +712,6 @@ vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Co
 	return gap;
 }
 
-
-
 VarUnit Variant::CallGap ( MapReg left, MapReg right ) { 
 // Call the simultaneous gap between 'left' mapped region and the 'right' one
 // 'left' and 'right' should be the same target id, the same query id and the same strand!
@@ -688,6 +766,7 @@ unsigned int RegionMin   ( vector<Region> & region ) {
 	for ( size_t i(0); i < region.size(); ++i ) { if (region[i].start < pos ) pos = region[i].start; }
 	return pos;
 }
+
 unsigned int RegionMax   ( vector<Region> & region ) {
 
 	if ( region.empty() ) { std::cerr << "[ERROR] Region is empty, when you're calling RegionMax() function.\n"; exit(1); }
@@ -720,6 +799,78 @@ string ReverseAndComplementary ( string & seq ) {
 	return tmpstr;
 }
 
+vector<VarUnit> MergeVarUnit( vector<VarUnit>& VarUnitVector ){
+// CAUTION : Merge vector<VarUnit>, but all new merge result just 
+// using the same strand of first element: VarUnitVector[0]!!
 
+	int distDelta = 1;
+	bool flag(false);
+
+	VarUnit varunit;
+	vector<VarUnit> newVector;
+	map<string, unsigned long int> tarPrePos, qryPrePos;
+	map<string, string> id2seq;
+	for ( size_t i(0); i < VarUnitVector.size(); ++i ) {
+
+std::cerr << "[Debug] Target "; VarUnitVector[i].target.OutErrReg();
+std::cerr << "[Debug] Query  "; VarUnitVector[i].query.OutErrReg();
+
+
+		string tarId = VarUnitVector[i].target.id;
+		string qryId = VarUnitVector[i].query.id ;
+		string id  = VarUnitVector[i].target.id + ":" + VarUnitVector[i].query.id;
+		string seq = VarUnitVector[i].tarSeq + "-" + VarUnitVector[i].qrySeq;
+
+		if (!tarPrePos.count(tarId) || !qryPrePos.count(qryId) || !id2seq.count(id)){
+
+			// The light is on => Get the region!
+			if (flag) newVector.push_back(varunit);
+			varunit    = VarUnitVector[i];
+			id2seq[id] = seq;
+			flag       = true; // first time
+		} else {
+
+			if (tarPrePos[tarId] > VarUnitVector[i].target.start) {
+				std::cerr << "[ERROR]Your target hasn't been sorted.\n"; 
+				VarUnitVector[i].target.OutErrReg();
+				exit(1);
+			}
+			if (qryPrePos[qryId] > VarUnitVector[i].query.start) {
+				std::cerr << "[ERROR]Your query hasn't been  sorted.\n";
+				VarUnitVector[i].query.OutErrReg();
+				exit(1);
+			}
+
+			if (varunit.target.end + distDelta >= VarUnitVector[i].target.start
+				&& varunit.query.end + distDelta >= VarUnitVector[i].query.start
+				&& id2seq[id] == seq){
+			
+				if (VarUnitVector[i].target.end > varunit.target.end)
+					varunit.target.end = VarUnitVector[i].target.end;
+
+				if (VarUnitVector[i].query.end > varunit.query.end)
+					varunit.query.end = VarUnitVector[i].query.end; 
+			} else {
+
+				newVector.push_back(varunit); 
+				varunit = VarUnitVector[i];
+			}
+		}
+		tarPrePos[tarId] = VarUnitVector[i].target.start;
+		qryPrePos[qryId] = VarUnitVector[i].query.start;
+		id2seq[id]       = seq;
+	}
+	if (flag) newVector.push_back(varunit);
+
+
+std::cerr << "\n-------=============== After Merge ===============-------\n\n";
+for ( size_t i(0); i < newVector.size(); ++i ) {
+std::cerr << "[Debug] Target "; newVector[i].target.OutErrReg();
+std::cerr << "[Debug] Query  "; newVector[i].query.OutErrReg();
+}
+cerr << "\n########################################################\n";
+
+	return newVector;
+}
 
 

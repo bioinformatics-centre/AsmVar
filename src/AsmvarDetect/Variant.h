@@ -19,11 +19,20 @@
 #include "MapReg.h"
 #include "Region.h"
 
+using namespace std;
+
 // Rename 2014-06-19 14:38:02
 class Variant : public MAF {
 
 private: 
-	string sample;                    // The name of sample
+	string sample;                   // The name of sample
+	vector< VarUnit > homoRef;       // The homozygous reference region, we should
+									 // filter the SV regions before output
+
+	vector< VarUnit > nSeq;          // The reference or query is 'n' base or region
+									 // it's juse the n base not in indel or any
+									 // other SV region.
+
 	vector< VarUnit > snp;           // Stored the SNP
 	vector< VarUnit > intragap;      // Call the intra-scaffold-gap, just for the gaps which in alignment. Abort, 2014-02-27 19:28:42
 	vector< VarUnit > insertion;     //
@@ -55,6 +64,8 @@ public :
 
 public : // Can be called per-axt alignment. And will be called in main function
 	void AssignSample  (string id) { sample = id; }
+	void CallHomoRef   (); // call the homo region( the same as reference)
+	void CallnSeq      (); // call the n region of target or query.
 	void CallSNP       ();
 	void CallInsertion ();
 	void CallDeletion  ();
@@ -68,7 +79,7 @@ public : // Just can be call when all the axt alignments have been read!
 	void Output   ( string file ); // Output to the stdout
 	void OutputSNP( string file ); // Output SNP
 	void Summary  ( string file ); // Output Summary information
-	void OutputGap( string file ); // Output the intra-gap in the scaffold and the inter-gaps between different scaffold of the same target chromosome.
+	void OutputGap( string file ); // Output the inter-gaps between different scaffold of the same target chromosome.
 
 	// Use for get the gap region, which actually would be the indel regions. can call deletion or insertion
 	// Friend ship functions, but I fail to use friend function here, and I don't have enough time to figure out.
@@ -76,11 +87,8 @@ public : // Just can be call when all the axt alignments have been read!
 	VarUnit CallGap ( MapReg left, MapReg right ); // call simultaneous gaps.
 	unsigned int Covlength ( vector<Region> mapreg );
 };
-//inline bool MySortByTarM ( MapReg  i, MapReg  j );
-//inline bool MySortByTarV ( VarUnit i, VarUnit j );
-//inline bool MySortByQryM ( MapReg  i, MapReg  j );
-//inline bool MySortByQryV ( VarUnit i, VarUnit j );
-//inline bool SortRegion   ( Region  i, Region  j );
+
+///////////////////////////////////////////////////////////////////////////////
 inline bool MySortByTarM ( MapReg  i, MapReg  j ) {
     if ( i.target.id == j.target.id ) {
         return ( i.target.start < j.target.start );
@@ -95,13 +103,33 @@ inline bool MySortByTarV ( VarUnit i, VarUnit j ) {
         return ( i.target.id < j.target.id );
     }
 }
-inline bool MySortByQryM ( MapReg  i, MapReg  j ) { return ( i.query.start  < j.query.start  ); }
-inline bool MySortByQryV ( VarUnit i, VarUnit j ) { return ( i.query.start  < j.query.start  ); }
-inline bool SortRegion   ( Region  i, Region  j ) { return ( i.start < j.start  ); }
+inline bool MySortByQryM ( MapReg  i, MapReg  j ) { 
 
-unsigned int RegionMin   ( vector<Region> & region );
-unsigned int RegionMax   ( vector<Region> & region );
-string ReverseAndComplementary ( string & seq );
+	if ( i.query.id == j.query.id ) {
+		return ( i.query.start  < j.query.start  ); 
+	} else {
+		return ( i.query.id < j.query.id );
+	}
+}
+inline bool MySortByQryV ( VarUnit i, VarUnit j ) { 
+	if ( i.query.id == j.query.id ) {
+		return ( i.query.start  < j.query.start  ); 
+	} else {
+		return ( i.query.id < j.query.id );
+	}
+}
+inline bool SortRegion( Region i, Region j){ 
+	if ( i.id == j.id ) {
+		return ( i.start  < j.start  ); 
+	} else {
+		return ( i.id < j.id );
+	}
+}
+
+unsigned int RegionMin( vector<Region> & region );
+unsigned int RegionMax( vector<Region> & region );
+string ReverseAndComplementary( string & seq );
+vector<VarUnit> MergeVarUnit( vector<VarUnit>& VarUnitVector );
 
 #endif
 

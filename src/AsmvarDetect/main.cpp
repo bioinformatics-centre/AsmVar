@@ -102,6 +102,8 @@ int main ( int argc, char* argv[] ) {
 			} while ( tmp[0] == 'p'); 
 
 			variant.CheckMAF();
+			variant.CallHomoRef();
+			variant.CallnSeq();
 			variant.CallSNP ();
 			variant.CallInsertion(); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.
 			variant.CallDeletion (); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.

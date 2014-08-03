@@ -19,7 +19,7 @@ public:
     string tarSeq;
     string qrySeq; // if include this part we should consider the coversion coordinate problem, so that make me to get the right seq
     char   strand;
-    string type;
+    string type;   // Variant type
 
     long score;
     double mismap; // mismatch probability
@@ -29,17 +29,21 @@ public:
 
 public:
     VarUnit () {
-        target.id = "-"; query.id = "-"; tarSeq = "-"; qrySeq = "-"; strand = '.', type = "." ; isClear = false;
+        target.id = "-"; query.id = "-"; tarSeq = "."; qrySeq = "."; strand = '.', type = "." ; isClear = false;
         score     = 0;   mismap   = 1.0;
     }
-    VarUnit ( const VarUnit & V ) {
-        target = V.target; query = V.query; tarSeq = V.tarSeq; qrySeq = V.qrySeq; strand = V.strand;
-        type   = V.type; isClear = V.isClear; score= V.score;  mismap = V.mismap;
+    VarUnit ( const VarUnit& V ) {
+        target = V.target; query   = V.query; tarSeq = V.tarSeq; 
+		qrySeq = V.qrySeq; strand  = V.strand;
+        type   = V.type  ; isClear = V.isClear; 
+		score  = V.score ;  mismap = V.mismap;
         exp_target = V.exp_target;
+		exp_tarSeq = V.exp_tarSeq;
     }
 
     void ConvQryCoordinate ( unsigned int qrySeqLen ) {
-    // This funtion just conversion the coordinate of Axt/MAF format creat by 'lastz'/'last ', which mapped to the '-' strand
+    // This funtion just conversion the coordinate of Axt/MAF format creat 
+    // by 'lastz'/'last ', which mapped to the '-' strand
     	if ( strand != '-' ) return;
         unsigned int itemp = query.start;
         query.start = qrySeqLen - query.end + 1;
@@ -54,6 +58,7 @@ public:
     bool Empty() { return isClear; } // Do not output if isClear==true
 
 public:
+
     void OutStd ( unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream& O ) { // Output the axt alignment to STDERR
 
         if ( tarSeq.empty() || qrySeq.empty() ) { std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); }
@@ -65,6 +70,7 @@ public:
             << query.end << "\t" << query.end  - query.start  + 1      << "\t" << double(qnl)/qrySeq.length()      << "\t"
             << qrySeqLen << "\t" << strand       << "\t" << score      << "\t" << mismap    << "\t" << type        << endl;
     }
+
     void OutStd ( unsigned int tarSeqLen, unsigned int exp_tarSeqLen, unsigned int qrySeqLen, ofstream& O ) {
         if ( exp_target.isEmpty() ) cerr << "[ERROR]exp_target is empty!\n";
 
