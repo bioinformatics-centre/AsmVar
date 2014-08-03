@@ -17,22 +17,37 @@ public:
     Region query;  // the mapping fa
 
     string tarSeq;
-    string qrySeq; // if include this part we should consider the coversion coordinate problem, so that make me to get the right seq
+    string qrySeq; // before use this value we should consider the coversion 
+				   // coordinate problem, to make sure we can get the correct 
+				   // query sequece
+
     char   strand;
     string type;   // Variant type
 
     long score;
     double mismap; // mismatch probability
 
-    Region exp_target; // Reserve target. Can only use in recording translocations. [Because Translocation have two target regions]
+	// Reserve target. Can only use in recording translocations.
+	// [Because Translocation have two target regions] 
+    Region exp_target; 
     string exp_tarSeq;
 
 public:
+
     VarUnit () {
-        target.id = "-"; query.id = "-"; tarSeq = "."; qrySeq = "."; strand = '.', type = "." ; isClear = false;
-        score     = 0;   mismap   = 1.0;
+        target.id = "-"; 
+		query.id  = "-"; 
+		tarSeq    = "."; 
+		qrySeq    = "."; 
+		strand    = '.'; 
+		type      = "."; 
+        score     = 0;   
+		mismap    = 1.0;
+		isClear   = false;
     }
+
     VarUnit ( const VarUnit& V ) {
+
         target = V.target; query   = V.query; tarSeq = V.tarSeq; 
 		qrySeq = V.qrySeq; strand  = V.strand;
         type   = V.type  ; isClear = V.isClear; 

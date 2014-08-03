@@ -13,8 +13,8 @@
 #include <vector>
 #include <map>
 
-#include "maf.h"
 #include "utility.h"
+#include "maf.h"
 #include "VarUnit.h"
 #include "MapReg.h"
 #include "Region.h"
@@ -44,8 +44,9 @@ private:
 	vector< VarUnit > nomadic;       // The query which totally can not map to target
 	vector< VarUnit > nosolution;
 
-	// Make 'CallIversion' function to be private, because this function can only be call when all
-	// the alignments have been loaded in memerber value 'mapreg'.
+	// Make 'CallIversion' function to be private, because this function can 
+	// only be call when all the alignments have been loaded in memerber value 
+	// 'mapreg'.
 	void CallReg        ( MapReg mapreg, string type, vector< VarUnit > & varReg );
 	bool CallTranslocat ( MapReg left, MapReg middle, MapReg right );
 	bool CallIversion   ( MapReg left, MapReg middle, MapReg right );

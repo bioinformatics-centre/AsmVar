@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <utility>
+
 #include "Variant.h"
 
 using namespace std;
@@ -426,23 +427,24 @@ bool Variant::IsSameStrand ( vector<MapReg> & mapreg ) {
 
 void Variant::Filter () {
 
-	map< string,vector<Region> > mapNosolution;
+	map< string,vector<Region> > filterReg;
 	map<string, size_t> index;
-
 	for ( size_t i(0); i < nosolution.size(); ++i ) 
-		mapNosolution[nosolution[i].query.id].push_back( nosolution[i].query );
+		filterReg[nosolution[i].query.id].push_back( nosolution[i].query );
 
-	for ( map< string,vector<Region> >::iterator it( mapNosolution.begin() ); 
-		  it != mapNosolution.end(); ++it ){
+	for ( map< string,vector<Region> >::iterator it( filterReg.begin() ); 
+		  it != filterReg.end(); ++it ){
 
-		sort( mapNosolution[it->first].begin(), 
-			  mapNosolution[it->first].end(), SortRegion);
+		sort(filterReg[it->first].begin(), filterReg[it->first].end(), SortRegion);
 		index[it->first] = 0;
 	}
 
-	FilterReg ( mapNosolution, index, insertion ); // Filter insertion regions which in mapNosolution
-	FilterReg ( mapNosolution, index, deletion  ); // Filter deletion  regions which in mapNosolution
-	FilterReg ( mapNosolution, index, snp       ); // Filter SNP which in mapNosolution
+	// Filter insertion regions which in filterReg 
+	FilterReg ( filterReg, index, insertion );
+	// Filter deletion regions which in filterReg
+	FilterReg ( filterReg, index, deletion  );
+	// Filter SNP which in filterReg
+	FilterReg ( filterReg, index, snp       );
 
 	if ( snp.empty() ) return;
 	map <string, vector<size_t> > tmp;
@@ -539,10 +541,10 @@ void Variant::Output ( string file ) {
 	Output ( nomadic,       O ); //
 	Output ( nosolution,    O ); 
 	Output ( translocation, O );
-	Output ( snp,           O );
 
+	Output ( snp,     O );
 	Output ( homoRef, O );
-	Output ( nSeq   , O );
+	Output ( nSeq,    O );
 
 	O.close();
 	return;
@@ -818,10 +820,6 @@ vector<VarUnit> MergeVarUnit( vector<VarUnit>& VarUnitVector ){
 	map<string, string> id2seq;
 	for ( size_t i(0); i < VarUnitVector.size(); ++i ) {
 
-std::cerr << "[Debug] Target "; VarUnitVector[i].target.OutErrReg();
-std::cerr << "[Debug] Query  "; VarUnitVector[i].query.OutErrReg();
-
-
 		string tarId = VarUnitVector[i].target.id;
 		string qryId = VarUnitVector[i].query.id ;
 		string id  = VarUnitVector[i].target.id + ":" + VarUnitVector[i].query.id;
@@ -867,14 +865,6 @@ std::cerr << "[Debug] Query  "; VarUnitVector[i].query.OutErrReg();
 		id2seq[id]       = seq;
 	}
 	if (flag) newVector.push_back(varunit);
-
-
-std::cerr << "\n-------=============== After Merge ===============-------\n\n";
-for ( size_t i(0); i < newVector.size(); ++i ) {
-std::cerr << "[Debug] Target "; newVector[i].target.OutErrReg();
-std::cerr << "[Debug] Query  "; newVector[i].query.OutErrReg();
-}
-cerr << "\n########################################################\n";
 
 	return newVector;
 }
