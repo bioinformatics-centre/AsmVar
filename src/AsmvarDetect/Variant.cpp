@@ -429,9 +429,14 @@ void Variant::Filter () {
 	map< string,vector<Region> > mapNosolution;
 	map<string, size_t> index;
 
-	for ( size_t i(0); i < nosolution.size(); ++i ) mapNosolution[nosolution[i].query.id].push_back( nosolution[i].query );
-	for ( map< string,vector<Region> >::iterator it( mapNosolution.begin() ); it != mapNosolution.end(); ++it ) {
-		sort ( mapNosolution[it->first].begin(), mapNosolution[it->first].end(), SortRegion );
+	for ( size_t i(0); i < nosolution.size(); ++i ) 
+		mapNosolution[nosolution[i].query.id].push_back( nosolution[i].query );
+
+	for ( map< string,vector<Region> >::iterator it( mapNosolution.begin() ); 
+		  it != mapNosolution.end(); ++it ){
+
+		sort( mapNosolution[it->first].begin(), 
+			  mapNosolution[it->first].end(), SortRegion);
 		index[it->first] = 0;
 	}
 
@@ -534,6 +539,7 @@ void Variant::Output ( string file ) {
 	Output ( nomadic,       O ); //
 	Output ( nosolution,    O ); 
 	Output ( translocation, O );
+	Output ( snp,           O );
 
 	Output ( homoRef, O );
 	Output ( nSeq   , O );
