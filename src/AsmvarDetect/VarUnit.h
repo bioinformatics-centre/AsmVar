@@ -74,19 +74,19 @@ public:
 
 public:
 
-    void OutStd ( unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream& O ) { // Output the axt alignment to STDERR
+    void OutStd ( unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O ) { // Output the axt alignment to STDERR
 
         if ( tarSeq.empty() || qrySeq.empty() ) { std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); }
 
         unsigned int qnl = NLength ( qrySeq );
         unsigned int tnl = NLength ( tarSeq );
-        O   << target.id << "\t" << target.start << "\t" << target.end << "\t" << target.end - target.start + 1    << "\t"
-            << double(tnl)/tarSeq.length()       << "\t" << tarSeqLen  << "\t" << query.id  << "\t" << query.start << "\t"
-            << query.end << "\t" << query.end  - query.start  + 1      << "\t" << double(qnl)/qrySeq.length()      << "\t"
-            << qrySeqLen << "\t" << strand       << "\t" << score      << "\t" << mismap    << "\t" << type        << endl;
+        O << target.id << "\t" << target.start << "\t" << target.end << "\t" << target.end - target.start + 1    << "\t"
+          << double(tnl)/tarSeq.length()       << "\t" << tarSeqLen  << "\t" << query.id  << "\t" << query.start << "\t"
+          << query.end << "\t" << query.end  - query.start  + 1      << "\t" << double(qnl)/qrySeq.length()      << "\t"
+          << qrySeqLen << "\t" << strand       << "\t" << score      << "\t" << mismap    << "\t" << type        << endl;
     }
 
-    void OutStd ( unsigned int tarSeqLen, unsigned int exp_tarSeqLen, unsigned int qrySeqLen, ofstream& O ) {
+    void OutStd ( unsigned int tarSeqLen, unsigned int exp_tarSeqLen, unsigned int qrySeqLen, ofstream &O ) {
         if ( exp_target.isEmpty() ) cerr << "[ERROR]exp_target is empty!\n";
 
         OutStd ( tarSeqLen, qrySeqLen, O );
@@ -95,15 +95,15 @@ public:
 
         unsigned int qnl = NLength ( qrySeq );
         unsigned int tnl = NLength ( exp_tarSeq );
-        O   << exp_target.id << "\t" << exp_target.start << "\t" << exp_target.end << "\t" << exp_target.end - exp_target.start + 1 << "\t"
-            << double(tnl)/exp_tarSeq.length()           << "\t" << exp_tarSeqLen  << "\t" << query.id  << "\t"   << query.start    << "\t"
-            << query.end << "\t" << query.end  - query.start  + 1          << "\t" << double(qnl)/qrySeq.length() << "\t"
-            << qrySeqLen << "\t" << strand <<"\t"<< score<< "\t" << mismap << "\t" << type + "-E" << endl;
+        O << exp_target.id << "\t" << exp_target.start << "\t" << exp_target.end << "\t" << exp_target.end - exp_target.start + 1 << "\t"
+          << double(tnl)/exp_tarSeq.length()           << "\t" << exp_tarSeqLen  << "\t" << query.id  << "\t"   << query.start    << "\t"
+          << query.end << "\t" << query.end  - query.start  + 1          << "\t" << double(qnl)/qrySeq.length() << "\t"
+          << qrySeqLen << "\t" << strand <<"\t"<< score<< "\t" << mismap << "\t" << type + "-E" << endl;
     }
 
 private:
 	// Return the number of 'n' base in 'str'
-	unsigned int NLength ( string& str ) {
+	unsigned int NLength ( string &str ) {
 
     	unsigned int num(0);
     	for (size_t i(0); i < str.size(); ++i)
