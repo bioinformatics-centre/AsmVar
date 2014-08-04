@@ -102,6 +102,8 @@ int main ( int argc, char* argv[] ) {
 			} while ( tmp[0] == 'p'); 
 
 			variant.CheckMAF();
+			variant.qryfa.CheckFaId(variant.query.id);
+			variant.tarfa.CheckFaId(variant.target.id);
 			variant.CallHomoRef();
 			variant.CallnSeq();
 			variant.CallSNP ();

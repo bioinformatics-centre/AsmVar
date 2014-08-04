@@ -18,11 +18,16 @@
 #include "VarUnit.h"
 #include "MapReg.h"
 #include "Region.h"
+#include "Fa.h"
 
 using namespace std;
 
 // Rename 2014-06-19 14:38:02
 class Variant : public MAF {
+
+public: 
+
+	Fa tarfa, qryfa;
 
 private: 
 	string sample;                   // The name of sample

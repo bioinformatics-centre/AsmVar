@@ -225,8 +225,11 @@ bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 
 void Variant::GetMapReg () {
 
-	// Call the query coverting function here to make the '-' strand coordinates of query be the same as '+' strand!
-	ConvQryCoordinate(); // ConvQryCoordinate() is a memerber function of class 'MAF'
+	// Call the query coverting function here to make the '-' strand coordinates 
+	// of query be the same as '+' strand.
+	// ConvQryCoordinate(...) is a memerber function of class 'MAF'  
+	qryfa.CheckFaId(query.id);
+	ConvQryCoordinate(qryfa.fa[query.id].length());
 
 	MapReg mpI;
 	mpI.target = target; mpI.query = query; mpI.strand = strand;
