@@ -570,6 +570,11 @@ void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 			R[i].exp_tarSeq = tarfa.fa[ R[i].exp_target.id ].substr( R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
 			R[i].OutStd( tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
 		}
+
+		// re-aligne :
+		AgeOption opt;
+		R[i].ReAlign(tarfa, qryfa, opt);
+		
 	}
 }
 

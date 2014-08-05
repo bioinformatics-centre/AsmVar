@@ -15,14 +15,17 @@ public :
     int match;
     int mismatch;
 
+	int extendVarFlankSzie;
+
     bool indel, inv, invl, invr, tdup;
-    bool both, revcom1, revcom2;
+    bool both, revcomTarget, revcomQuery;
 
 public :
-    AgeOption() : match(1), mismatch(-2), gapOpen(-2), gapExtend(-1),
-                  both(false) , revcom1(false), revcom2(false),
-                  indel(false), inv(false), invl(false), invr(false),
-                  tdup(false)
+//--indel --both --match=1 --mismatch=-1 --go=-10 --ge=-1 
+    AgeOption() : match(1), mismatch(-1), gapOpen(-10), gapExtend(-1),
+				  extendVarFlankSzie(500),
+                  both(true) , revcomTarget(false), revcomQuery(false),
+                  indel(true), inv(false), invl(false), invr(false), tdup(false)
 	{}
 
 };

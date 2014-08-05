@@ -8,7 +8,21 @@
 #include<iostream> 
 #include<fstream>
 
+#ifdef AGE_TIME
+#include <sys/time.h>
+#endif
+
+//--- AGE includes ---
+#include "AGEaligner.h"
+#include "Sequence.h"
+#include "Scorer.h"
+#include "AgeOption.h" // alignement options
+
+//--- Other include ---
 #include "Region.h"
+#include "Fa.h"  // VarUnit AgeAlign() function need Fa.h 
+
+using namespace std;
 
 class VarUnit { // Well, it looks like the class 'Axt/MAF', but no! Totally different! Use for record the varants.
 
@@ -16,7 +30,7 @@ public:
     Region target; // target or said reference
     Region query;  // the mapping fa
 
-    string tarSeq;
+    string tarSeq; // Target sequence of variant
     string qrySeq; // before use this value we should consider the coversion 
 				   // coordinate problem, to make sure we can get the correct 
 				   // query sequece
@@ -34,73 +48,23 @@ public:
 
 public:
 
-    VarUnit () {
-        target.id = "-"; 
-		query.id  = "-"; 
-		tarSeq    = "."; 
-		qrySeq    = "."; 
-		strand    = '.'; 
-		type      = "."; 
-        score     = 0;   
-		mismap    = 1.0;
-		isClear   = false;
-    }
+    VarUnit();
+    VarUnit(const VarUnit &V);
 
-    VarUnit ( const VarUnit& V ) {
+    void ConvQryCoordinate(unsigned int qrySeqLen);
+    void Swap();
 
-        target = V.target; query   = V.query; tarSeq = V.tarSeq; 
-		qrySeq = V.qrySeq; strand  = V.strand;
-        type   = V.type  ; isClear = V.isClear; 
-		score  = V.score ;  mismap = V.mismap;
-        exp_target = V.exp_target;
-		exp_tarSeq = V.exp_tarSeq;
-    }
+	VarUnit ReAlign(Fa &target, Fa &query, AgeOption opt);
 
-    void ConvQryCoordinate ( unsigned int qrySeqLen ) {
-    // This funtion just conversion the coordinate of Axt/MAF format creat 
-    // by 'lastz'/'last ', which mapped to the '-' strand
-    	if ( strand != '-' ) return;
-        unsigned int itemp = query.start;
-        query.start = qrySeqLen - query.end + 1;
-        query.end   = qrySeqLen - itemp + 1;
-    }
-
-    void Swap () { // Swap the target and query region. Ignore 'exp_target' 
-        Region tmp = target; target = query;  query  = tmp;
-        string str = tarSeq; tarSeq = qrySeq; qrySeq = str;
-    }
-    void Clear() { isClear = true; }
-    bool Empty() { return isClear; } // Do not output if isClear==true
+    void Clear(){ isClear = true; }
+    bool Empty(){ return isClear; } // Do not output if isClear==true
+	bool IsSuccessReAlign(){ return isSuccessReAlign; }
 
 public:
 
-    void OutStd ( unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O ) { // Output the axt alignment to STDERR
-
-        if ( tarSeq.empty() || qrySeq.empty() ) { std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); }
-
-        unsigned int qnl = NLength ( qrySeq );
-        unsigned int tnl = NLength ( tarSeq );
-        O << target.id << "\t" << target.start << "\t" << target.end << "\t" << target.end - target.start + 1    << "\t"
-          << double(tnl)/tarSeq.length()       << "\t" << tarSeqLen  << "\t" << query.id  << "\t" << query.start << "\t"
-          << query.end << "\t" << query.end  - query.start  + 1      << "\t" << double(qnl)/qrySeq.length()      << "\t"
-          << qrySeqLen << "\t" << strand       << "\t" << score      << "\t" << mismap    << "\t" << type        << endl;
-    }
-
-    void OutStd ( unsigned int tarSeqLen, unsigned int exp_tarSeqLen, unsigned int qrySeqLen, ofstream &O ) {
-        if ( exp_target.isEmpty() ) cerr << "[ERROR]exp_target is empty!\n";
-
-        OutStd ( tarSeqLen, qrySeqLen, O );
-
-        if ( exp_tarSeq.empty() ) { cerr << "exp_tarSeq.empty() " << endl; exit(1); }
-
-        unsigned int qnl = NLength ( qrySeq );
-        unsigned int tnl = NLength ( exp_tarSeq );
-        O << exp_target.id << "\t" << exp_target.start << "\t" << exp_target.end << "\t" << exp_target.end - exp_target.start + 1 << "\t"
-          << double(tnl)/exp_tarSeq.length()           << "\t" << exp_tarSeqLen  << "\t" << query.id  << "\t"   << query.start    << "\t"
-          << query.end << "\t" << query.end  - query.start  + 1          << "\t" << double(qnl)/qrySeq.length() << "\t"
-          << qrySeqLen << "\t" << strand <<"\t"<< score<< "\t" << mismap << "\t" << type + "-E" << endl;
-    }
-
+    void OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O);
+    void OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen, 
+				unsigned int qrySeqLen, ofstream &O);
 private:
 	// Return the number of 'n' base in 'str'
 	unsigned int NLength ( string &str ) {
@@ -111,9 +75,13 @@ private:
     	return num;
 	}
 
+	bool IsHugeMemory(unsigned long int n, unsigned long int m){
+		return (5 * n * m / 1000000000 > 10); // 10G
+	}
+
 private:
     bool isClear;
-
+	bool isSuccessReAlign; // Check the variant could be re-align or not
 };
 
 #endif

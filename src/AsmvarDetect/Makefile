@@ -2,13 +2,15 @@
 #UTILS_DIR   = $(INCLUDE_DIR)/utils
 
 CC  = g++ -lz
-obj = main.o utility.o Variant.o gzstream.o
+obj = main.o utility.o Variant.o VarUnit.o gzstream.o AGEaligner.o
 
-out : $(obj)
+ASV_VariantDetector : $(obj)
 
-	$(CC) -o out $(obj)
+	$(CC) -o out2 $(obj)
 
 main.o : gzstream.h utility.h Variant.h
+VarUnit.o  : VarUnit.h
+AGEaligner.o : AGEaligner.h
 utility.o  : utility.h
 gzstream.o : gzstream.h
 Variant.o  : Variant.h
