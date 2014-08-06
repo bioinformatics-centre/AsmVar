@@ -58,11 +58,11 @@ public:
     void ConvQryCoordinate(unsigned int qrySeqLen);
     void Swap();
 
+	// Here is the only function will use 'AgeAlignment' class
 	VarUnit ReAlign(Fa &target, Fa &query, AgeOption opt);
 
     void Clear(){ isClear = true; }
     bool Empty(){ return isClear; } // Do not output if isClear==true
-	bool IsSuccessReAlign(){ return isSuccessReAlign; }
 
 public:
 
@@ -81,12 +81,15 @@ private:
 
 private:
     bool isClear;
-	bool isSuccessReAlign; // Check the variant could be re-align or not
 };
 
 /////////////////////////////////////////////////////////////////////////
 /************************* Class AgeAlignment **************************/
 /////////////////////////////////////////////////////////////////////////
+// Each single Indel or SV should AGE re-alignement. That's why I keep 
+// 'AgeAlignment' class together with 'VarUnit' class!
+// 'AgeAlignment' will just present in the memeber function:'ReAlign()'
+// of 'VarUnit' class! 
 class AgeAlignment {
 
 public:

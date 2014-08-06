@@ -11,7 +11,6 @@ VarUnit::VarUnit(){
 	score     = 0;   
 	mismap    = 1.0;
 	isClear   = false;
-	isSuccessReAlign = false;
 
 	return;
 }
@@ -21,8 +20,6 @@ VarUnit::VarUnit (const VarUnit& V) {
 	target = V.target; query   = V.query; tarSeq = V.tarSeq; 
 	qrySeq = V.qrySeq; strand  = V.strand;
 	type   = V.type  ; isClear = V.isClear; 
-
-	isSuccessReAlign = V.isSuccessReAlign;
 
 	score  = V.score ;  mismap = V.mismap;
 	exp_target = V.exp_target;
