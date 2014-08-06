@@ -20,11 +20,15 @@
 
 //--- Other include ---
 #include "Region.h"
-#include "Fa.h"  // VarUnit AgeAlign() function need Fa.h 
+#include "Fa.h"        // VarUnit AgeAlign() function need Fa.h 
 
 using namespace std;
 
-class VarUnit { // Well, it looks like the class 'Axt/MAF', but no! Totally different! Use for record the varants.
+class AgeAlignment;
+
+class VarUnit { 
+// Well, it looks like the class 'Axt/MAF', but no! Totally different! 
+// Use for record the varants.
 
 public:
     Region target; // target or said reference
@@ -75,13 +79,35 @@ private:
     	return num;
 	}
 
-	bool IsHugeMemory(unsigned long int n, unsigned long int m){
-		return (5 * n * m / 1000000000 > 10); // 10G
-	}
-
 private:
     bool isClear;
 	bool isSuccessReAlign; // Check the variant could be re-align or not
+};
+
+/////////////////////////////////////////////////////////////////////////
+/************************* Class AgeAlignment **************************/
+/////////////////////////////////////////////////////////////////////////
+class AgeAlignment {
+
+public:
+
+    AgeAlignment(): isInit_(false){}
+    AgeAlignment(VarUnit &v, AgeOption opt){ Init(v, opt); }
+	VarUnit vu() { return vu_; } 
+
+    void Init(VarUnit &v, AgeOption opt);
+    bool Align(string &tarFa, string &qryFa);
+
+private:
+
+    void ExtendVariant(unsigned long int, unsigned long int, int extandFlankSzie);
+    bool IsHugeMemory(unsigned long int n, unsigned long int m);
+
+private:
+
+    VarUnit   vu_;
+    AgeOption para_; // Parameters for AGE
+    bool isInit_;
 };
 
 #endif

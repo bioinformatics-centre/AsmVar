@@ -6,7 +6,7 @@ obj = main.o utility.o Variant.o VarUnit.o gzstream.o AGEaligner.o
 
 ASV_VariantDetector : $(obj)
 
-	$(CC) -o out2 $(obj)
+	$(CC) -o out3 $(obj)
 
 main.o : gzstream.h utility.h Variant.h
 VarUnit.o  : VarUnit.h

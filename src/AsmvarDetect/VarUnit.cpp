@@ -53,109 +53,14 @@ void VarUnit::Swap(){ // Swap the target and query region. Ignore 'exp_target'
 
 VarUnit VarUnit::ReAlign(Fa &targetSeq, Fa &querySeq, AgeOption opt){
 // Return new VarUnit after AGE Realignment
-// This is a design strategy, I'm going to simply update the raw VarUnit!
-
-	int flag = 0;
-    if (opt.indel) flag |= AGEaligner::INDEL_FLAG;
-    if (opt.inv  ) flag |= AGEaligner::INVERSION_FLAG;
-    if (opt.invl ) flag |= AGEaligner::INVL_FLAG;
-    if (opt.invr ) flag |= AGEaligner::INVR_FLAG;
-    if (opt.tdup ) flag |= AGEaligner::TDUPLICATION_FLAG;
-    if (flag == 0) flag  = AGEaligner::INDEL_FLAG; // Default
-
-	int n_modes = 0;
-    if (flag & AGEaligner::INDEL_FLAG)        n_modes++;
-    if (flag & AGEaligner::TDUPLICATION_FLAG) n_modes++;
-    if (flag & AGEaligner::INVR_FLAG)         n_modes++;
-    if (flag & AGEaligner::INVL_FLAG)         n_modes++;
-    if (flag & AGEaligner::INVERSION_FLAG)    n_modes++;
-
-    if (n_modes != 1) {
-        cerr << "# [Error] In mode specification. ";
-        if ( n_modes == 0 ) cerr << "No mode is specified.\n";
-        if ( n_modes  > 1 ) cerr << "More than one mode is specified.\n";
-        exit(1);
-    }
-	/////////////////////////////////////////////////////////////////////////////
-	
-	unsigned long int newTarStart(target.start - opt.extendVarFlankSzie); 
-	unsigned long int newTarEnd  (target.end   + opt.extendVarFlankSzie);
-	unsigned long int newQryStart(query.start  - opt.extendVarFlankSzie); 
-	unsigned long int newQryEnd  (query.end    + opt.extendVarFlankSzie);
-
-	if (newTarStart < 1) newTarStart = 1; 
-	if (target.end  > targetSeq.fa[target.id].length()) 
-		target.end = targetSeq.fa[target.id].length();
-
-	if (newQryStart < 1) newQryStart = 1; 
-	if (query.end > querySeq.fa[query.id].length()) 
-		query.end = querySeq.fa[query.id].length();
-	
-	// Do not AGE if the memory cost is bigger than 10G. 
-	if (IsHugeMemory(newTarEnd - newTarStart, newQryEnd - newQryStart)){
-		isSuccessReAlign = false;
-		return *(this);
-	}
-
-	isSuccessReAlign = true;
+// This is a design strategy, I'm not going to simply update the raw VarUnit!
 
 	targetSeq.CheckFaId(target.id); // make sure target fa is right
 	querySeq.CheckFaId(query.id);   // make sure query  fa is right
 
-	Sequence *tarSeq = new Sequence(targetSeq.fa[target.id], target.id, 1, false);
-	Sequence *qrySeq = new Sequence(querySeq.fa[query.id]  , query.id , 1, false);
-	Sequence *tar = tarSeq->substr(newTarStart, newTarEnd);
-	Sequence *qry = qrySeq->substr(newQryStart, newQryEnd);
-
-	if (opt.revcomTarget) tar->revcom();
-	if (opt.revcomQuery ) qry->revcom();
-
-#ifdef AGE_TIME
-timeval ali_s,ali_e;
-gettimeofday(&ali_s, NULL);
-#endif
-
-cout << "\n**********************************************************\n# AGE Re-align :\n";
-	Scorer scr(opt.match, opt.mismatch, opt.gapOpen, opt.gapExtend);
-	if (opt.both) {
-
-		Sequence *qryClone = qry->clone(); 
-		qryClone->revcom();
-		AGEaligner aligner1(*tar, *qry);
-		AGEaligner aligner2(*tar, *qryClone);
-		
-		bool res1 = aligner1.align(scr, flag);
-		bool res2 = aligner2.align(scr, flag);
-
-		if (!res1 && !res2) {
-			cerr<<"No alignment made.\n";
-		} else if (aligner1.score() >= aligner2.score()) {
-			aligner1.printAlignment();
-		} else {
-			aligner2.printAlignment();
-		}
-		delete qryClone;
-
-	} else {
-		
-		AGEaligner aligner(*tar, *qry);
-		if (aligner.align(scr, flag)){
-			aligner.printAlignment();
-		} else {
-			cerr << "No alignment made.\n";
-		}
-	}
-
-#ifdef AGE_TIME
-gettimeofday(&ali_e, NULL);
-cout << "\nAlignment time is " << ali_e.tv_sec - ali_s.tv_sec 
-	+ (ali_e.tv_usec - ali_s.tv_usec)/1e+6 <<" s\n\n";
-#endif
-
-	Sequence::deleteSequences(tarSeq);
-    Sequence::deleteSequences(qrySeq);
-
-	return *(this);
+	AgeAlignment alignment(*(this), opt);
+	alignment.Align(targetSeq.fa[target.id], querySeq.fa[query.id]);
+	return alignment.vu();
 }
 
 void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O){ 
@@ -198,4 +103,136 @@ void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen,
 	  << "\t" << type + "-E"<< endl;
 	return;
 }
+
+/**********************************
+ * Author : Shujia Huang
+ * Date   : 2014-08-05 22:49:56
+ *
+ * Class  AgeAlignment
+ **********************************/
+
+void AgeAlignment::Init(VarUnit &v, AgeOption opt){
+
+	vu_     = v;
+	para_   = opt;
+	isInit_ = true;
+}
+
+void AgeAlignment::ExtendVariant(unsigned long int tarFaSize, 
+								 unsigned long int qryFaSize,
+								 int extandFlankSzie){
+	
+	if (!isInit_) { 
+		cerr<<"[ERROR]You should init AgeAlignment before calling ExtendVariant()\n";
+		exit(1);
+	}
+	
+	vu_.target.start -= extandFlankSzie;
+	vu_.target.end   += extandFlankSzie;
+	vu_.query.start  -= extandFlankSzie;
+	vu_.query.end    += extandFlankSzie;
+
+	if (vu_.target.start < 1) vu_.target.start = 1;
+    if (vu_.target.end   > tarFaSize) vu_.target.end = tarFaSize;	
+    if (vu_.query.start  < 1) vu_.query.start = 1; 
+    if (vu_.query.end    > qryFaSize) vu_.query.end  = qryFaSize;
+
+	return;
+}
+
+bool AgeAlignment::IsHugeMemory(unsigned long int n, unsigned long int m){ 
+
+	return (5 * n * m / 1000000000 > 10); // 10G
+}
+
+bool AgeAlignment::Align(string &tarFa, string &qryFa){
+
+	if (!isInit_) { 
+		cerr << "[ERROR] You should init AgeAlignment before calling Align()\n";
+		exit(1);
+	}
+
+	int flag = 0;
+    if (para_.indel) flag |= AGEaligner::INDEL_FLAG;
+    if (para_.inv  ) flag |= AGEaligner::INVERSION_FLAG;
+    if (para_.invl ) flag |= AGEaligner::INVL_FLAG;
+    if (para_.invr ) flag |= AGEaligner::INVR_FLAG;
+    if (para_.tdup ) flag |= AGEaligner::TDUPLICATION_FLAG;
+    if (flag == 0) flag  = AGEaligner::INDEL_FLAG; // Default
+
+    int n_modes = 0;
+    if (flag & AGEaligner::INDEL_FLAG)        n_modes++;
+    if (flag & AGEaligner::TDUPLICATION_FLAG) n_modes++;
+    if (flag & AGEaligner::INVR_FLAG)         n_modes++;
+    if (flag & AGEaligner::INVL_FLAG)         n_modes++;
+    if (flag & AGEaligner::INVERSION_FLAG)    n_modes++;
+
+    if (n_modes != 1) {
+        cerr << "# [Error] In mode specification. ";
+        if ( n_modes == 0 ) cerr << "No mode is specified.\n";
+        if ( n_modes  > 1 ) cerr << "More than one mode is specified.\n";
+        exit(1);
+    }
+	//////////////////////////////////////////////////////////////////////
+	
+	ExtendVariant(tarFa.length(), qryFa.length(), para_.extendVarFlankSzie);
+    // Do not AGE if the memory cost is bigger than 10G.
+    unsigned long int varTarSize = vu_.target.end - vu_.target.start;
+	unsigned long int varQrySize = vu_.query.end  - vu_.query.start;
+    if (IsHugeMemory(varTarSize, varQrySize)) return false;
+
+	Sequence *tarSeq = new Sequence(tarFa, vu_.target.id, 1, false);
+	Sequence *qrySeq = new Sequence(qryFa, vu_.query.id , 1, false);
+	Sequence *tar = tarSeq->substr(vu_.target.start, vu_.target.end);
+	Sequence *qry = qrySeq->substr(vu_.query.start , vu_.query.end );
+
+#ifdef AGE_TIME
+timeval ali_s,ali_e;
+gettimeofday(&ali_s, NULL);
+#endif
+
+	bool isalign(true);
+	Scorer scr(para_.match, para_.mismatch, para_.gapOpen, para_.gapExtend);
+	if (para_.both) {
+            
+        Sequence *qryClone = qry->clone(); 
+        qryClone->revcom();
+        AGEaligner aligner1(*tar, *qry);
+        AGEaligner aligner2(*tar, *qryClone);                                         
+        bool res1 = aligner1.align(scr, flag);
+		bool res2 = aligner2.align(scr, flag);
+
+		if (!res1 && !res2) {
+			cerr<<"No alignment made.\n";
+			isalign = false;
+		} else if (aligner1.score() >= aligner2.score()) {
+			aligner1.printAlignment();
+        } else {
+			aligner2.printAlignment();
+        } 
+        delete qryClone;
+
+    } else {
+
+        AGEaligner aligner(*tar, *qry);
+        if (aligner.align(scr, flag)){
+            aligner.printAlignment();
+        } else {
+            cerr << "No alignment made.\n";
+			isalign = false; 
+        }
+    }
+
+#ifdef AGE_TIME
+gettimeofday(&ali_e, NULL);
+cout << "\nAlignment time is " << ali_e.tv_sec - ali_s.tv_sec
+    + (ali_e.tv_usec - ali_s.tv_usec)/1e+6 <<" s\n\n";
+#endif
+
+	Sequence::deleteSequences(tarSeq);
+	Sequence::deleteSequences(qrySeq);
+
+	return isalign;
+}
+
 
