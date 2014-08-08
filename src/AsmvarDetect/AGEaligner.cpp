@@ -62,7 +62,7 @@ void AGEaligner::freeFragments(AliFragment *frags)
 	}
 }
 
-bool AGEaligner::align(Scorer &scr,int flag)
+bool AGEaligner::align(Scorer &scr, int flag)
 {
 	_n_bpoints = 0; // Erase previous break points
 	if (_len1 <= 0 || _len2 <= 0) return false;
@@ -174,6 +174,223 @@ bool AGEaligner::getExcisedRange(AliFragment *f,int &s,int &e,
 	s += inc1*add_s;
 	e += inc1*add_e;
 	return true;
+}
+
+void AGEaligner::Test(){
+
+	if (_aux_aligner && _aux_aligner->score() > _max) {
+        _aux_aligner->printAlignment();
+        return;
+    }
+
+    const static string EXCISED_MESSAGE  = "EXCISED REGION";
+    const static string EXCISED_MESSAGEs = "EXCISED REGION(S)";
+
+	int inc1 = 1; if (_s1.reverse()) inc1 = -1;
+    int inc2 = 1; if (_s2.reverse()) inc2 = -1;
+    int s1 = _s1.start(),s2 =_s2.start();
+
+    int e1 = s1 + inc1*(_seq1.length() - 1);
+    int e2 = s2 + inc2*(_seq2.length() - 1);
+    cout << "First  seq ["
+        << setw(calcWidth(s1,s2))  << s1 << ","
+        << setw(calcWidth(e1,e2))  << e1 << "] => "
+        << setw(9)<<_seq1.length() << " nucs '" << _s1.name() << "'\n";
+    cout << "Second seq ["
+        << setw(calcWidth(s1,s2))  << s2 << ","
+        << setw(calcWidth(e1,e2))  << e2 << "] => "
+        << setw(9)<<_seq2.length() << " nucs '" << _s2.name() << "'\n\n";
+
+	int n_frg = 0;
+    for (AliFragment *f = _frags;f;f = f->next()) n_frg++;
+    int *n_ali = new int[n_frg + 1];
+    int *n_id  = new int[n_frg + 1];
+    int *n_gap = new int[n_frg + 1];
+    n_ali[0] = n_id[0] = n_gap[0] = 0;
+    int index = 1;
+    for (AliFragment *f = _frags;f;f = f->next()) {
+        f->countAligned(n_ali[index],n_id[index],n_gap[index]);
+        n_ali[0] += n_ali[index];
+        n_id[0]  += n_id[index];
+        n_gap[0] += n_gap[index];
+        index++;
+    }
+
+    int identic = 0,gap = 0;
+    if (n_ali[0] > 0) {
+        identic = (int)(100.*n_id[0]/n_ali[0] + 0.5);
+        gap     = (int)(100.*n_gap[0]/n_ali[0] + 0.5);
+    }
+
+vector< pair<int,int> > iden;
+iden.push_back(make_pair(n_id[0], identic));
+
+    if (n_frg > 1) {
+        for (int i = 1;i < n_frg + 1; ++i) {
+iden.push_back( make_pair(n_id[i], int(100.0*n_id[i]/n_ali[i] + 0.5)) );
+		}
+    }
+    cout << "\nGaps:    "      << setw(9) << n_gap[0] << " (" << setw(3)
+        << gap << "%) nucs\n\n";
+
+for (size_t i(0); i < iden.size(); ++i) cout << "## " << iden[i].first <<", " << iden[i].second << "\n";
+
+    // Printing aligned region coordinates
+    if (n_ali[0] > 0) {
+        cout << "Alignment:\n";
+
+vector< pair<int,int> > pos1, pos2;
+
+        for (AliFragment *f = _frags;f;f = f->next()) {
+pos1.push_back( make_pair(f->start1(), f->end1()) );
+
+        }
+
+for (size_t i(0); i < pos1.size(); ++i){ cout << "\n## " << pos1[i].first << ", " << pos1[i].second << "\n"; }
+        cout << "\n second seq =>  ";
+        for (AliFragment *f = _frags;f;f = f->next()) {
+pos2.push_back( make_pair(f->start2(), f->end2()) );
+        }
+
+for (size_t i(0); i < pos2.size(); ++i){ cout << "\n## " << pos2[i].first << ", " << pos2[i].second << "\n"; }
+        cout << "\n";
+    }
+
+    int s,e,len;
+    if (n_frg > 1) {
+        cout << "\n" << EXCISED_MESSAGEs << ":\n";
+        for (AliFragment *f = _frags;f && f->next();f = f->next()) {
+            if (!getExcisedRange(f,s,e)) continue;
+            cout << " first  seq => ";
+            len = abs(s - e - inc1);
+            cout << setw(9) << len << " nucs";
+  			if (len > 0) { 
+				cout << " [" << s << "," << e << "]";
+			}
+            cout << "\n";
+            cout << " second seq => ";
+            s = f->end2() + inc2;
+            e = f->next()->start2() - inc2;
+            len = abs(s - e - inc2);
+            cout << setw(9) << len << " nucs";
+            if (len > 0) { 
+				cout << " [" << s << "," << e << "]";
+			}
+            cout << "\n";
+        }
+		if (_n_bpoints > 1) cout<<"ALTERNATIVE REGION(S): "<<_n_bpoints - 1<<"\n";
+        for (int i = _n_bpoints - 1;i >= 1;i--) {
+            if (!findAlignment(i,true)) continue;  // Fiding alternative alignment
+            if (!_frags_alt) continue;
+            for (AliFragment *f = _frags_alt;f && f->next();f = f->next()) {
+                if (!getExcisedRange(f,s,e)) continue;
+                cout<<" first  seq => ";
+                len = abs(s - e - inc1);
+                cout<<setw(9)<<len<<" nucs";
+                if (len > 0) cout<<" ["<<s<<","<<e<<"]";
+                cout<<"\n";
+                cout<<" second seq => ";
+                s = f->end2() + inc2;
+                e = f->next()->start2() - inc2;
+                len = abs(s - e - inc2);
+                cout<<setw(9)<<len<<" nucs";
+                if (len > 0) cout<<" ["<<s<<","<<e<<"]";
+                cout<<"\n";
+            }
+            break;
+        }
+
+        // Printing sequence identity around breakpoints
+		vector< pair<int,int> > ci_start1, ci_end1, ci_start2, ci_end2; 
+		// Identity at breakpoints
+        int left, right, s, e;
+        for (AliFragment *f = _frags;f && f->next();f = f->next()) {
+            if (!getExcisedRange(f,s,e,0,1)) continue;
+            int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
+            int homo_run = calcIdentity(_seq1,bp1,bp2,left,right);
+            //cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+            if (homo_run > 0) {
+				ci_start1.push_back(make_pair(s + inc1*left, s + inc1*(right - 1)));
+				ci_end1.push_back  (make_pair(e + inc1*left, e + inc1*(right - 1)));
+			}
+
+            s = f->end2() + inc2, e = f->next()->start2();
+            bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
+            homo_run = calcIdentity(_seq2,bp1,bp2,left,right);
+            //cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+            if (homo_run > 0) {
+				ci_start2.push_back(make_pair(s + inc2*left, s + inc2*(right - 1)));
+				ci_end2.push_back  (make_pair(e + inc2*left, e + inc2*(right - 1)));
+			}
+        }
+
+        //cout<<"Identity outside breakpoints: "<<"\n";
+        for (AliFragment *f = _frags;f && f->next();f = f->next()) {
+            if (!getExcisedRange(f,s,e,-1,1)) continue;
+            int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
+            int homo_run = calcOutsideIdentity(_seq1,bp1,bp2);
+            //cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+            if (homo_run > 0) {
+				ci_start1.push_back(make_pair(s - inc1*(homo_run - 1), s));
+				ci_end1.push_back  (make_pair(e, e + inc1*(homo_run - 1)));
+			}
+
+            s = f->end2(), e = f->next()->start2();
+            bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
+            homo_run = calcOutsideIdentity(_seq2,bp1,bp2);
+            //cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+            if (homo_run > 0) {
+				ci_start2.push_back(make_pair(s - inc2*(homo_run - 1), s));
+				ci_end2.push_back  (make_pair(e, e + inc2*(homo_run - 1)));
+			}
+        }
+		// Identity inside breakpoints
+        for (AliFragment *f = _frags;f && f->next();f = f->next()) {
+            if (!getExcisedRange(f,s,e)) continue;
+            int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
+            int homo_run = calcInsideIdentity(_seq1,bp1,bp2);
+            //cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+            if (homo_run > 0) {
+				ci_start1.push_back(make_pair(s, s + inc1*(homo_run - 1)));
+				ci_end1.push_back  (make_pair(e - inc1*(homo_run - 1), e));
+			}
+
+            s = f->end2() + inc2, e = f->next()->start2() - inc2;
+            bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
+            homo_run = calcInsideIdentity(_seq2,bp1,bp2);
+            //cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+            if (homo_run > 0) {
+				ci_start2.push_back(make_pair(s, s + inc2*(homo_run - 1)));
+				ci_end2.push_back  (make_pair(e - inc2*(homo_run - 1), e));
+			}
+        }
+
+pair<int, int> bo = Boundary(ci_start1);
+for (size_t i(0); i < ci_start1.size(); ++i) cout << "ci_start1: " << ci_start1[i].first << ", " << ci_start1[i].second << "\n";
+cout << "BO: " << bo.first << ", " << bo.second << "\n";
+
+bo = Boundary(ci_end1);
+for (size_t i(0); i < ci_end1.size(); ++i) cout << "ci_end1: " << ci_end1[i].first << ", " << ci_end1[i].second << "\n";
+cout << "BO: " << bo.first << ", " << bo.second << "\n";
+
+bo = Boundary(ci_start2);
+for (size_t i(0); i < ci_start2.size(); ++i) cout << "ci_start2: " << ci_start2[i].first << ", " << ci_start2[i].second << "\n";
+cout << "BO: " << bo.first << ", " << bo.second << "\n"; 
+
+bo = Boundary(ci_end2);
+for (size_t i(0); i < ci_end2.size(); ++i) cout << "ci_end2: " << ci_end2[i].first << ", " << ci_end2[i].second << "\n";
+cout << "BO: " << bo.first << ", " << bo.second << "\n"; 
+
+    }
+    // Printing actual alignment
+    for (AliFragment *f = _frags;f;f = f->next()) {
+        if (f != _frags) cout<<"\n"<<EXCISED_MESSAGE<<"\n";
+        f->printAlignment();
+    }
+
+    delete[] n_ali;
+    delete[] n_id;
+    delete[] n_gap;
 }
 
 void AGEaligner::printAlignment()
@@ -311,17 +528,17 @@ void AGEaligner::printAlignment()
 		for (AliFragment *f = _frags;f && f->next();f = f->next()) {
 			if (!getExcisedRange(f,s,e,0,1)) continue;
 			int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
-			int n_hom = calcIdentity(_seq1,bp1,bp2,left,right);
-			cout<<" first  seq => "<<setw(9)<<n_hom<<" nucs";
-			if (n_hom > 0)
-				cout<<" ["<<s + inc1*left<<","<<s + inc1*(right - 1)<<"] to"
+			int homo_run = calcIdentity(_seq1,bp1,bp2,left,right);
+			cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+			if (homo_run > 0)
+				cout<<" ["<<s + inc1 * left<<","<<s + inc1*(right - 1)<<"] to"
 					<<" ["<<e + inc1*left<<","<<e + inc1*(right - 1)<<"]";
 			cout<<"\n";
 			s = f->end2() + inc2, e = f->next()->start2();
 			bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
-			n_hom = calcIdentity(_seq2,bp1,bp2,left,right);
-			cout<<" second seq => "<<setw(9)<<n_hom<<" nucs";
-			if (n_hom > 0)
+			homo_run = calcIdentity(_seq2,bp1,bp2,left,right);
+			cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+			if (homo_run > 0)
 				cout<<" ["<<s + inc2*left<<","<<s + inc2*(right - 1)<<"] to"
 					<<" ["<<e + inc2*left<<","<<e + inc2*(right - 1)<<"]";
 			cout<<"\n";
@@ -331,19 +548,19 @@ void AGEaligner::printAlignment()
 		for (AliFragment *f = _frags;f && f->next();f = f->next()) {
 			if (!getExcisedRange(f,s,e,-1,1)) continue;
 			int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
-			int n_hom = calcOutsideIdentity(_seq1,bp1,bp2);
-			cout<<" first  seq => "<<setw(9)<<n_hom<<" nucs";
-			if (n_hom > 0)
-				cout<<" ["<<s - inc1*(n_hom - 1)<<","<<s<<"] to"
-					<<" ["<<e<<","<<e + inc1*(n_hom - 1)<<"]";
+			int homo_run = calcOutsideIdentity(_seq1,bp1,bp2);
+			cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+			if (homo_run > 0)
+				cout<<" ["<<s - inc1*(homo_run - 1)<<","<<s<<"] to"
+					<<" ["<<e<<","<<e + inc1*(homo_run - 1)<<"]";
 			cout<<"\n";
 			s = f->end2(), e = f->next()->start2();
 			bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
-			n_hom = calcOutsideIdentity(_seq2,bp1,bp2);
-			cout<<" second seq => "<<setw(9)<<n_hom<<" nucs";
-			if (n_hom > 0)
-				cout<<" ["<<s - inc2*(n_hom - 1)<<","<<s<<"] to"
-					<<" ["<<e<<","<<e + inc2*(n_hom - 1)<<"]";
+			homo_run = calcOutsideIdentity(_seq2,bp1,bp2);
+			cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+			if (homo_run > 0)
+				cout<<" ["<<s - inc2*(homo_run - 1)<<","<<s<<"] to"
+					<<" ["<<e<<","<<e + inc2*(homo_run - 1)<<"]";
 			cout<<"\n";
 		}
 
@@ -351,19 +568,19 @@ void AGEaligner::printAlignment()
 		for (AliFragment *f = _frags;f && f->next();f = f->next()) {
 			if (!getExcisedRange(f,s,e)) continue;
 			int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
-			int n_hom = calcInsideIdentity(_seq1,bp1,bp2);
-			cout<<" first  seq => "<<setw(9)<<n_hom<<" nucs";
-			if (n_hom > 0)
-				cout<<" ["<<s<<","<<s + inc1*(n_hom - 1)<<"] to"
-					<<" ["<<e - inc1*(n_hom - 1)<<","<<e<<"]";
+			int homo_run = calcInsideIdentity(_seq1,bp1,bp2);
+			cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+			if (homo_run > 0)
+				cout<<" ["<<s<<","<<s + inc1*(homo_run - 1)<<"] to"
+					<<" ["<<e - inc1*(homo_run - 1)<<","<<e<<"]";
 			cout<<"\n";
 			s = f->end2() + inc2, e = f->next()->start2() - inc2;
 			bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
-			n_hom = calcInsideIdentity(_seq2,bp1,bp2);
-			cout<<" second seq => "<<setw(9)<<n_hom<<" nucs";
-			if (n_hom > 0)
-				cout<<" ["<<s<<","<<s + inc2*(n_hom - 1)<<"] to"
-					<<" ["<<e - inc2*(n_hom - 1)<<","<<e<<"]";
+			homo_run = calcInsideIdentity(_seq2,bp1,bp2);
+			cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+			if (homo_run > 0)
+				cout<<" ["<<s<<","<<s + inc2*(homo_run - 1)<<"] to"
+					<<" ["<<e - inc2*(homo_run - 1)<<","<<e<<"]";
 			cout<<"\n";
 		}
 	}
@@ -407,7 +624,7 @@ int AGEaligner::calcOutsideIdentity(string &seq,int bp1,int bp2)
 	return 0;
 }
 
-int AGEaligner::calcInsideIdentity(string &seq,int bp1,int bp2)
+int AGEaligner::calcInsideIdentity(string &seq, int bp1, int bp2)
 {
 	// bp1 and bp2 are zero based
 	if (bp1 >= bp2) return 0;
@@ -415,7 +632,7 @@ int AGEaligner::calcInsideIdentity(string &seq,int bp1,int bp2)
 	for (int i = 0;i < n_check;i++) {
 		int n_same = 0,start1 = bp1 - i;
 		for (int j = i;j < n_check;j++) {
-			if (Sequence::sameNuc(seq[start1 + j],seq[start2 + j])) n_same++;
+			if (Sequence::sameNuc(seq[start1 + j], seq[start2 + j])) n_same++;
 			else break;
 		}
 		if (n_same == n_check - i) return n_same;
@@ -444,6 +661,22 @@ int AGEaligner::calcIdentity(string &seq,int bp1,int bp2,int &left,int &right)
 	}
 
 	return right - left;
+}
+
+pair<int, int> AGEaligner::Boundary(vector< pair<int, int> > reg) {
+
+    pair<int, int> boundary(make_pair(0, 0));
+	if (reg.size() > 0) {
+
+		boundary = reg[0];
+    	for (size_t i(1); i < reg.size(); ++i) {
+
+			if (boundary.first  >  reg[i].first) boundary.first  = reg[i].first;
+			if (boundary.second < reg[i].second) boundary.second = reg[i].second;
+    	}
+	}
+
+    return boundary;
 }
 
 void AGEaligner::printMatrix(unsigned short *matr)

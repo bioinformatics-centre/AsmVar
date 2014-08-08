@@ -173,9 +173,6 @@ public :
 	static char gap() { return '-'; }
 
 	static bool isGap(char c) {
-		//if (c == '-') return true;
-		//if (c == ' ') return true;
-		//return false;
 		return (c == ' ' || c == '-'); // By Shujia Huang 2014-04-08 20:27:55
 	}
 
@@ -204,8 +201,6 @@ public :
 		if (end   <= 0 || end > _seq.length()) end   = _seq.length();
 		int s = start, e = end;
 		if (_reverse) {
-			//s = _seq.length() - e + 1;
-			//e = _seq.length() - s + 1; // This is not Right!!!! By Shujia Huang 2014-04-07 15:32:33
 			s = _seq.length() - end   + 1; // By Shujia Huang 2014-04-07 15:32:33
 			e = _seq.length() - start + 1; // By Shujia Huang 2014-04-07 15:32:33
 		}

@@ -56,8 +56,12 @@ VarUnit VarUnit::ReAlign(Fa &targetSeq, Fa &querySeq, AgeOption opt){
 	querySeq.CheckFaId(query.id);   // make sure query  fa is right
 
 	AgeAlignment alignment(*(this), opt);
-	alignment.Align(targetSeq.fa[target.id], querySeq.fa[query.id]);
-	return alignment.vu();
+	if (alignment.Align(targetSeq.fa[target.id], querySeq.fa[query.id])){
+	// Successful align!
+		return alignment.vu();
+	} else {
+		return *(this);
+	}
 }
 
 void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O){ 
@@ -178,18 +182,18 @@ bool AgeAlignment::Align(string &tarFa, string &qryFa){
 	unsigned long int varQrySize = vu_.query.end  - vu_.query.start;
     if (IsHugeMemory(varTarSize, varQrySize)) return false;
 
-	Sequence *tarSeq = new Sequence(tarFa, vu_.target.id, 1, false);
-	Sequence *qrySeq = new Sequence(qryFa, vu_.query.id , 1, false);
-	Sequence *tar = tarSeq->substr(vu_.target.start, vu_.target.end);
-	Sequence *qry = qrySeq->substr(vu_.query.start , vu_.query.end );
-
 #ifdef AGE_TIME
 timeval ali_s,ali_e;
 gettimeofday(&ali_s, NULL);
 #endif
 
-	bool isalign(true);
+	Sequence *tarSeq = new Sequence(tarFa, vu_.target.id, 1, false);
+	Sequence *qrySeq = new Sequence(qryFa, vu_.query.id , 1, false);
+	Sequence *tar = tarSeq->substr(vu_.target.start, vu_.target.end);
+	Sequence *qry = qrySeq->substr(vu_.query.start , vu_.query.end );
 	Scorer scr(para_.match, para_.mismatch, para_.gapOpen, para_.gapExtend);
+
+	bool isalign(true);
 	if (para_.both) {
             
         Sequence *qryClone = qry->clone(); 
@@ -203,9 +207,11 @@ gettimeofday(&ali_s, NULL);
 			cerr<<"No alignment made.\n";
 			isalign = false;
 		} else if (aligner1.score() >= aligner2.score()) {
-			aligner1.printAlignment();
+			//aligner1.printAlignment();
+aligner1.Test(); 
         } else {
-			aligner2.printAlignment();
+			//aligner2.printAlignment();
+aligner2.Test();
         } 
         delete qryClone;
 
@@ -213,7 +219,8 @@ gettimeofday(&ali_s, NULL);
 
         AGEaligner aligner(*tar, *qry);
         if (aligner.align(scr, flag)){
-            aligner.printAlignment();
+            //aligner.printAlignment();
+aligner.Test();
         } else {
             cerr << "No alignment made.\n";
 			isalign = false; 

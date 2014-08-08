@@ -26,6 +26,8 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <vector>
+#include <utility> // std::pair, std::make_pair
 #ifdef OMP
 #include <omp.h>
 #endif
@@ -37,6 +39,9 @@ using namespace std;
 //--- AGE includes ---
 #include "Sequence.h"
 #include "Scorer.h"
+
+//--- Other includes ---
+#include "Region.h"
 
 const static unsigned char DIAGONAL   = 1;
 const static unsigned char HORIZONTAL = 2;
@@ -65,6 +70,50 @@ const static unsigned char RM_MASK       = MASK<<6;
 
 class Block;
 class AliFragment;
+
+class AlignResult {
+// By Shujia Huang 2014-08-08 09:43:03
+public :
+	AlignResult(): _homo_run_atbp(0), _homo_run_outbp(0), _homo_run_inbp(0) {}
+
+	void set_alig_region1(Region r) { _alig_region1 = r; }
+	void set_alig_region2(Region r) { _alig_region2 = r; }
+
+	void set_ci_start1(pair<int, int> ci) { _ci_start1 = ci; }
+	void set_ci_end1  (pair<int, int> ci) { _ci_end1   = ci; }
+	void set_ci_start2(pair<int, int> ci) { _ci_start2 = ci; }
+	void set_ci_end2  (pair<int, int> ci) { _ci_end2   = ci; }
+
+	void set_homo_run_atbp(int  hr) { _homo_run_atbp  = hr; }
+	void set_homo_run_inbp(int  hr) { _homo_run_inbp  = hr; }
+	void set_homo_run_outbp(int hr) { _homo_run_outbp = hr; }
+
+	Region alig_region1() { return _alig_region1; }
+	Region alig_region2() { return _alig_region2; }
+
+	pair<int, int> ci_start1() { return _ci_start1; }
+	pair<int, int> ci_end1()   { return _ci_end1;   }
+	pair<int, int> ci_start2() { return _ci_start2; }
+	pair<int, int> ci_end2()   { return _ci_end2;   }
+
+	pair<int, int> homo_run_atbp()  { return _homo_run_atbp;  }
+	pair<int, int> homo_run_inbp()  { return _homo_run_inbp;  }
+	pair<int, int> homo_run_outbp() { return _homo_run_outbp; }
+	
+public :
+	
+	Region _alig_region1;
+	Region _alig_region2;
+
+	pair<int, int> _ci_start1, _ci_end1;
+	pair<int, int> _ci_start2, _ci_end2;
+
+	int _homo_run_atbp; // homo run at breakpoints
+	int _homo_run_outbp;// homo run outside breakpoints
+	int _homo_run_inbp; // homo run inside breakpoints
+
+
+};
 
 class AGEaligner {
 
@@ -97,12 +146,27 @@ private:
 
   short _match,_mismatch,_gap_open,_gap_extend; // Scoring parameters
 
+  AlignResult _align_result; // By Shujia Huang
+
 public:
   AGEaligner(Sequence &s1,Sequence &s2);
   ~AGEaligner();
   bool align(Scorer &scr,int flag);
   void printAlignment();
   int score();
+
+  // Add By Shujia Huang 2014-08-07 15:29:59
+  AlignResult align_result() { return _align_result; }
+  pair<int, int> Boundary(vector< pair<int, int> > reg);
+  void Test(); // Test
+  short match()      { return _match;      }
+  short mismatch()   { return _mismatch;   }
+  short gap_open()   { return _gap_open;   }
+  short gap_extend() { return _gap_extend; }
+  AliFragment *alifrag() { return _frags;  }
+  AliFragment *alifrag_alt() { return _frags_alt;   }
+  AGEaligner  *aux_aligner() { return _aux_aligner; }
+  // ****** Add End ************************
 
 private:
   void printMatrix(unsigned short *matr);
