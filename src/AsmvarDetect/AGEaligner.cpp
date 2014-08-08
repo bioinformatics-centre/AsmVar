@@ -183,26 +183,11 @@ void AGEaligner::Test(){
         return;
     }
 
-    const static string EXCISED_MESSAGE  = "EXCISED REGION";
-    const static string EXCISED_MESSAGEs = "EXCISED REGION(S)";
-
 	int inc1 = 1; if (_s1.reverse()) inc1 = -1;
     int inc2 = 1; if (_s2.reverse()) inc2 = -1;
-    int s1 = _s1.start(),s2 =_s2.start();
-
-    int e1 = s1 + inc1*(_seq1.length() - 1);
-    int e2 = s2 + inc2*(_seq2.length() - 1);
-    cout << "First  seq ["
-        << setw(calcWidth(s1,s2))  << s1 << ","
-        << setw(calcWidth(e1,e2))  << e1 << "] => "
-        << setw(9)<<_seq1.length() << " nucs '" << _s1.name() << "'\n";
-    cout << "Second seq ["
-        << setw(calcWidth(s1,s2))  << s2 << ","
-        << setw(calcWidth(e1,e2))  << e2 << "] => "
-        << setw(9)<<_seq2.length() << " nucs '" << _s2.name() << "'\n\n";
 
 	int n_frg = 0;
-    for (AliFragment *f = _frags;f;f = f->next()) n_frg++;
+    for (AliFragment *f = _frags; f; f = f->next()) n_frg++;
     int *n_ali = new int[n_frg + 1];
     int *n_id  = new int[n_frg + 1];
     int *n_gap = new int[n_frg + 1];
@@ -216,99 +201,50 @@ void AGEaligner::Test(){
         index++;
     }
 
-    int identic = 0,gap = 0;
-    if (n_ali[0] > 0) {
-        identic = (int)(100.*n_id[0]/n_ali[0] + 0.5);
-        gap     = (int)(100.*n_gap[0]/n_ali[0] + 0.5);
-    }
+    int identic = 0;
+    if (n_ali[0] > 0) identic = (int)(100.*n_id[0]/n_ali[0] + 0.5);
 
-vector< pair<int,int> > iden;
-iden.push_back(make_pair(n_id[0], identic));
-
+	_align_result._identity.clear();
+	_align_result._identity.push_back(make_pair(n_id[0], identic));
     if (n_frg > 1) {
         for (int i = 1;i < n_frg + 1; ++i) {
-iden.push_back( make_pair(n_id[i], int(100.0*n_id[i]/n_ali[i] + 0.5)) );
+			_align_result._identity.push_back(
+				make_pair(n_id[i], int(100.0*n_id[i]/n_ali[i] + 0.5)));
 		}
     }
-    cout << "\nGaps:    "      << setw(9) << n_gap[0] << " (" << setw(3)
-        << gap << "%) nucs\n\n";
 
-for (size_t i(0); i < iden.size(); ++i) cout << "## " << iden[i].first <<", " << iden[i].second << "\n";
-
+	_align_result.id1 = _s1.name(); // Id of first  Seq
+	_align_result.id2 = _s2.name(); // Id of second Seq
+	_align_result._strand = '.';
     // Printing aligned region coordinates
     if (n_ali[0] > 0) {
-        cout << "Alignment:\n";
 
-vector< pair<int,int> > pos1, pos2;
-
-        for (AliFragment *f = _frags;f;f = f->next()) {
-pos1.push_back( make_pair(f->start1(), f->end1()) );
-
+		_align_result._alig_region1.clear();
+		_align_result._alig_region2.clear();
+        for (AliFragment *f = _frags; f; f = f->next()) {
+			// <start, end>
+			_align_result._alig_region1.push_back(make_pair(f->start1(), f->end1()));
+			_align_result._alig_region2.push_back(make_pair(f->start2(), f->end2()));
         }
-
-for (size_t i(0); i < pos1.size(); ++i){ cout << "\n## " << pos1[i].first << ", " << pos1[i].second << "\n"; }
-        cout << "\n second seq =>  ";
-        for (AliFragment *f = _frags;f;f = f->next()) {
-pos2.push_back( make_pair(f->start2(), f->end2()) );
-        }
-
-for (size_t i(0); i < pos2.size(); ++i){ cout << "\n## " << pos2[i].first << ", " << pos2[i].second << "\n"; }
-        cout << "\n";
+		_align_result._strand = (_align_result._alig_region2[0].first > 
+								 _align_result._alig_region2[0].second) ? '-' : '+';
     }
 
-    int s,e,len;
     if (n_frg > 1) {
-        cout << "\n" << EXCISED_MESSAGEs << ":\n";
-        for (AliFragment *f = _frags;f && f->next();f = f->next()) {
-            if (!getExcisedRange(f,s,e)) continue;
-            cout << " first  seq => ";
-            len = abs(s - e - inc1);
-            cout << setw(9) << len << " nucs";
-  			if (len > 0) { 
-				cout << " [" << s << "," << e << "]";
-			}
-            cout << "\n";
-            cout << " second seq => ";
-            s = f->end2() + inc2;
-            e = f->next()->start2() - inc2;
-            len = abs(s - e - inc2);
-            cout << setw(9) << len << " nucs";
-            if (len > 0) { 
-				cout << " [" << s << "," << e << "]";
-			}
-            cout << "\n";
-        }
-		if (_n_bpoints > 1) cout<<"ALTERNATIVE REGION(S): "<<_n_bpoints - 1<<"\n";
-        for (int i = _n_bpoints - 1;i >= 1;i--) {
-            if (!findAlignment(i,true)) continue;  // Fiding alternative alignment
-            if (!_frags_alt) continue;
-            for (AliFragment *f = _frags_alt;f && f->next();f = f->next()) {
-                if (!getExcisedRange(f,s,e)) continue;
-                cout<<" first  seq => ";
-                len = abs(s - e - inc1);
-                cout<<setw(9)<<len<<" nucs";
-                if (len > 0) cout<<" ["<<s<<","<<e<<"]";
-                cout<<"\n";
-                cout<<" second seq => ";
-                s = f->end2() + inc2;
-                e = f->next()->start2() - inc2;
-                len = abs(s - e - inc2);
-                cout<<setw(9)<<len<<" nucs";
-                if (len > 0) cout<<" ["<<s<<","<<e<<"]";
-                cout<<"\n";
-            }
-            break;
-        }
+
+		_align_result._is_alternative_align = (_n_bpoints > 1);
 
         // Printing sequence identity around breakpoints
 		vector< pair<int,int> > ci_start1, ci_end1, ci_start2, ci_end2; 
 		// Identity at breakpoints
         int left, right, s, e;
         for (AliFragment *f = _frags;f && f->next();f = f->next()) {
+
             if (!getExcisedRange(f,s,e,0,1)) continue;
             int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
             int homo_run = calcIdentity(_seq1,bp1,bp2,left,right);
-            //cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+			_align_result._homo_run_atbp1 = homo_run;
+
             if (homo_run > 0) {
 				ci_start1.push_back(make_pair(s + inc1*left, s + inc1*(right - 1)));
 				ci_end1.push_back  (make_pair(e + inc1*left, e + inc1*(right - 1)));
@@ -317,19 +253,22 @@ for (size_t i(0); i < pos2.size(); ++i){ cout << "\n## " << pos2[i].first << ", 
             s = f->end2() + inc2, e = f->next()->start2();
             bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
             homo_run = calcIdentity(_seq2,bp1,bp2,left,right);
-            //cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+			_align_result._homo_run_atbp2 = homo_run;
+
             if (homo_run > 0) {
 				ci_start2.push_back(make_pair(s + inc2*left, s + inc2*(right - 1)));
 				ci_end2.push_back  (make_pair(e + inc2*left, e + inc2*(right - 1)));
 			}
         }
 
-        //cout<<"Identity outside breakpoints: "<<"\n";
+        // Identity outside breakpoints
         for (AliFragment *f = _frags;f && f->next();f = f->next()) {
+
             if (!getExcisedRange(f,s,e,-1,1)) continue;
             int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
             int homo_run = calcOutsideIdentity(_seq1,bp1,bp2);
-            //cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+			_align_result._homo_run_outbp1 = homo_run;
+
             if (homo_run > 0) {
 				ci_start1.push_back(make_pair(s - inc1*(homo_run - 1), s));
 				ci_end1.push_back  (make_pair(e, e + inc1*(homo_run - 1)));
@@ -338,7 +277,7 @@ for (size_t i(0); i < pos2.size(); ++i){ cout << "\n## " << pos2[i].first << ", 
             s = f->end2(), e = f->next()->start2();
             bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
             homo_run = calcOutsideIdentity(_seq2,bp1,bp2);
-            //cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+			_align_result._homo_run_outbp2 = homo_run; 
             if (homo_run > 0) {
 				ci_start2.push_back(make_pair(s - inc2*(homo_run - 1), s));
 				ci_end2.push_back  (make_pair(e, e + inc2*(homo_run - 1)));
@@ -349,7 +288,7 @@ for (size_t i(0); i < pos2.size(); ++i){ cout << "\n## " << pos2[i].first << ", 
             if (!getExcisedRange(f,s,e)) continue;
             int bp1 = inc1*(s - _s1.start()), bp2 = inc1*(e - _s1.start());
             int homo_run = calcInsideIdentity(_seq1,bp1,bp2);
-            //cout<<" first  seq => "<<setw(9)<<homo_run<<" nucs";
+			_align_result._homo_run_inbp1 = homo_run;
             if (homo_run > 0) {
 				ci_start1.push_back(make_pair(s, s + inc1*(homo_run - 1)));
 				ci_end1.push_back  (make_pair(e - inc1*(homo_run - 1), e));
@@ -358,39 +297,24 @@ for (size_t i(0); i < pos2.size(); ++i){ cout << "\n## " << pos2[i].first << ", 
             s = f->end2() + inc2, e = f->next()->start2() - inc2;
             bp1 = inc2*(s - _s2.start()), bp2 = inc2*(e - _s2.start());
             homo_run = calcInsideIdentity(_seq2,bp1,bp2);
-            //cout<<" second seq => "<<setw(9)<<homo_run<<" nucs";
+			_align_result._homo_run_inbp2 = homo_run;
             if (homo_run > 0) {
 				ci_start2.push_back(make_pair(s, s + inc2*(homo_run - 1)));
 				ci_end2.push_back  (make_pair(e - inc2*(homo_run - 1), e));
 			}
         }
 
-pair<int, int> bo = Boundary(ci_start1);
-for (size_t i(0); i < ci_start1.size(); ++i) cout << "ci_start1: " << ci_start1[i].first << ", " << ci_start1[i].second << "\n";
-cout << "BO: " << bo.first << ", " << bo.second << "\n";
-
-bo = Boundary(ci_end1);
-for (size_t i(0); i < ci_end1.size(); ++i) cout << "ci_end1: " << ci_end1[i].first << ", " << ci_end1[i].second << "\n";
-cout << "BO: " << bo.first << ", " << bo.second << "\n";
-
-bo = Boundary(ci_start2);
-for (size_t i(0); i < ci_start2.size(); ++i) cout << "ci_start2: " << ci_start2[i].first << ", " << ci_start2[i].second << "\n";
-cout << "BO: " << bo.first << ", " << bo.second << "\n"; 
-
-bo = Boundary(ci_end2);
-for (size_t i(0); i < ci_end2.size(); ++i) cout << "ci_end2: " << ci_end2[i].first << ", " << ci_end2[i].second << "\n";
-cout << "BO: " << bo.first << ", " << bo.second << "\n"; 
-
-    }
-    // Printing actual alignment
-    for (AliFragment *f = _frags;f;f = f->next()) {
-        if (f != _frags) cout<<"\n"<<EXCISED_MESSAGE<<"\n";
-        f->printAlignment();
+		_align_result._ci_start1 = Boundary(ci_start1);
+		_align_result._ci_end1   = Boundary(ci_end1);
+		_align_result._ci_start2 = Boundary(ci_start2);
+		_align_result._ci_end2   = Boundary(ci_end2);
     }
 
     delete[] n_ali;
     delete[] n_id;
     delete[] n_gap;
+
+	return;
 }
 
 void AGEaligner::printAlignment()

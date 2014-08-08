@@ -101,6 +101,8 @@ public:
     void Init(VarUnit &v, AgeOption opt);
     bool Align(string &tarFa, string &qryFa);
 
+	AlignResult AligResult() { return alignResult_; }	
+
 private:
 
     void ExtendVariant(unsigned long int, unsigned long int, int extandFlankSzie);
@@ -110,6 +112,7 @@ private:
 
     VarUnit   vu_;
     AgeOption para_; // Parameters for AGE
+	AlignResult alignResult_;
     bool isInit_;
 };
 

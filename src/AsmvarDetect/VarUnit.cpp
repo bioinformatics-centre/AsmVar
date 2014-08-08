@@ -209,9 +209,11 @@ gettimeofday(&ali_s, NULL);
 		} else if (aligner1.score() >= aligner2.score()) {
 			//aligner1.printAlignment();
 aligner1.Test(); 
+alignResult_ = aligner1.align_result();
         } else {
 			//aligner2.printAlignment();
 aligner2.Test();
+alignResult_ = aligner2.align_result();
         } 
         delete qryClone;
 
@@ -221,11 +223,35 @@ aligner2.Test();
         if (aligner.align(scr, flag)){
             //aligner.printAlignment();
 aligner.Test();
+alignResult_ = aligner.align_result();
         } else {
             cerr << "No alignment made.\n";
 			isalign = false; 
         }
     }
+
+if (isalign) {
+
+	cout << "# " << alignResult_.id1 << "\t" << alignResult_.id2 << "\t" << alignResult_._strand << "\n";
+	cout << "# _is_alternative_align: " << alignResult_._is_alternative_align << "\n";
+	cout << "_homo_run_atbp1: " << alignResult_._homo_run_atbp1 << "\n";
+	cout << "_homo_run_inbp1: " << alignResult_._homo_run_inbp1 << "\n";
+	cout << "_homo_run_outbp1: " << alignResult_._homo_run_outbp1 << "\n";
+	cout << "_homo_run_atbp2: " << alignResult_._homo_run_atbp2 << "\n";
+	cout << "_homo_run_inbp2: " << alignResult_._homo_run_inbp2 << "\n";
+	cout << "_homo_run_outbp2: " << alignResult_._homo_run_outbp2 << "\n";
+
+	for (size_t i(0); i < alignResult_._alig_region1.size(); ++i) cout << "# Align Region1: " << alignResult_._alig_region1[i].first << ", " << alignResult_._alig_region1[i].second << "\n";
+	for (size_t i(0); i < alignResult_._alig_region2.size(); ++i) cout << "# Align Region2: " << alignResult_._alig_region2[i].first << ", " << alignResult_._alig_region2[i].second << "\n";
+
+	for (size_t i(0); i < alignResult_._identity.size(); ++i) cout << "# Align Region1: " << alignResult_._identity[i].first << ", " << alignResult_._identity[i].second << "\n";
+
+	cout << "\n";
+	cout << "# _ci_start1: " << alignResult_._ci_start1.first << "," << alignResult_._ci_start1.second << "\n";
+	cout << "# _ci_end1: " << alignResult_._ci_end1.first << "\t" << alignResult_._ci_end1.second << "\n";
+	cout << "# _ci_start2: " << alignResult_._ci_start2.first << "," << alignResult_._ci_start2.second << "\n";
+	cout << "# _ci_end1: " << alignResult_._ci_end2.first << "\t" << alignResult_._ci_end2.second << "\n\n";
+}
 
 #ifdef AGE_TIME
 gettimeofday(&ali_e, NULL);

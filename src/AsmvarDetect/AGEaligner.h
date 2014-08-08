@@ -40,9 +40,6 @@ using namespace std;
 #include "Sequence.h"
 #include "Scorer.h"
 
-//--- Other includes ---
-#include "Region.h"
-
 const static unsigned char DIAGONAL   = 1;
 const static unsigned char HORIZONTAL = 2;
 const static unsigned char VERTICAL   = 3;
@@ -74,8 +71,11 @@ class AliFragment;
 class AlignResult {
 // By Shujia Huang 2014-08-08 09:43:03
 public :
-	AlignResult(): _homo_run_atbp(0), _homo_run_outbp(0), _homo_run_inbp(0) {}
-
+	AlignResult(): _homo_run_atbp1(0),  _homo_run_atbp2(0),
+				   _homo_run_inbp1(0),  _homo_run_inbp2(0),
+				   _homo_run_outbp1(0), _homo_run_outbp2(0),
+				   _is_alternative_align(false), _strand('.') {}
+/*
 	void set_alig_region1(Region r) { _alig_region1 = r; }
 	void set_alig_region2(Region r) { _alig_region2 = r; }
 
@@ -99,20 +99,26 @@ public :
 	pair<int, int> homo_run_atbp()  { return _homo_run_atbp;  }
 	pair<int, int> homo_run_inbp()  { return _homo_run_inbp;  }
 	pair<int, int> homo_run_outbp() { return _homo_run_outbp; }
+*/
 	
 public :
-	
-	Region _alig_region1;
-	Region _alig_region2;
+	string id1; // Id of first  Seq
+	string id2; // Id of second Seq
+	vector< pair<int,int> > _alig_region1;
+	vector< pair<int,int> > _alig_region2;
 
 	pair<int, int> _ci_start1, _ci_end1;
 	pair<int, int> _ci_start2, _ci_end2;
 
-	int _homo_run_atbp; // homo run at breakpoints
-	int _homo_run_outbp;// homo run outside breakpoints
-	int _homo_run_inbp; // homo run inside breakpoints
+	vector< pair<int,int> > _identity; // Alignment identity:<length(bp), identity%>
 
+	int _homo_run_atbp1,  _homo_run_atbp2; // homo run at breakpoints
+	int _homo_run_inbp1,  _homo_run_inbp2; // homo run inside breakpoints
+	int _homo_run_outbp1, _homo_run_outbp2;// homo run outside breakpoints
 
+	char _strand;
+
+	bool _is_alternative_align;
 };
 
 class AGEaligner {
