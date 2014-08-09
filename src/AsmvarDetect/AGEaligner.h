@@ -96,7 +96,7 @@ public :
 	string _id1;
 	string _id2;
 
-	int _score; // Aligne score
+	int _score; // Aligne score by AGE process. This score is not that good!
 	char _strand;
 	bool _is_alternative_align;
 	vector< pair<int,int> > _identity; // Alignment identity:<length(bp), identity%>

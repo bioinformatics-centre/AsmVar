@@ -94,13 +94,15 @@ class AgeAlignment {
 
 public:
 
-    AgeAlignment(): isInit_(false){}
-    AgeAlignment(VarUnit &v, AgeOption opt){ Init(v, opt); }
+    AgeAlignment(): isInit_(false), isalign_(false) {}
+    AgeAlignment(VarUnit &v, AgeOption opt) { Init(v, opt); }
 	VarUnit vu() { return vu_; } 
 
     void Init(VarUnit &v, AgeOption opt);
     bool Align(string &tarFa, string &qryFa);
 
+	// Caution: The position order is big->small in query if 
+	// mapping to the '-' strand! We should take care about this!
 	AlignResult AligResult() { return alignResult_; }	
 
 private:
@@ -114,6 +116,7 @@ private:
     AgeOption para_; // Parameters for AGE
 	AlignResult alignResult_;
     bool isInit_;
+	bool isalign_;
 };
 
 #endif

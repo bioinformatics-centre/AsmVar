@@ -166,9 +166,7 @@ gettimeofday(&ali_s, NULL);
 	Sequence *qry = qrySeq->substr(vu_.query.start , vu_.query.end );
 	Scorer scr(para_.match, para_.mismatch, para_.gapOpen, para_.gapExtend);
 
-//AliFragment *aligf = NULL;
-
-	bool isalign(true);
+	isalign_ = true;
 	if (para_.both) {
             
         Sequence *qryClone = qry->clone(); 
@@ -180,15 +178,13 @@ gettimeofday(&ali_s, NULL);
 
 		if (!res1 && !res2) {
 			cerr<<"No alignment made.\n";
-			isalign = false;
+			isalign_ = false;
 		} else if (aligner1.score() >= aligner2.score()) {
 			aligner1.SetAlignResult(); 
 			alignResult_ = aligner1.align_result();
-//aligf = aligner1.alifrag();
         } else {
 			aligner2.SetAlignResult();
 			alignResult_ = aligner2.align_result();
-//aligf = aligner2.alifrag();
         } 
         delete qryClone;
 
@@ -198,38 +194,23 @@ gettimeofday(&ali_s, NULL);
         if (aligner.align(scr, flag)){
 			aligner.SetAlignResult();
 			alignResult_ = aligner.align_result();
-//aligf = aligner.alifrag();
         } else {
             cerr << "No alignment made.\n";
-			isalign = false; 
+			isalign_ = false; 
         }
     }
 
-if (isalign) {
+/*
+if (isalign_) {
 
-	cout << "# " << alignResult_._id1 << "\t" << alignResult_._id2 << "\t" << alignResult_._strand << "\n";
-	cout << "# _is_alternative_align: " << alignResult_._is_alternative_align << "\n";
-	cout << "_homo_run_atbp1: " << alignResult_._homo_run_atbp1 << "\n";
-	cout << "_homo_run_inbp1: " << alignResult_._homo_run_inbp1 << "\n";
-	cout << "_homo_run_outbp1: " << alignResult_._homo_run_outbp1 << "\n";
-	cout << "_homo_run_atbp2: " << alignResult_._homo_run_atbp2 << "\n";
-	cout << "_homo_run_inbp2: " << alignResult_._homo_run_inbp2 << "\n";
-	cout << "_homo_run_outbp2: " << alignResult_._homo_run_outbp2 << "\n";
+for (size_t i(0); i < alignResult_._map.size(); ++i) {
 
-	for (size_t i(0); i < alignResult_._map.size(); ++i) {
-		cout << "# Align Region1: " << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << ", " << alignResult_._map[i].first._end << "\n";
-		cout << "# Align Region2: " << alignResult_._map[i].second._id << " " << alignResult_._map[i].second._start << ", " << alignResult_._map[i].second._end << "\n";
-	}
-
-	for (size_t i(0); i < alignResult_._identity.size(); ++i) cout << "# Align Region1: " << alignResult_._identity[i].first << ", " << alignResult_._identity[i].second << "\n";
-
-	cout << "\n";
-	cout << "# _ci_start1: " << alignResult_._ci_start1.first << "," << alignResult_._ci_start1.second << "\n";
-	cout << "# _ci_end1: " << alignResult_._ci_end1.first << "\t" << alignResult_._ci_end1.second << "\n";
-	cout << "# _ci_start2: " << alignResult_._ci_start2.first << "," << alignResult_._ci_start2.second << "\n";
-	cout << "# _ci_end1: " << alignResult_._ci_end2.first << "\t" << alignResult_._ci_end2.second << "\n\n";
-
+	cout << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\t" << alignResult_._map[i].first._sequence << "\n";
+	cout << "Mapinfo:\t" << alignResult_._map_info[i] << "\n";
+	cout << alignResult_._map[i].second._id << " " << alignResult_._map[i].second._start << "\t" << alignResult_._map[i].second._end << "\t" << alignResult_._map[i].second._sequence << "\n";
 }
+}
+*/
 
 #ifdef AGE_TIME
 gettimeofday(&ali_e, NULL);
@@ -240,7 +221,7 @@ cout << "\nAlignment time is " << ali_e.tv_sec - ali_s.tv_sec
 	Sequence::deleteSequences(tarSeq);
 	Sequence::deleteSequences(qrySeq);
 
-	return isalign;
+	return isalign_;
 }
 
 void AgeAlignment::ExtendVU(unsigned long int tarFaSize, 

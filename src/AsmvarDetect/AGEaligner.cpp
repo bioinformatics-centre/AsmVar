@@ -186,8 +186,6 @@ void AGEaligner::SetAlignResult() {
     }
 
 	_align_result._score = score();
-	int inc1 = 1; if (_s1.reverse()) inc1 = -1;
-    int inc2 = 1; if (_s2.reverse()) inc2 = -1;
 
 	int n_frg = 0;
     for (AliFragment *f = _frags; f; f = f->next()) n_frg++;
@@ -204,11 +202,12 @@ void AGEaligner::SetAlignResult() {
         index++;
     }
 
-    int identic = 0;
-    if (n_ali[0] > 0) identic = (int)(100.*n_id[0]/n_ali[0] + 0.5);
-
 	_align_result._identity.clear();
-	_align_result._identity.push_back(make_pair(n_id[0], identic));
+    int identic = 0;
+    if (n_ali[0] > 0) { 
+		identic = (int)(100.*n_id[0]/n_ali[0] + 0.5);
+		_align_result._identity.push_back(make_pair(n_id[0], identic));
+	}
     if (n_frg > 1) {
         for (int i = 1;i < n_frg + 1; ++i) {
 			_align_result._identity.push_back(
@@ -216,8 +215,8 @@ void AGEaligner::SetAlignResult() {
 		}
     }
 
-	_align_result._id1     = _s1.name(); // Id of first  Seq
-	_align_result._id2     = _s2.name(); // Id of second Seq
+	_align_result._id1    = _s1.name(); // Id of first  Seq
+	_align_result._id2    = _s2.name(); // Id of second Seq
 	_align_result._strand = '.';
 	_align_result._map.clear();
 	_align_result._map_info.clear();
@@ -239,11 +238,11 @@ void AGEaligner::SetAlignResult() {
 			_align_result._map_info.push_back(f->mapInfo());
         }
 		_align_result._strand = (_align_result._map[0].second._start > 
-								 _align_result._map[0].second._end   ||
-								 _align_result._map[0].first._start  >
-								 _align_result._map[0].second._end   ) ? '-' : '+';
+								 _align_result._map[0].second._end) ? '-' : '+';
     }
 
+	int inc1 = 1; if (_s1.reverse()) inc1 = -1;
+	int inc2 = 1; if (_s2.reverse()) inc2 = -1;
     if (n_frg > 1) {
 
 		_align_result._is_alternative_align = (_n_bpoints > 1);
