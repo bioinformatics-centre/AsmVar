@@ -20,7 +20,7 @@ AGEaligner::AGEaligner(Sequence &s1,Sequence &s2) :
 	_s1_rc(_s1.clone()),_seq1_rc(_s1_rc->sequence()),
 	_frags(NULL), _frags_alt(NULL),_max(0), _flag(0), _aux_aligner(NULL),
 	_match(0), _mismatch(0), _gap_open(0), _gap_extend(0),
-	_n_bpoints(0)
+	_n_bpoints(0), _is_set_align_result(false)
 {
 	// Constructing of reverse complement (RC) of first sequence 
 	// RC could be needed for alignment in regions of inversion
@@ -109,7 +109,7 @@ bool AGEaligner::align(Scorer &scr, int flag)
 #endif
 
 	_max = findBPs(true,MAX_BPOINTS/2);
-	_max = findBPs(false,MAX_BPOINTS/2);
+	_max = findBPs(false,MAX_BPOINTS /2);
 	//cout<<"# bpoints = "<<_n_bpoints<<"\n";
 
 #ifdef AGE_TIME
@@ -176,13 +176,16 @@ bool AGEaligner::getExcisedRange(AliFragment *f,int &s,int &e,
 	return true;
 }
 
-void AGEaligner::Test(){
+void AGEaligner::SetAlignResult() {
+
+	_is_set_align_result = true;
 
 	if (_aux_aligner && _aux_aligner->score() > _max) {
         _aux_aligner->printAlignment();
         return;
     }
 
+	_align_result._score = score();
 	int inc1 = 1; if (_s1.reverse()) inc1 = -1;
     int inc2 = 1; if (_s2.reverse()) inc2 = -1;
 
@@ -213,21 +216,32 @@ void AGEaligner::Test(){
 		}
     }
 
-	_align_result.id1 = _s1.name(); // Id of first  Seq
-	_align_result.id2 = _s2.name(); // Id of second Seq
+	_align_result._id1     = _s1.name(); // Id of first  Seq
+	_align_result._id2     = _s2.name(); // Id of second Seq
 	_align_result._strand = '.';
+	_align_result._map.clear();
+	_align_result._map_info.clear();
     // Printing aligned region coordinates
     if (n_ali[0] > 0) {
 
-		_align_result._alig_region1.clear();
-		_align_result._alig_region2.clear();
         for (AliFragment *f = _frags; f; f = f->next()) {
-			// <start, end>
-			_align_result._alig_region1.push_back(make_pair(f->start1(), f->end1()));
-			_align_result._alig_region2.push_back(make_pair(f->start2(), f->end2()));
+
+			// <First, second>
+			MapData map1, map2;
+			map1._id = _align_result._id1;
+			map2._id = _align_result._id2;
+			map1._start    = f->start1(); map1._end = f->end1();
+			map2._start    = f->start2(); map2._end = f->end2();
+			map1._sequence = f->ali1();
+			map2._sequence = f->ali2();
+			
+			_align_result._map.push_back(make_pair(map1, map2));
+			_align_result._map_info.push_back(f->mapInfo());
         }
-		_align_result._strand = (_align_result._alig_region2[0].first > 
-								 _align_result._alig_region2[0].second) ? '-' : '+';
+		_align_result._strand = (_align_result._map[0].second._start > 
+								 _align_result._map[0].second._end   ||
+								 _align_result._map[0].first._start  >
+								 _align_result._map[0].second._end   ) ? '-' : '+';
     }
 
     if (n_frg > 1) {

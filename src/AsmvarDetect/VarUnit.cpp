@@ -1,6 +1,6 @@
 #include "VarUnit.h"
 
-VarUnit::VarUnit(){
+VarUnit::VarUnit() {
 
 	target.id = "-"; 
 	query.id  = "-"; 
@@ -15,7 +15,7 @@ VarUnit::VarUnit(){
 	return;
 }
 
-VarUnit::VarUnit (const VarUnit& V) {
+VarUnit::VarUnit(const VarUnit& V) {
 
 	target = V.target; query   = V.query; tarSeq = V.tarSeq; 
 	qrySeq = V.qrySeq; strand  = V.strand;
@@ -28,7 +28,7 @@ VarUnit::VarUnit (const VarUnit& V) {
 	return;
 }
 
-void VarUnit::ConvQryCoordinate ( unsigned int qrySeqLen ) {
+void VarUnit::ConvQryCoordinate(unsigned int qrySeqLen) {
 
 	// This funtion just conversion the coordinate of Axt/MAF format creat 
 	// by 'lastz'/'last ', which mapped to the '-' strand
@@ -40,7 +40,7 @@ void VarUnit::ConvQryCoordinate ( unsigned int qrySeqLen ) {
 	return;
 }
 
-void VarUnit::Swap(){ // Swap the target and query region. Ignore 'exp_target' 
+void VarUnit::Swap() { // Swap the target and query region. Ignore 'exp_target' 
 
 	Region tmp = target; target = query;  query  = tmp;
 	string str = tarSeq; tarSeq = qrySeq; qrySeq = str;
@@ -48,7 +48,7 @@ void VarUnit::Swap(){ // Swap the target and query region. Ignore 'exp_target'
 	return;
 }
 
-VarUnit VarUnit::ReAlign(Fa &targetSeq, Fa &querySeq, AgeOption opt){
+VarUnit VarUnit::ReAlign(Fa &targetSeq, Fa &querySeq, AgeOption opt) {
 // Return new VarUnit after AGE Realignment
 // This is a design strategy, I'm not going to simply update the raw VarUnit!
 
@@ -64,7 +64,7 @@ VarUnit VarUnit::ReAlign(Fa &targetSeq, Fa &querySeq, AgeOption opt){
 	}
 }
 
-void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O){ 
+void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O) { 
 // Output the alignment to STDERR
 
 	if (tarSeq.empty() || qrySeq.empty()){ 
@@ -85,7 +85,7 @@ void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O
 }
 
 void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen, 
-					 unsigned int qrySeqLen, ofstream &O){
+					 unsigned int qrySeqLen, ofstream &O) {
 
 	if (exp_target.isEmpty()) cerr << "[ERROR]exp_target is empty!\n";
 	OutStd(tarSeqLen, qrySeqLen, O);
@@ -112,41 +112,14 @@ void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen,
  * Class  AgeAlignment
  **********************************/
 
-void AgeAlignment::Init(VarUnit &v, AgeOption opt){
+void AgeAlignment::Init(VarUnit &v, AgeOption opt) {
 
 	vu_     = v;
 	para_   = opt;
 	isInit_ = true;
 }
 
-void AgeAlignment::ExtendVariant(unsigned long int tarFaSize, 
-								 unsigned long int qryFaSize,
-								 int extandFlankSzie){
-	
-	if (!isInit_) { 
-		cerr<<"[ERROR]You should init AgeAlignment before calling ExtendVariant()\n";
-		exit(1);
-	}
-	
-	vu_.target.start -= extandFlankSzie;
-	vu_.target.end   += extandFlankSzie;
-	vu_.query.start  -= extandFlankSzie;
-	vu_.query.end    += extandFlankSzie;
-
-	if (vu_.target.start < 1) vu_.target.start = 1;
-    if (vu_.target.end   > tarFaSize) vu_.target.end = tarFaSize;	
-    if (vu_.query.start  < 1) vu_.query.start = 1; 
-    if (vu_.query.end    > qryFaSize) vu_.query.end  = qryFaSize;
-
-	return;
-}
-
-bool AgeAlignment::IsHugeMemory(unsigned long int n, unsigned long int m){ 
-
-	return (5 * n * m / 1000000000 > 10); // 10G
-}
-
-bool AgeAlignment::Align(string &tarFa, string &qryFa){
+bool AgeAlignment::Align(string &tarFa, string &qryFa) {
 
 	if (!isInit_) { 
 		cerr << "[ERROR] You should init AgeAlignment before calling Align()\n";
@@ -176,7 +149,7 @@ bool AgeAlignment::Align(string &tarFa, string &qryFa){
     }
 	//////////////////////////////////////////////////////////////////////
 	
-	ExtendVariant(tarFa.length(), qryFa.length(), para_.extendVarFlankSzie);
+	ExtendVU(tarFa.length(), qryFa.length(), para_.extendVarFlankSzie);
     // Do not AGE if the memory cost is bigger than 10G.
     unsigned long int varTarSize = vu_.target.end - vu_.target.start;
 	unsigned long int varQrySize = vu_.query.end  - vu_.query.start;
@@ -193,6 +166,8 @@ gettimeofday(&ali_s, NULL);
 	Sequence *qry = qrySeq->substr(vu_.query.start , vu_.query.end );
 	Scorer scr(para_.match, para_.mismatch, para_.gapOpen, para_.gapExtend);
 
+//AliFragment *aligf = NULL;
+
 	bool isalign(true);
 	if (para_.both) {
             
@@ -207,13 +182,13 @@ gettimeofday(&ali_s, NULL);
 			cerr<<"No alignment made.\n";
 			isalign = false;
 		} else if (aligner1.score() >= aligner2.score()) {
-			//aligner1.printAlignment();
-aligner1.Test(); 
-alignResult_ = aligner1.align_result();
+			aligner1.SetAlignResult(); 
+			alignResult_ = aligner1.align_result();
+//aligf = aligner1.alifrag();
         } else {
-			//aligner2.printAlignment();
-aligner2.Test();
-alignResult_ = aligner2.align_result();
+			aligner2.SetAlignResult();
+			alignResult_ = aligner2.align_result();
+//aligf = aligner2.alifrag();
         } 
         delete qryClone;
 
@@ -221,9 +196,9 @@ alignResult_ = aligner2.align_result();
 
         AGEaligner aligner(*tar, *qry);
         if (aligner.align(scr, flag)){
-            //aligner.printAlignment();
-aligner.Test();
-alignResult_ = aligner.align_result();
+			aligner.SetAlignResult();
+			alignResult_ = aligner.align_result();
+//aligf = aligner.alifrag();
         } else {
             cerr << "No alignment made.\n";
 			isalign = false; 
@@ -232,7 +207,7 @@ alignResult_ = aligner.align_result();
 
 if (isalign) {
 
-	cout << "# " << alignResult_.id1 << "\t" << alignResult_.id2 << "\t" << alignResult_._strand << "\n";
+	cout << "# " << alignResult_._id1 << "\t" << alignResult_._id2 << "\t" << alignResult_._strand << "\n";
 	cout << "# _is_alternative_align: " << alignResult_._is_alternative_align << "\n";
 	cout << "_homo_run_atbp1: " << alignResult_._homo_run_atbp1 << "\n";
 	cout << "_homo_run_inbp1: " << alignResult_._homo_run_inbp1 << "\n";
@@ -241,8 +216,10 @@ if (isalign) {
 	cout << "_homo_run_inbp2: " << alignResult_._homo_run_inbp2 << "\n";
 	cout << "_homo_run_outbp2: " << alignResult_._homo_run_outbp2 << "\n";
 
-	for (size_t i(0); i < alignResult_._alig_region1.size(); ++i) cout << "# Align Region1: " << alignResult_._alig_region1[i].first << ", " << alignResult_._alig_region1[i].second << "\n";
-	for (size_t i(0); i < alignResult_._alig_region2.size(); ++i) cout << "# Align Region2: " << alignResult_._alig_region2[i].first << ", " << alignResult_._alig_region2[i].second << "\n";
+	for (size_t i(0); i < alignResult_._map.size(); ++i) {
+		cout << "# Align Region1: " << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << ", " << alignResult_._map[i].first._end << "\n";
+		cout << "# Align Region2: " << alignResult_._map[i].second._id << " " << alignResult_._map[i].second._start << ", " << alignResult_._map[i].second._end << "\n";
+	}
 
 	for (size_t i(0); i < alignResult_._identity.size(); ++i) cout << "# Align Region1: " << alignResult_._identity[i].first << ", " << alignResult_._identity[i].second << "\n";
 
@@ -251,6 +228,7 @@ if (isalign) {
 	cout << "# _ci_end1: " << alignResult_._ci_end1.first << "\t" << alignResult_._ci_end1.second << "\n";
 	cout << "# _ci_start2: " << alignResult_._ci_start2.first << "," << alignResult_._ci_start2.second << "\n";
 	cout << "# _ci_end1: " << alignResult_._ci_end2.first << "\t" << alignResult_._ci_end2.second << "\n\n";
+
 }
 
 #ifdef AGE_TIME
@@ -265,4 +243,30 @@ cout << "\nAlignment time is " << ali_e.tv_sec - ali_s.tv_sec
 	return isalign;
 }
 
+void AgeAlignment::ExtendVU(unsigned long int tarFaSize, 
+							unsigned long int qryFaSize,
+							int extandFlankSzie) {
+	
+	if (!isInit_) { 
+		cerr<<"[ERROR]You should init AgeAlignment before calling ExtendVU()\n";
+		exit(1);
+	}
+	
+	vu_.target.start -= extandFlankSzie;
+	vu_.target.end   += extandFlankSzie;
+	vu_.query.start  -= extandFlankSzie;
+	vu_.query.end    += extandFlankSzie;
+
+	if (vu_.target.start < 1) vu_.target.start = 1;
+    if (vu_.target.end   > tarFaSize) vu_.target.end = tarFaSize;	
+    if (vu_.query.start  < 1) vu_.query.start = 1; 
+    if (vu_.query.end    > qryFaSize) vu_.query.end  = qryFaSize;
+
+	return;
+}
+
+bool AgeAlignment::IsHugeMemory(unsigned long int n, unsigned long int m) { 
+
+	return (5 * n * m / 1000000000 > 10); // 10G
+}
 

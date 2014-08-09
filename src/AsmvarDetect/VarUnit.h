@@ -105,7 +105,7 @@ public:
 
 private:
 
-    void ExtendVariant(unsigned long int, unsigned long int, int extandFlankSzie);
+    void ExtendVU(unsigned long int, unsigned long int, int extandFlankSzie);
     bool IsHugeMemory(unsigned long int n, unsigned long int m);
 
 private:

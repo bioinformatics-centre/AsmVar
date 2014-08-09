@@ -68,57 +68,48 @@ const static unsigned char RM_MASK       = MASK<<6;
 class Block;
 class AliFragment;
 
+class MapData {
+
+public :
+
+	string _id;
+	int _start;
+	int _end;
+	string _sequence;
+};
+
 class AlignResult {
 // By Shujia Huang 2014-08-08 09:43:03
 public :
 	AlignResult(): _homo_run_atbp1(0),  _homo_run_atbp2(0),
 				   _homo_run_inbp1(0),  _homo_run_inbp2(0),
 				   _homo_run_outbp1(0), _homo_run_outbp2(0),
-				   _is_alternative_align(false), _strand('.') {}
-/*
-	void set_alig_region1(Region r) { _alig_region1 = r; }
-	void set_alig_region2(Region r) { _alig_region2 = r; }
-
-	void set_ci_start1(pair<int, int> ci) { _ci_start1 = ci; }
-	void set_ci_end1  (pair<int, int> ci) { _ci_end1   = ci; }
-	void set_ci_start2(pair<int, int> ci) { _ci_start2 = ci; }
-	void set_ci_end2  (pair<int, int> ci) { _ci_end2   = ci; }
-
-	void set_homo_run_atbp(int  hr) { _homo_run_atbp  = hr; }
-	void set_homo_run_inbp(int  hr) { _homo_run_inbp  = hr; }
-	void set_homo_run_outbp(int hr) { _homo_run_outbp = hr; }
-
-	Region alig_region1() { return _alig_region1; }
-	Region alig_region2() { return _alig_region2; }
-
-	pair<int, int> ci_start1() { return _ci_start1; }
-	pair<int, int> ci_end1()   { return _ci_end1;   }
-	pair<int, int> ci_start2() { return _ci_start2; }
-	pair<int, int> ci_end2()   { return _ci_end2;   }
-
-	pair<int, int> homo_run_atbp()  { return _homo_run_atbp;  }
-	pair<int, int> homo_run_inbp()  { return _homo_run_inbp;  }
-	pair<int, int> homo_run_outbp() { return _homo_run_outbp; }
-*/
+				   _score(-1),
+				   _is_alternative_align(false), _strand('.') {
+		_map.clear();
+		_map_info.clear();
+		_identity.clear();
+	}
 	
 public :
-	string id1; // Id of first  Seq
-	string id2; // Id of second Seq
-	vector< pair<int,int> > _alig_region1;
-	vector< pair<int,int> > _alig_region2;
+
+	string _id1;
+	string _id2;
+
+	int _score; // Aligne score
+	char _strand;
+	bool _is_alternative_align;
+	vector< pair<int,int> > _identity; // Alignment identity:<length(bp), identity%>
 
 	pair<int, int> _ci_start1, _ci_end1;
 	pair<int, int> _ci_start2, _ci_end2;
-
-	vector< pair<int,int> > _identity; // Alignment identity:<length(bp), identity%>
 
 	int _homo_run_atbp1,  _homo_run_atbp2; // homo run at breakpoints
 	int _homo_run_inbp1,  _homo_run_inbp2; // homo run inside breakpoints
 	int _homo_run_outbp1, _homo_run_outbp2;// homo run outside breakpoints
 
-	char _strand;
-
-	bool _is_alternative_align;
+	vector< pair<MapData, MapData> > _map; // first -> seq1, second -> seq2
+    vector< string > _map_info;
 };
 
 class AGEaligner {
@@ -152,6 +143,7 @@ private:
 
   short _match,_mismatch,_gap_open,_gap_extend; // Scoring parameters
 
+  bool _is_set_align_result;
   AlignResult _align_result; // By Shujia Huang
 
 public:
@@ -162,16 +154,18 @@ public:
   int score();
 
   // Add By Shujia Huang 2014-08-07 15:29:59
-  AlignResult align_result() { return _align_result; }
+  AlignResult align_result() { 
+	if (!_is_set_align_result) { 
+		cerr << "[ERROR] You should Call SetAlignResult() first before ";
+		cerr << "calling align_result() or the align_result would be empty\n";
+		exit(1);
+	} 
+	return _align_result; 
+  }
+
+  // Add By Shjia Huang 2014-08-09 16:42:55
   pair<int, int> Boundary(vector< pair<int, int> > reg);
-  void Test(); // Test
-  short match()      { return _match;      }
-  short mismatch()   { return _mismatch;   }
-  short gap_open()   { return _gap_open;   }
-  short gap_extend() { return _gap_extend; }
-  AliFragment *alifrag() { return _frags;  }
-  AliFragment *alifrag_alt() { return _frags_alt;   }
-  AGEaligner  *aux_aligner() { return _aux_aligner; }
+  void SetAlignResult(); // SetAlignResult
   // ****** Add End ************************
 
 private:
@@ -251,6 +245,7 @@ class AliFragment {
 private:
   AliFragment *_next, *_prev;
   string       _ali1,  _ali2;
+  string       _map_info;     // Shujia Huang 2014-08-09 15:51:49
   int          _start1,_start2;
   int          _end1,  _end2;
 public:
@@ -260,7 +255,7 @@ public:
 				       _ali1(ali1),     _ali2(ali2),
 				       _start1(start1), _start2(start2),
 				       _end1(end1),     _end2(end2)
-  {}
+  { _map_info.clear(); }
 
   AliFragment *next(AliFragment *b) {
 
@@ -284,6 +279,8 @@ public:
   inline int          start2() { return _start2; }
   inline int          end1()   { return _end1; }
   inline int          end2()   { return _end2; }
+  string ali1() { return _ali1; } // Shujia Huang 2014-08-09
+  string ali2() { return _ali2; } // Shujia Huang 2014-08-09
 
   void countAligned(int &n_ali,int &n_id,int &n_gap) {
 
@@ -295,6 +292,25 @@ public:
       if (Sequence::sameNuc(_ali1[i],_ali2[i]) > 0)               n_id++;
       if (Sequence::isGap(_ali1[i]) || Sequence::isGap(_ali2[i])) n_gap++;
     }
+  }
+
+  string mapInfo () { // Shujia Huang 2014-08-09  
+
+    _map_info.clear();
+
+    int n = _ali1.length(); if (_ali2.length() < n) n = _ali2.length(); 
+    for (int i = 0;i < n; ++i) { 
+
+        if (Sequence::sameNuc(_ali1[i], _ali2[i]) > 0) { 
+            _map_info += '|'; // match
+        } else if (!Sequence::isGap(_ali1[i]) && !Sequence::isGap(_ali2[i])) { 
+            _map_info += '.'; // mismatch
+        } else { 
+            _map_info += ' '; // gap
+        }
+    }
+
+    return _map_info;
   }
 
   void printAlignment() {
@@ -313,7 +329,7 @@ public:
 
     for (int i = 0;i < n;i += WIDTH) {
 
-      int st1 = ind1,st2 = ind2;
+      int st1 = ind1, st2 = ind2;
       string a1 = _ali1.substr(i,WIDTH);
       string a2 = _ali2.substr(i,WIDTH);
       int nuc1 = 0,nuc2 = 0;
@@ -325,7 +341,7 @@ public:
 		} else if (!Sequence::isGap(a1[j]) && !Sequence::isGap(a2[j])) {      
 			match += '.';
 		} else {
-			match += ' ';
+			match += ' '; // gap
 		}
 		if (!Sequence::isGap(a1[j])) { nuc1++; ind1 += inc1; }
 		if (!Sequence::isGap(a2[j])) { nuc2++; ind2 += inc2; }
