@@ -2,8 +2,8 @@
  * Date   : 2013-10-10
  * 
  */
-#ifndef FA_H
-#define FA_H
+#ifndef __FA_H__
+#define __FA_H__
 
 #include <iostream>
 #include <fstream>
@@ -13,6 +13,7 @@
 #include "gzstream.h"
 
 using namespace std;
+
 typedef unsigned int uint; // The biggest number of uint is 2^32 = 4294967296
 
 class Fa {
@@ -55,6 +56,15 @@ public:
 
 public :
 	void Clear () { fa.clear(); length = 0; }
+
+	void CheckFaId(string id) {
+
+		if (!fa.count(id)) {
+			cerr << "Missing some fa id or fa id can't match!!!\nThe unmatch id : " 
+				     + id << "\n";
+			exit(1);
+		}
+	}
 
 	uint Nlength( string id, uint start, uint end ) {
 		if ( end < start )    { cerr << "[ERROR] start > end, in Nlength( string id, uint start, uint end ) in class 'Fa'\n"; exit(1); }

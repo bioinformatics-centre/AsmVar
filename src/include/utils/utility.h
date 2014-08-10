@@ -3,8 +3,8 @@
 // Author : Shujia Huang
 // Date   : 2011/04/06
 
-#ifndef UTILITY_H
-#define UTILITY_H
+#ifndef __UTILITY_H__
+#define __UTILITY_H__
 
 #include <iostream>
 #include <fstream>
