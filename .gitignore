@@ -5,3 +5,8 @@ git.sh
 rsync.sh
 *.o
 .DS_Store
+
+*.pdf
+*.png
+*.jpg
+Trash
