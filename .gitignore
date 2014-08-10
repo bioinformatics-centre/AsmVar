@@ -7,3 +7,8 @@ rsync.sh
 *.o
 .*.swp
 .DS_Store
+
+*.pdf
+*.png
+*.jpg
+Trash
