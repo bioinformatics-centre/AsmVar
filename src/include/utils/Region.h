@@ -3,8 +3,8 @@
  *
  * Region class
  */
-#ifndef REGION_H
-#define REGION_H
+#ifndef __REGION_H__
+#define __REGION_H__
 
 #include <iostream>
 
@@ -20,10 +20,17 @@ public:
 
 public:
     Region () : start(0), end (0) { id.clear(); info.clear(); }
-    Region ( const Region & R ) { id = R.id; start = R.start; end = R.end; info = R.info; } // The copy construct function.
+    Region ( const Region &R ) { // The copy construct function. 
+		id = R.id; start = R.start; end = R.end; info = R.info; 
+	}
 
 public:
-	bool IsOverlap ( Region & R ) { // determine overlap other region or not!
+
+	void OutErrReg() {
+		cerr << "# " << id << "\t" << start << "\t" << end << "\t" << info << "\n";
+    }
+
+	bool IsOverlap ( Region &R ) { // determine overlap other region or not!
 		bool flag (false);
 		if ( (id == R.id) && (start <= R.end && end >= R.start) ) flag = true;
 		return flag;

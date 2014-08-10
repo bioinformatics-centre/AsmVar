@@ -6,14 +6,13 @@
  *
  */
 
-#ifndef AXTVAR_H
-#define AXTVAR_H
+#ifndef __MAF_H__
+#define __MAF_H__
 
 #include <iostream>
 #include <string>
 #include <stdlib.h>
 #include "Region.h"
-#include "Fa.h"
 
 using namespace std;
 
@@ -38,26 +37,16 @@ public:
     string qrySeq; // AGTTCTAAGGGCTCCAGTGTACACACATTGCAGAAAC (query  sequence)
     // Ignore other lines 
 
-public :
-    Fa tarfa, qryfa;
-
 public:
 
-	void ConvQryCoordinate () {
-	// This funtion just conversion the coordinate but not conversion the query sequence, 
-	// which would be a problem when consider the sequence. So make this memerber function be private!
-		if ( strand != '-' ) return;
-		if ( qryfa.fa.empty() ) { 
-			cerr << "[ERROR] Query fa sequence is missing! Make sure you've input it!" << endl; exit(EXIT_FAILURE);
-		}
-
-		if ( !qryfa.fa.count( query.id ) ) { 
-			err ( "Missing some query id or query id can't match!!!\nThe unmatch query(main): " + query.id );
-		}
-		unsigned int itemp = query.start;
-		query.start = qryfa.fa[query.id].length() - query.end + 1;
-		query.end   = qryfa.fa[query.id].length() - itemp + 1;
-	}
+	void ConvQryCoordinate ( unsigned int qrySeqLen ) {
+	// This funtion just conversion the coordinate but not conversion the query 
+	// sequence, which would be a problem when consider the sequence.
+        if ( strand != '-' ) return;
+        unsigned int itemp = query.start;
+        query.start = qrySeqLen - query.end + 1;
+        query.end   = qrySeqLen - itemp + 1;
+    }
 
 	void err(string reason) {
         cerr << "\nError on ID:("<< target.id << " <=> " << query.id <<")\n";
@@ -66,7 +55,7 @@ public:
 			tarSeq = tarSeq.substr( 0, 100 ) + " ... "; 
 			qrySeq = qrySeq.substr( 0, 100 ) + " ... ";
 		}
-		OutErrAlg (); exit(EXIT_FAILURE);
+		OutErrAlg (); exit(1);
     }
 
 	void CheckMAF() {
@@ -77,19 +66,17 @@ public:
 		if ( target.id.empty() || query.id.empty() ) err ( "target.id.empty() || query.id.empty()" );
 		if ( target.start <= 0 || target.end <= 0 || query.start <= 0 || query.end <= 0 ) 
 			err ( "target.start <= 0 || target.end <= 0 || query.start <= 0 || query.end <= 0" );
-		if ( !qryfa.fa.empty() && !qryfa.fa.count( query.id ) )
-			err ( "Missing some query id or query id can't match!!!\nThe unmatch query(main): " + query.id );
-		if ( !tarfa.fa.empty() && !tarfa.fa.count( target.id ) )
-			err ( "Missing some query id or target id can't match!!!\nThe unmatch query(main): " + target.id );
 	}
 
 	void OutErrAlg () { // Output the alignment to STDERR
 		cerr<< target.id << " " << target.start << " " << target.end << " "
-        	<< query.id  << " " << query.start  << " " << query.end  << " " << strand << " " << score  << "\n"
-         	<< tarSeq    << "\n"<< qrySeq       << "\n"<< endl;
+        	<< query.id  << " " << query.start  << " " << query.end  << " " 
+			<< strand    << " " << score        << "\n"<< tarSeq     << "\n"
+			<< qrySeq    << "\n\n";
 	}
 
-	void RmGap2Gap () { // Remove the gap to gap base into the algnment. it may calls by lastz's bug!
+	void RmGap2Gap () { 
+	// Remove the gap to gap base into the algnment. it may calls by lastz's bug!
 	// debug carefully here!!
 		for ( string::iterator itt( tarSeq.begin() ), itq( qrySeq.begin() ); itt != tarSeq.end(); ) {
 			if ( *itt == '-' && *itq == '-' ) {
@@ -103,7 +90,6 @@ public:
 	unsigned int SeqLength () { return tarSeq.length(); }
 };
 
-// Call indel from per axt alignment.
 #endif 
 
 

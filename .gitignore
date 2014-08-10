@@ -1,9 +1,11 @@
 example
+obj
 bin
 data
 git.sh
 rsync.sh
 *.o
+.*.swp
 .DS_Store
 
 *.pdf
