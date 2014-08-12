@@ -573,7 +573,7 @@ void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 
 		// re-aligne :
 		AgeOption opt;
-		R[i].ReAlign(tarfa, qryfa, opt);
+		R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
 		
 	}
 }

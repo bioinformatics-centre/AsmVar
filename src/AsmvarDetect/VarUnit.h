@@ -59,7 +59,7 @@ public:
     void Swap();
 
 	// Here is the only function will use 'AgeAlignment' class
-	VarUnit ReAlign(Fa &target, Fa &query, AgeOption opt);
+	vector<VarUnit> ReAlignAndReCallVar(Fa &target, Fa &query, AgeOption opt);
 
     void Clear(){ isClear = true; }
     bool Empty(){ return isClear; } // Do not output if isClear==true
@@ -104,6 +104,7 @@ public:
 	// Caution: The position order is big->small in query if 
 	// mapping to the '-' strand! We should take care about this!
 	AlignResult AligResult() { return alignResult_; }	
+	vector<VarUnit> VarReCall();
 
 private:
 
@@ -112,7 +113,7 @@ private:
 
 private:
 
-    VarUnit   vu_;
+    VarUnit   vu_;   // this would aways be a copy of a VarUnit.
     AgeOption para_; // Parameters for AGE
 	AlignResult alignResult_;
     bool isInit_;

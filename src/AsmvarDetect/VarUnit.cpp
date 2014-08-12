@@ -48,20 +48,20 @@ void VarUnit::Swap() { // Swap the target and query region. Ignore 'exp_target'
 	return;
 }
 
-VarUnit VarUnit::ReAlign(Fa &targetSeq, Fa &querySeq, AgeOption opt) {
+vector<VarUnit> VarUnit::ReAlignAndReCallVar(Fa &targetSeq, Fa &querySeq, AgeOption opt) {
 // Return new VarUnit after AGE Realignment
 // This is a design strategy, I'm not going to simply update the raw VarUnit!
 
 	targetSeq.CheckFaId(target.id); // make sure target fa is right
 	querySeq.CheckFaId(query.id);   // make sure query  fa is right
 
+	vector<VarUnit> vus;
 	AgeAlignment alignment(*(this), opt);
 	if (alignment.Align(targetSeq.fa[target.id], querySeq.fa[query.id])){
 	// Successful align!
-		return alignment.vu();
-	} else {
-		return *(this);
-	}
+		vus.push_back(alignment.vu());
+	} 
+	return vus;
 }
 
 void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O) { 
@@ -222,6 +222,32 @@ cout << "\nAlignment time is " << ali_e.tv_sec - ali_s.tv_sec
 	Sequence::deleteSequences(qrySeq);
 
 	return isalign_;
+}
+
+vector<VarUnit> AgeAlignment::VarReCall() {
+// debug here carefully
+
+	vector<VarUnit> vus;
+	if (isalign_) {
+
+		// Call the variant in the excise region
+		if (alignResult_._map.size() > 1) {
+			vector< pair<MapData, MapData> > pre_map = alignResult_._map[0];
+			for (size_t i(1); i < alignResult_._map.size(); ++i) {
+			// Variant in excise region	
+			}
+		}
+		// Call the variant in the flank sequence of variant
+		for (size_t i(0); i < alignResult_._map.size(); ++i) {
+			
+		}
+
+	} else {
+		vus.push_back(vu_); // No this is not good for the "No alignment made" situation!!!
+	}	
+
+	return vus;	
+
 }
 
 void AgeAlignment::ExtendVU(unsigned long int tarFaSize, 
