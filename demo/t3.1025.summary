@@ -1,0 +1,26 @@
+Summary Information for 1025
+
+Clip	26
+Del	262
+Full-Align	403
+Ins	727
+InterScaffoldGap	140044
+Inv	0
+Nomadic	107
+Nos-Complex	10
+Nos-JustNo	1
+SNP	1851
+Trans-Intra1	7
+gap-1	18
+gap-2	516
+qryCovlength	1868549
+query-Intra-gap('N')	1627
+tarCovlength	1831011
+QryCovlength/querylength  0.964331
+TarCovlength/targetlength 0.915505
+TarCovlength/targetlength(NO 'N') 0.93898
+SNP/querylength           0.000955274
+SNP/targetlength          0.0009255
+
+# 1_999999_3000000	1831011/2000001	0.915505
+
