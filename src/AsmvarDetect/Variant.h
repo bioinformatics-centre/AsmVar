@@ -32,13 +32,13 @@ public:
 	Fa tarfa, qryfa;
 
 private: 
-	string sample;                   // The name of sample
-	vector< VarUnit > homoRef;       // The homozygous reference region, we should
-									 // filter the SV regions before output
+	string sample;              // The name of sample
+	vector< VarUnit > homoRef;  // The homozygous reference region, we should
+						    	// filter the SV regions before output
 
-	vector< VarUnit > nSeq;          // The reference or query is 'n' base or region
-									 // it's juse the n base not in indel or any
-									 // other SV region.
+	vector< VarUnit > nSeq;  // The reference or query is 'n' base or region
+							 // it's juse the n base not in indel or any
+							 // other SV region.
 
 	vector< VarUnit > snp;           // Stored the SNP
 	vector< VarUnit > intragap;      // Call the intra-scaffold-gap, just for the gaps which in alignment. Abort, 2014-02-27 19:28:42
@@ -46,9 +46,9 @@ private:
 	vector< VarUnit > deletion;      //
 	vector< VarUnit > inversion;     //
 	vector< VarUnit > translocation; //
-	vector< VarUnit > simulreg;      // simultaneous gap regions
-	vector< VarUnit > clipreg;       // clip regions 
-	vector< VarUnit > nomadic;       // The query which totally can not map to target
+	vector< VarUnit > simulreg;// simultaneous gap regions
+	vector< VarUnit > clipreg; // clip regions 
+	vector< VarUnit > nomadic; // The query which totally can not map to target
 	vector< VarUnit > nosolution;
 
 	// Make 'CallIversion' function to be private, because this function can 
