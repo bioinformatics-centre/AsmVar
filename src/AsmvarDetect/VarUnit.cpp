@@ -247,7 +247,6 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 	}	
 
 	return vus;	
-
 }
 
 void AgeAlignment::ExtendVU(unsigned long int tarFaSize, 
