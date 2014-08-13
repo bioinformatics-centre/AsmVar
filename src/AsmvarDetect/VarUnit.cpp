@@ -230,13 +230,16 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 	vector<VarUnit> vus;
 	if (isalign_) {
 
-		// Call the variant in the excise region
+		isgoodAlign_ = true;
 		if (alignResult_._map.size() > 1) {
+		// Call the variant in the excise region
 			vector< pair<MapData, MapData> > pre_map = alignResult_._map[0];
 			for (size_t i(1); i < alignResult_._map.size(); ++i) {
 			// Variant in excise region	
+			
 			}
 		}
+
 		// Call the variant in the flank sequence of variant
 		for (size_t i(0); i < alignResult_._map.size(); ++i) {
 			

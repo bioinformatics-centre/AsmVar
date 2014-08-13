@@ -94,7 +94,7 @@ class AgeAlignment {
 
 public:
 
-    AgeAlignment(): isInit_(false), isalign_(false) {}
+    AgeAlignment(): isInit_(false), isalign_(false), isgoodAlign_(false) {}
     AgeAlignment(VarUnit &v, AgeOption opt) { Init(v, opt); }
 	VarUnit vu() { return vu_; } 
 
@@ -105,6 +105,8 @@ public:
 	// mapping to the '-' strand! We should take care about this!
 	AlignResult AligResult() { return alignResult_; }	
 	vector<VarUnit> VarReCall();
+
+	bool isgoodAlign() { return isgoodAlign_; }
 
 private:
 
@@ -118,6 +120,7 @@ private:
 	AlignResult alignResult_;
     bool isInit_;
 	bool isalign_;
+	bool isgoodAlign_;
 };
 
 #endif

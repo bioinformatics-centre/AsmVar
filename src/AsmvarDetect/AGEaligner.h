@@ -99,7 +99,10 @@ public :
 	int _score; // Aligne score by AGE process. This score is not that good!
 	char _strand;
 	bool _is_alternative_align;
-	vector< pair<int,int> > _identity; // Alignment identity:<length(bp), identity%>
+
+	// Alignment identity:<length(bp), identity%> 
+	// Average, left, right
+	vector< pair<int,int> > _identity;
 
 	pair<int, int> _ci_start1, _ci_end1;
 	pair<int, int> _ci_start2, _ci_end2;
