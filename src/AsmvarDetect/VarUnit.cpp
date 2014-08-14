@@ -59,9 +59,27 @@ vector<VarUnit> VarUnit::ReAlignAndReCallVar(Fa &targetSeq, Fa &querySeq, AgeOpt
 	AgeAlignment alignment(*(this), opt);
 	if (alignment.Align(targetSeq.fa[target.id], querySeq.fa[query.id])){
 	// Successful align!
-		vus.push_back(alignment.vu());
+		vus = alignment.VarReCall();
 	} 
 	return vus;
+}
+
+void VarUnit::OutErr() {
+// Output the alignment to STDERR
+
+    if (tarSeq.empty() || qrySeq.empty()){
+        std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1);
+    }
+
+    unsigned int qnl = NLength ( qrySeq );
+    unsigned int tnl = NLength ( tarSeq );
+    cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
+      << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
+      << query.id  << "\t" << query.start  << "\t" << query.end << "\t"
+      << query.end  - query.start  + 1     << "\t" << double(qnl)/qrySeq.length()
+      << "\t" << strand << "\t" << score << "\t" << mismap
+      << "\t" << type      << endl;
+    return;
 }
 
 void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O) { 
@@ -202,9 +220,7 @@ gettimeofday(&ali_s, NULL);
 
 /*
 if (isalign_) {
-
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
-
 	cout << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\t" << alignResult_._map[i].first._sequence << "\n";
 	cout << "Mapinfo:\t" << alignResult_._map_info[i] << "\n";
 	cout << alignResult_._map[i].second._id << " " << alignResult_._map[i].second._start << "\t" << alignResult_._map[i].second._end << "\t" << alignResult_._map[i].second._sequence << "\n";
@@ -255,12 +271,13 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 				vus.push_back(var);
 			}
 		}
-
 		// Call the variant in the flank sequence of variant
 		for (size_t i(0); i < alignResult_._map.size(); ++i) {
-			
+			vector<VarUnit> var = CallVarInFlank(alignResult_._map[i], 
+												 alignResult_._map_info[i],
+												 alignResult_._strand);
+			for (size_t i(0); i < var.size(); ++i) vus.push_back(var[i]); 
 		}
-
 	} else {
 		vus.push_back(vu_); // No this is not good for the "No alignment made" situation!!!
 	}	
@@ -337,7 +354,102 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.query.end    = vu.query.start + qlen;
 	}
 
+vu.OutErr(); // Debug
+
 	return vu;
+}
+
+vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m, 
+                                             string &mapInfo, char strand) {
+
+
+/**
+ * GNAGGAGGTAGGCAGATCC-TGGGGCCAGTGGCATATGGGGCCTGGACACAGGGCGGCCT first
+ * |.||||||||||||||||| |||||||||||||| |||||||||||||.||||||||||| Map Info
+ * GGAGGAGGTAGGCAGATCCCTGGGGCCAGTGGCA-ATGGGGCCTGGACTCAGGGCGGCCT second
+ **/
+
+// Need Debug here!!!
+
+	int inc1 = 1;
+    int inc2 = 1; if (strand == '-') inc2 = -1;
+	int pos1start(m.first._start), pos2start(m.second._start);
+	int pos1end(m.first._start),   pos2end(m.second._start);
+
+	vector<VarUnit> vus;
+	VarUnit vuTmp;
+	vuTmp.strand    = strand;
+    vuTmp.score     = vu_.score; // It's the LAST aligne score
+    vuTmp.mismap    = vu_.mismap;// It's the LAST mismap probability
+    vuTmp.target.id = m.first._id;
+    vuTmp.query.id  = m.second._id;
+
+	for (size_t i(0); i < mapInfo.size(); ++i) {
+
+		if (mapInfo[i] == '|') {
+		// Homo block
+
+			vuTmp.type   = "Homo";
+			vuTmp.tarSeq = ".";
+			vuTmp.qrySeq = ".";
+			while (mapInfo[i] == '|' && i < mapInfo.size()) {
+				pos1end += inc1;
+				pos2end += inc2;
+				++i;
+			}
+			--i; // Rock back 1 position
+		} else if (mapInfo[i] == ' ') {
+		// New Indel!
+			if (m.first._sequence[i]  == '-') pos1start -= 1;
+			if (m.second._sequence[i] == '-') pos2start -= 1;
+
+			while (mapInfo[i] == ' ' && i < mapInfo.size()) {
+				if (m.first._sequence[i]  != '-') pos1end += inc1;
+				if (m.second._sequence[i] != '-') pos2end += inc2;
+				++i;
+			}
+			--i; // Rock back 1 position
+		} else if (mapInfo[i] == '.') {
+		// New SNP or Map 'N'!
+			if (toupper(m.first._sequence[i] == 'N')) {
+				vuTmp.type   = "N";
+				vuTmp.tarSeq = "N";
+            	vuTmp.qrySeq = ".";
+			} else if (toupper(m.second._sequence[i]) == 'N') {
+				vuTmp.type   = "N";
+				vuTmp.tarSeq = ".";
+            	vuTmp.qrySeq = "N";
+			} else {
+				vuTmp.type   = "SNP";
+				vuTmp.tarSeq = m.first._sequence[i]; // char2str(m.first._sequence[i])
+            	vuTmp.qrySeq = m.second._sequence[i];
+			}
+		} else {
+		// Who knows...
+			cerr << "[ERROR] What is it?!" << mapInfo[i] 
+				 << " Must be some error in AGE aligne.\nDetail : \n";
+			cerr << m.first._sequence << "\t" << m.first._id  << ":" 
+				 << m.first._start    << "-"  << m.first._end << "\n"
+				 << mapInfo << "\n"
+				 << m.second._sequence << "\t" << m.second._id  << ":"
+                 << m.second._start    << "-"  << m.second._end << "\n";
+			exit(1);
+		}
+
+		vuTmp.target.start = pos1start;
+        vuTmp.target.end   = pos1end;
+        vuTmp.query.start  = pos2start;
+        vuTmp.query.end    = pos2end;
+
+		vus.push_back(vuTmp);
+
+vuTmp.OutErr(); // Debug
+
+        pos1start = pos1end + 1;
+        pos2start = pos2end + 1;
+	}
+
+	return vus;
 }
 
 void AgeAlignment::ExtendVU(unsigned long int tarFaSize, 

@@ -68,6 +68,7 @@ public:
 
 public:
 
+	void OutErr();
     void OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O);
     void OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen, 
 				unsigned int qrySeqLen, ofstream &O);
@@ -115,7 +116,8 @@ private:
 	// Variant in excise region
 	VarUnit CallVarInExcise(pair<MapData, MapData> &m1, 
 							pair<MapData, MapData> &m2, char strand);
-
+	vector<VarUnit> CallVarInFlank(pair<MapData, MapData> &m, string &mapInfo,
+								   char strand);
     void ExtendVU(unsigned long int, unsigned long int, int extandFlankSzie);
     bool IsHugeMemory(unsigned long int n, unsigned long int m);
 
