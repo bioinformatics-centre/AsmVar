@@ -38,14 +38,14 @@ void Variant::CallnSeq() {
 		tmpnseq.target.start = tarPos; tmpnseq.target.end = tarPos;
 		tmpnseq.query.start  = qryPos; tmpnseq.query.end  = qryPos;
 		if (toupper(tarSeq[i]) == 'N' && toupper(qrySeq[i]) != 'N') {
-			tmpnseq.tarSeq = 'N'; 
-			tmpnseq.qrySeq = '.';
+			tmpnseq.tarSeq = "N"; 
+			tmpnseq.qrySeq = ".";
 		} else if (toupper(tarSeq[i]) != 'N' && toupper(qrySeq[i]) == 'N') {
-			tmpnseq.tarSeq = '.'; 
-			tmpnseq.qrySeq = 'N';
+			tmpnseq.tarSeq = "."; 
+			tmpnseq.qrySeq = "N";
 		} else { // tarSeq[i] and qrySeq[i] are 'N'
-			tmpnseq.tarSeq = 'N';
-			tmpnseq.qrySeq = 'N';
+			tmpnseq.tarSeq = "N";
+			tmpnseq.qrySeq = "N";
 		}
 		tmpVarVector.push_back(tmpnseq);
 	}
@@ -85,8 +85,8 @@ void Variant::CallHomoRef () {
 		if ( toupper(tarSeq[i]) == toupper(qrySeq[i]) ) {
 			tmphseq.target.start = tarPos; tmphseq.target.end = tarPos;
 			tmphseq.query.start  = qryPos; tmphseq.query.end  = qryPos;
-			tmphseq.tarSeq = '.';
-			tmphseq.tarSeq = '.';
+			tmphseq.tarSeq = ".";
+			tmphseq.tarSeq = ".";
         	tmpVarVector.push_back(tmphseq);
 		}
     }
