@@ -95,7 +95,7 @@ void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen,
 	unsigned int qnl = NLength ( qrySeq     );
 	unsigned int tnl = NLength ( exp_tarSeq );
 	//O << exp_target.id << "\t" << exp_target.start     << "\t" << exp_target.end 
-	cout << exp_target.id << "\t" << exp_target.start     << "\t" << exp_target.end 
+	cout << exp_target.id << "\t" << exp_target.start  << "\t" << exp_target.end 
 	  << "\t" << exp_target.end - exp_target.start + 1 << "\t" 
 	  << double(tnl)/exp_tarSeq.length()      << "\t" << exp_tarSeqLen << "\t" 
 	  << query.id  << "\t"   << query.start   << "\t" << query.end     << "\t" 
@@ -246,10 +246,10 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			
 		if (alignResult_._map.size() > 1) {
 		// Call the variant in the excise region
-			vector< pair<MapData, MapData> > pre_map = alignResult_._map[0];
+			pair<MapData, MapData> pre_map = alignResult_._map[0];
 			for (size_t i(1); i < alignResult_._map.size(); ++i) {
 			// Variant in excise region	
-				VarUnit var = CallVarInExcise(pre_map, alignResult_[i], 
+				VarUnit var = CallVarInExcise(pre_map, alignResult_._map[i], 
 											  alignResult_._strand);
 				pre_map = alignResult_._map[i];
 				vus.push_back(var);

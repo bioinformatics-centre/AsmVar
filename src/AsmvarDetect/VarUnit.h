@@ -22,6 +22,7 @@
 //--- Other include ---
 #include "Region.h"
 #include "Fa.h"        // VarUnit AgeAlign() function need Fa.h 
+#include "utility.h"
 
 using namespace std;
 

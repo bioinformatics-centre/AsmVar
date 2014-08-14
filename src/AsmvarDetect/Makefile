@@ -9,7 +9,7 @@ ASV_VariantDetector : $(obj)
 	$(CC) -o out3 $(obj)
 
 main.o : gzstream.h utility.h Variant.h
-VarUnit.o  : VarUnit.h AGEaligner.h Sequence.h Scorer.h
+VarUnit.o  : utility.h VarUnit.h AGEaligner.h Sequence.h Scorer.h
 AGEaligner.o : AGEaligner.h Sequence.h Scorer.h
 Variant.o  : Variant.h VarUnit.h
 utility.o  : utility.h

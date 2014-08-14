@@ -71,6 +71,16 @@ class AliFragment;
 class MapData {
 
 public :
+	MapData() : _start(0), _end(0) { _id.clear(); _sequence.clear(); }
+	MapData(const MapData &m) { 
+		_id    = m._id;
+		_start = m._start;
+		_end   = m._end;
+		_sequence = m._sequence;
+	}
+
+
+public :
 
 	string _id;
 	int _start;
@@ -91,6 +101,24 @@ public :
 		_identity.clear();
 	}
 	
+	AlignResult(const AlignResult &ar) { // The copy construct function. 
+		_id1 = ar._id1; _id2 = ar._id2;
+		_score  = ar._score;
+		_strand = ar._strand;
+		_is_alternative_align = ar._is_alternative_align;
+		_identity = ar._identity;
+		_ci_start1= ar._ci_start1; _ci_end1 = ar._ci_end1;
+		_ci_start2= ar._ci_start2; _ci_end2 = ar._ci_end2;
+		_homo_run_atbp1 = ar._homo_run_atbp1; 
+		_homo_run_atbp2 = ar._homo_run_atbp2;
+		_homo_run_inbp1 = ar._homo_run_inbp1;
+		_homo_run_inbp2 = ar._homo_run_inbp2;
+		_homo_run_outbp1= ar._homo_run_outbp1;
+		_homo_run_outbp2= ar._homo_run_outbp2;
+
+		_map      = ar._map;
+		_map_info = ar._map_info;
+	}
 public :
 
 	string _id1;
