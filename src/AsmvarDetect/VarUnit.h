@@ -7,6 +7,7 @@
 
 #include<iostream> 
 #include<fstream>
+#include<stdlib.h>
 
 #ifdef AGE_TIME
 #include <sys/time.h>
@@ -109,6 +110,10 @@ public:
 	bool isgoodAlign() { return isgoodAlign_; }
 
 private:
+
+	// Variant in excise region
+	VarUnit CallVarInExcise(pair<MapData, MapData> &m1, 
+							pair<MapData, MapData> &m2, char strand);
 
     void ExtendVU(unsigned long int, unsigned long int, int extandFlankSzie);
     bool IsHugeMemory(unsigned long int n, unsigned long int m);

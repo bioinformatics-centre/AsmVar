@@ -230,13 +230,29 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 	vector<VarUnit> vus;
 	if (isalign_) {
 
-		isgoodAlign_ = true;
+		isgoodAlign_ = false;
+		if (alignResult_._identity.size() >= 3 &&
+			alignResult_._identity[0].second > 98 && // Average identity
+			alignResult_._identity[1].first  > 30 && // left side size
+			alignResult_._identity[1].second > 95 && // left identity
+			alignResult_._identity[2].first  > 30 && // right side size
+			alignResult_._identity[2].second > 95)   // right identity 
+			isgoodAlign_ = true;
+
+		if (alignResult_._identity.size() > 3) {
+			cerr << "[WARNING] alignResult_._identity.size() > 3!! It may be";
+			cerr << "a bug, please contact the author to confirm!\n";
+		}
+			
 		if (alignResult_._map.size() > 1) {
 		// Call the variant in the excise region
 			vector< pair<MapData, MapData> > pre_map = alignResult_._map[0];
 			for (size_t i(1); i < alignResult_._map.size(); ++i) {
 			// Variant in excise region	
-			
+				VarUnit var = CallVarInExcise(pre_map, alignResult_[i], 
+											  alignResult_._strand);
+				pre_map = alignResult_._map[i];
+				vus.push_back(var);
 			}
 		}
 
@@ -250,6 +266,78 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 	}	
 
 	return vus;	
+}
+
+VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
+									  pair<MapData, MapData> &rt, // Right side
+									  char strand) {
+
+	if (lf.first._id != rt.first._id || lf.second._id != rt.second._id) {
+		cerr << "[BUG] The id is not match!!\n" << lf.first._id << ", "
+			 << rt.first._id  << "; " << lf.second._id          << ", " 
+			 << rt.second._id << "\n";
+		exit(1);
+	}
+
+	int qlen = abs(rt.second._start - lf.second._end - 1); // Query
+	int tlen = rt.first._start  - lf.first._end  - 1;      // Reference
+	if (tlen < 0) cerr << "[WARNING] It'll cause bug below!\n";
+
+	VarUnit vu;
+	vu.strand    = strand;
+	vu.score     = vu_.score; // It's the LAST aligne score
+	vu.mismap    = vu_.mismap;// It's the LAST mismap probability
+	vu.target.id = lf.first._id;
+	vu.query.id  = lf.second._id;
+	if (tlen > 0 && qlen == 0) {
+	// Pure-Deletion
+		vu.type = "DEL";
+		// I should treat the type to be 'SDEL' 
+		// if they're agree with the original type.
+		if (toupper(vu_.type) == "DEL") vu.type = "SDEL";
+
+		// Reference position
+		vu.target.start= lf.first._end;
+		vu.target.end  = vu.target.start + tlen;
+
+		// Query position 
+		// CAUTION : Just use the reference base at ALT field in VCF file
+		vu.query.start = (strand == '+') ? lf.second._end : rt.second._start;
+		vu.query.end   = vu.query.start;
+
+	} else if (qlen > 0 && tlen == 0) {
+	// Pure-Insertion
+		vu.type = "INS";
+		// I should treat the type to be 'SINS' 
+        // if they're agree with the original type.
+		if (toupper(vu_.type) == "INS") vu.type = "SINS";
+
+		// Reference position
+		vu.target.start = lf.first._end;
+		vu.target.end   = vu.target.start;
+        // Query position
+		// CAUTION: Here is just the variant region, not include the position
+		// which at the boundary of variant. So that I'll add one base of ref-
+		// erence at ALT field in VCF file.
+		vu.query.start = (strand == '+') ? lf.second._end + 1 : rt.second._start + 1;
+		vu.query.end   = vu.query.start + qlen - 1;
+	} else if (tlen == qlen) {
+		vu.type = (tlen == 1) ? "SNP" : "BSubstitution";
+		vu.target.start = lf.first._end + 1;
+		vu.target.end   = vu.target.start + tlen -1;
+		vu.query.start  = (strand == '+') ? lf.second._end + 1 : rt.second._start + 1;
+		vu.query.end    = vu.query.start + qlen - 1;
+	} else {
+		// Simultaneous gap or Unknown Type
+		// Actrually, "Unknown" should be imposible!!
+		vu.type = (tlen != qlen && tlen > 0) ? "Sgap" : "Unknown" ;
+		vu.target.start = lf.first._end;
+		vu.target.end   = vu.target.start + tlen;
+		vu.query.start  = (strand == '+') ? lf.second._end : rt.second._start;
+		vu.query.end    = vu.query.start + qlen;
+	}
+
+	return vu;
 }
 
 void AgeAlignment::ExtendVU(unsigned long int tarFaSize, 
