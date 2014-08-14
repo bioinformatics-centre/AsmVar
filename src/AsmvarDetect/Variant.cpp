@@ -574,7 +574,6 @@ void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 		// re-aligne :
 		AgeOption opt;
 		R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
-		
 	}
 }
 
@@ -833,7 +832,7 @@ vector<VarUnit> MergeVarUnit( vector<VarUnit>& VarUnitVector ){
 		string id  = VarUnitVector[i].target.id + ":" + VarUnitVector[i].query.id;
 		string seq = VarUnitVector[i].tarSeq + "-" + VarUnitVector[i].qrySeq;
 
-		if (!tarPrePos.count(tarId) || !qryPrePos.count(qryId) || !id2seq.count(id)){
+		if (!tarPrePos.count(tarId) || !qryPrePos.count(qryId) || !id2seq.count(id)) {
 
 			// The light is on => Get the region!
 			if (flag) newVector.push_back(varunit);
@@ -855,7 +854,7 @@ vector<VarUnit> MergeVarUnit( vector<VarUnit>& VarUnitVector ){
 
 			if (varunit.target.end + distDelta >= VarUnitVector[i].target.start
 				&& varunit.query.end + distDelta >= VarUnitVector[i].query.start
-				&& id2seq[id] == seq){
+				&& id2seq[id] == seq) {
 			
 				if (VarUnitVector[i].target.end > varunit.target.end)
 					varunit.target.end = VarUnitVector[i].target.end;
