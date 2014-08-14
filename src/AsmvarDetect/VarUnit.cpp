@@ -218,15 +218,16 @@ gettimeofday(&ali_s, NULL);
         }
     }
 
-/*
+///*
 if (isalign_) {
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
-	cout << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\t" << alignResult_._map[i].first._sequence << "\n";
-	cout << "Mapinfo:\t" << alignResult_._map_info[i] << "\n";
-	cout << alignResult_._map[i].second._id << " " << alignResult_._map[i].second._start << "\t" << alignResult_._map[i].second._end << "\t" << alignResult_._map[i].second._sequence << "\n";
+	cerr << alignResult_._map[i].first._sequence << "\t" << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\n";
+	cerr << alignResult_._map_info[i] << "\n";
+	cerr << alignResult_._map[i].second._sequence << "\t" << alignResult_._map[i].second._id << " " << alignResult_._map[i].second._start << "\t" << alignResult_._map[i].second._end << "\n";
 }
+cerr << "\n";
 }
-*/
+//*/
 
 #ifdef AGE_TIME
 gettimeofday(&ali_e, NULL);
@@ -278,6 +279,10 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 												 alignResult_._strand);
 			for (size_t i(0); i < var.size(); ++i) vus.push_back(var[i]); 
 		}
+
+cerr << "\n###########################################################################\n\n";
+//exit(1);
+
 	} else {
 		vus.push_back(vu_); // No this is not good for the "No alignment made" situation!!!
 	}	
@@ -354,6 +359,7 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.query.end    = vu.query.start + qlen;
 	}
 
+cerr << "## CallVarInExcise\n";
 vu.OutErr(); // Debug
 
 	return vu;
@@ -384,14 +390,22 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
     vuTmp.target.id = m.first._id;
     vuTmp.query.id  = m.second._id;
 
+	bool isSnpPrevious(false);
 	for (size_t i(0); i < mapInfo.size(); ++i) {
 
+
 		if (mapInfo[i] == '|') {
-		// Homo block
+		// Homo block		
 
 			vuTmp.type   = "Homo";
 			vuTmp.tarSeq = ".";
 			vuTmp.qrySeq = ".";
+
+			if (!isSnpPrevious) {
+				pos1end -= inc1;
+				pos2end -= inc2;
+			}
+			isSnpPrevious = false; // Previous setting
 			while (mapInfo[i] == '|' && i < mapInfo.size()) {
 				pos1end += inc1;
 				pos2end += inc2;
@@ -400,11 +414,14 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 			--i; // Rock back 1 position
 		} else if (mapInfo[i] == ' ') {
 		// New Indel!
-			if (m.first._sequence[i]  == '-') pos1start -= 1;
-			if (m.second._sequence[i] == '-') pos2start -= 1;
+			if (m.first._sequence[i]  == '-') pos1start -= inc1;
+			if (m.second._sequence[i] == '-') pos2start -= inc2;
 
+			vuTmp.type = (m.first._sequence[i] == '-') ? "INS" : "DEL";
+			if (vuTmp.type == "DEL" && !isSnpPrevious) pos1end -= inc1;
+			if (vuTmp.type == "INS" && !isSnpPrevious) pos2end -= inc2;
 			while (mapInfo[i] == ' ' && i < mapInfo.size()) {
-				if (m.first._sequence[i]  != '-') pos1end += inc1;
+				if (m.first._sequence[i]  != '-') pos1end += inc1; 
 				if (m.second._sequence[i] != '-') pos2end += inc2;
 				++i;
 			}
@@ -424,6 +441,9 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 				vuTmp.tarSeq = m.first._sequence[i]; // char2str(m.first._sequence[i])
             	vuTmp.qrySeq = m.second._sequence[i];
 			}
+			pos1end = pos1start;
+			pos2end = pos2start;
+			isSnpPrevious = true;
 		} else {
 		// Who knows...
 			cerr << "[ERROR] What is it?!" << mapInfo[i] 
@@ -438,11 +458,12 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 
 		vuTmp.target.start = pos1start;
         vuTmp.target.end   = pos1end;
-        vuTmp.query.start  = pos2start;
-        vuTmp.query.end    = pos2end;
+        vuTmp.query.start  = (pos2end >= pos2start) ? pos2start : pos2end;
+        vuTmp.query.end    = (pos2end >= pos2start) ? pos2end   : pos2start;
 
 		vus.push_back(vuTmp);
 
+cerr << "## CallVarInFlank\n";
 vuTmp.OutErr(); // Debug
 
         pos1start = pos1end + 1;
@@ -455,7 +476,6 @@ vuTmp.OutErr(); // Debug
 void AgeAlignment::ExtendVU(unsigned long int tarFaSize, 
 							unsigned long int qryFaSize,
 							int extandFlankSzie) {
-	
 	if (!isInit_) { 
 		cerr<<"[ERROR]You should init AgeAlignment before calling ExtendVU()\n";
 		exit(1);
