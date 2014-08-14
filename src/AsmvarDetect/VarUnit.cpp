@@ -75,7 +75,7 @@ void VarUnit::OutErr() {
     unsigned int tnl = NLength ( tarSeq );
     cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
       << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
-      << query.id  << "\t" << query.start  << "\t" << query.end << "\t"
+      << "\t" << query.id << "\t" << query.start  << "\t" << query.end << "\t"
       << query.end  - query.start  + 1     << "\t" << double(qnl)/qrySeq.length()
       << "\t" << strand << "\t" << score << "\t" << mismap
       << "\t" << type      << endl;
