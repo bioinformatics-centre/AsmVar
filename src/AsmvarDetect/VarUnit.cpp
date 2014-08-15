@@ -92,8 +92,10 @@ void VarUnit::OutErr() {
     unsigned int tnl = NLength ( tarSeq );
     cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
       << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
-      << "\t" << query.id << "\t" << query.start   << "\t" << query.end << "\t"
-      << query.end  - query.start  + 1     << "\t" << double(qnl)/qrySeq.length()
+	  << "\t" << cipos.first  << "," << cipos.second << "\t" << ciend.first 
+	  << ","  << ciend.second << "\t"<< query.id     << "\t" << query.start   
+	  << "\t" << query.end    << "\t"<< query.end  - query.start  + 1 << "\t" 
+	  << double(qnl)/qrySeq.length()
       << "\t" << strand << "\t" << homoRun << "\t" << isGoodReAlign 
 	  << "\t" << score  << "\t" << mismap  << "\t" << type << endl;
     return;
@@ -288,8 +290,10 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 				var.isSuccessAlign = true;
 				var.isGoodReAlign  = isgoodAlign();
 				var.homoRun        = HomoRun(); //Just usefull in excise region
-				var.cipos          = cipos();   //Just usefull in excise region
-				var.ciend          = ciend();   //Just usefull in excise region
+				var.cipos.first    = (cipos().first > 0) ? cipos().first  - var.target.start : 0; // Just here
+				var.cipos.second   = (cipos().second> 0) ? cipos().second - var.target.start : 0; // Just here
+				var.ciend.first    = (ciend().first > 0) ? ciend().first  - var.target.end : 0;   // Just here
+				var.ciend.second   = (ciend().second> 0) ? ciend().second - var.target.end : 0;   // Just here
 				
 				vus.push_back(var);
 				pre_map = alignResult_._map[i];
@@ -307,9 +311,6 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 				vus.push_back(var[i]); 
 			}
 		}
-
-	//} else {
-	//vus.push_back(vu_); // No!! this is not good for the "No alignment made" situation!!!
 	}	
 
 	return vus;	
@@ -415,7 +416,7 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 		if (mapInfo[i] == '|') {
 		// Homo block		
 
-			vuTmp.type   = "Homo";
+			vuTmp.type   = "Homo-AGE";
 			vuTmp.tarSeq = ".";
 			vuTmp.qrySeq = ".";
 
@@ -428,8 +429,8 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 			--i; // Rock back 1 position
 		} else if (mapInfo[i] == ' ') {
 		// New Indel!
-			vuTmp.type = (m.first._sequence[i] == '-') ? "INS" : "DEL";
-			if (vuTmp.type == "INS") { // Insertion
+			vuTmp.type = (m.first._sequence[i] == '-') ? "INS-AGE" : "DEL-AGE";
+			if (vuTmp.type == "INS-AGE") { // Insertion
 			// Caution: pos2start -= inc2 is to make the first position  
 			// match with each other, which on the boundary of varaints
 			// not the base in variant region!!!
@@ -455,15 +456,15 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 		} else if (mapInfo[i] == '.') {
 		// New SNP or Map 'N'!
 			if (toupper(m.first._sequence[i] == 'N')) {
-				vuTmp.type   = "N";
+				vuTmp.type   = "N-AGE";
 				vuTmp.tarSeq = "N";
             	vuTmp.qrySeq = ".";
 			} else if (toupper(m.second._sequence[i]) == 'N') {
-				vuTmp.type   = "N";
+				vuTmp.type   = "N-AGE";
 				vuTmp.tarSeq = ".";
             	vuTmp.qrySeq = "N";
 			} else {
-				vuTmp.type   = "SNP";
+				vuTmp.type   = "SNP-AGE";
 				vuTmp.tarSeq = "."; // Do not put base here! Not now!
             	vuTmp.qrySeq = "."; // Do not put base here! Not now!
 			}
@@ -475,8 +476,8 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
                 ++i;
 			}
 			--i;
-			if (vuTmp.type == "SNP" && pos1end - pos1start > 0) 
-				vuTmp.type = "MNP";
+			if (vuTmp.type == "SNP-AGE" && pos1end - pos1start > 0)
+				vuTmp.type = "MNP-AGE"; // Could just call by AGE process
 		} else {
 		// Who knows...
 			cerr << "[ERROR] What is it?!" << mapInfo[i] 

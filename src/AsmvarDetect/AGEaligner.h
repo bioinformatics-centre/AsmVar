@@ -102,7 +102,8 @@ public :
 	}
 	
 	AlignResult(const AlignResult &ar) { // The copy construct function. 
-		_id1 = ar._id1; _id2 = ar._id2;
+		_id1    = ar._id1; 
+		_id2    = ar._id2;
 		_score  = ar._score;
 		_strand = ar._strand;
 		_is_alternative_align = ar._is_alternative_align;
@@ -119,6 +120,7 @@ public :
 		_map      = ar._map;
 		_map_info = ar._map_info;
 	}
+
 public :
 
 	string _id1;
