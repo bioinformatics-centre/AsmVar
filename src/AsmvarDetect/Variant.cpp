@@ -573,7 +573,12 @@ void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 
 		// re-aligne :
 		AgeOption opt;
-		R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
+		vector<VarUnit> vus = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
+
+cerr << "\n***********************************\n";
+R[i].OutErr();
+cerr << "\n********** AGE Process ************\n";
+for (size_t i(0); i < vus.size(); ++i) vus[i].OutErr();
 	}
 }
 

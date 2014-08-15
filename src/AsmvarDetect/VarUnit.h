@@ -44,8 +44,14 @@ public:
     char   strand;
     string type;   // Variant type
 
-    long score;
-    double mismap; // mismatch probability
+    long score;    // LAST Alignment score
+    double mismap; // mismatch probability, could be used to calcute 
+				   // the Mapping quality
+
+	// This value will get after AGE process
+	int homoRun;
+	bool isSuccessAlign; // Can be re-align but the result may be not good
+	bool isGoodReAlign;  // The result of realignment is good!
 
 	// Reserve target. Can only use in recording translocations.
 	// [Because Translocation have two target regions] 
@@ -110,6 +116,7 @@ public:
 	vector<VarUnit> VarReCall();
 
 	bool isgoodAlign() { return isgoodAlign_; }
+	int HomoRun() { return alignResult_._homo_run_atbp1; }
 
 private:
 

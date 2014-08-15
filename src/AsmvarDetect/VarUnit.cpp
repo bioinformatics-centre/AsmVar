@@ -11,6 +11,10 @@ VarUnit::VarUnit() {
 	score     = 0;   
 	mismap    = 1.0;
 	isClear   = false;
+	
+	homoRun = 0;
+	isSuccessAlign = false;
+	isGoodReAlign  = false;
 
 	return;
 }
@@ -21,7 +25,12 @@ VarUnit::VarUnit(const VarUnit& V) {
 	qrySeq = V.qrySeq; strand  = V.strand;
 	type   = V.type  ; isClear = V.isClear; 
 
-	score  = V.score ;  mismap = V.mismap;
+	score  = V.score;  
+	mismap = V.mismap;
+	homoRun= V.homoRun;
+	isSuccessAlign = V.isSuccessAlign;
+	isGoodReAlign  = V.isGoodReAlign;
+
 	exp_target = V.exp_target;
 	exp_tarSeq = V.exp_tarSeq;
 
@@ -33,6 +42,7 @@ void VarUnit::ConvQryCoordinate(unsigned int qrySeqLen) {
 	// This funtion just conversion the coordinate of Axt/MAF format creat 
 	// by 'lastz'/'last ', which mapped to the '-' strand
 	if ( strand != '-' ) return;
+
 	unsigned int itemp = query.start;
 	query.start = qrySeqLen - query.end + 1;
 	query.end   = qrySeqLen - itemp + 1;
@@ -59,7 +69,10 @@ vector<VarUnit> VarUnit::ReAlignAndReCallVar(Fa &targetSeq, Fa &querySeq, AgeOpt
 	AgeAlignment alignment(*(this), opt);
 	if (alignment.Align(targetSeq.fa[target.id], querySeq.fa[query.id])){
 	// Successful align!
+		isSuccessAlign = true;
 		vus = alignment.VarReCall();
+	} else {
+		isSuccessAlign = false;
 	} 
 	return vus;
 }
@@ -75,10 +88,10 @@ void VarUnit::OutErr() {
     unsigned int tnl = NLength ( tarSeq );
     cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
       << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
-      << "\t" << query.id << "\t" << query.start  << "\t" << query.end << "\t"
+      << "\t" << query.id << "\t" << query.start   << "\t" << query.end << "\t"
       << query.end  - query.start  + 1     << "\t" << double(qnl)/qrySeq.length()
-      << "\t" << strand << "\t" << score << "\t" << mismap
-      << "\t" << type      << endl;
+      << "\t" << strand << "\t" << homoRun << "\t" << isGoodReAlign 
+	  << "\t" << score  << "\t" << mismap  << "\t" << type << endl;
     return;
 }
 
@@ -268,8 +281,11 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			// Variant in excise region	
 				VarUnit var = CallVarInExcise(pre_map, alignResult_._map[i], 
 											  alignResult_._strand);
-				pre_map = alignResult_._map[i];
+				var.isSuccessAlign = true;
+				var.isGoodReAlign  = isgoodAlign();
+				var.homoRun        = HomoRun(); // hr is usefull here!
 				vus.push_back(var);
+				pre_map = alignResult_._map[i];
 			}
 		}
 
@@ -278,7 +294,11 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			vector<VarUnit> var = CallVarInFlank(alignResult_._map[i], 
 												 alignResult_._map_info[i],
 												 alignResult_._strand);
-			for (size_t i(0); i < var.size(); ++i) vus.push_back(var[i]); 
+			for (size_t i(0); i < var.size(); ++i) {
+				var[i].isSuccessAlign = true;
+                var[i].isGoodReAlign  = isgoodAlign_;
+				vus.push_back(var[i]); 
+			}
 		}
 
 	//} else {
