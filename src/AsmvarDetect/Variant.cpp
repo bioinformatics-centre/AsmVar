@@ -692,8 +692,8 @@ vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Co
                                      char   strand,   // + or -
                                      long   score,    // 221 
                                      double mismap,   // 1e-10
-                                     string type )    // insertion or deletion
-{
+                                     string type ) {  // insertion or deletion
+
 // This function is just used to call the gap regions of 'tar' (not for 'qry'!!). which will be indel actually ( indels are gaps ).
 	assert ( tarSeq.length() == qrySeq.length() );
 
@@ -742,8 +742,14 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	gap.query.start = left.query.end;
 	gap.query.end   = right.query.start;
 	if ( left.target.start <= right.target.start ) { // Ascending
-		gap.target.start = left.target.end;   // Should +1? what if the size larger than the size of query after +1. so I don't want to +1!
-		gap.target.end   = right.target.start;// I don't want to -1 ! If left.query overlap with right.query, we will find gap.query.start >= gap.query.end
+
+		// Should +1? what if the size larger than the size of query after +1. 
+		// so I don't want to +1!
+		gap.target.start = left.target.end;
+
+		// I don't want to -1 ! If left.query overlap with right.query, we will
+		// find gap.query.start >= gap.query.end, that's not right!
+		gap.target.end   = right.target.start;
 	} else { // Decending I consider the '-' strand here!!
 		gap.target.start = right.target.end;
 		gap.target.end   = left.target.start;

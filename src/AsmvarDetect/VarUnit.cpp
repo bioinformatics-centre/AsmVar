@@ -323,7 +323,9 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.target.end  = vu.target.start + tlen;
 
 		// Query position 
-		// CAUTION : Just use the reference base at ALT field in VCF file
+		// CAUTION: Here is not just the variant region, but include one
+		// position which on the boundary of variant. So that we don't have 
+		// to add one base of reference at ALT field in VCF file.
 		vu.query.start = (strand == '+') ? lf.second._end : rt.second._start;
 		vu.query.end   = vu.query.start;
 
@@ -338,13 +340,13 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.target.start = lf.first._end;
 		vu.target.end   = vu.target.start;
         // Query position
-		// CAUTION: Here is just the variant region, not include the position
-		// which at the boundary of variant. So that I'll add one base of ref-
-		// erence at ALT field in VCF file.
-		vu.query.start = (strand == '+') ? lf.second._end + 1 : rt.second._start + 1;
-		vu.query.end   = vu.query.start + qlen - 1;
+		// CAUTION: Here is not just the variant region, but include one
+		// position which on the boundary of variant. So that we don't have 
+		// to add one base of reference at ALT field in VCF file.
+		vu.query.start = (strand == '+') ? lf.second._end : rt.second._start;
+		vu.query.end   = vu.query.start + qlen;
 	} else if (tlen == qlen) {
-		vu.type = (tlen == 1) ? "SNP" : "BSubstitution";
+		vu.type = (tlen == 1) ? "SNP" : "MNP";
 		vu.target.start = lf.first._end + 1;
 		vu.target.end   = vu.target.start + tlen -1;
 		vu.query.start  = (strand == '+') ? lf.second._end + 1 : rt.second._start + 1;
@@ -361,6 +363,7 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 
 cerr << "## CallVarInExcise\n";
 vu.OutErr(); // Debug
+cerr << "\n";
 
 	return vu;
 }
@@ -390,7 +393,6 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
     vuTmp.target.id = m.first._id;
     vuTmp.query.id  = m.second._id;
 
-	bool isSnpPrevious(false);
 	for (size_t i(0); i < mapInfo.size(); ++i) {
 
 
@@ -401,11 +403,7 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 			vuTmp.tarSeq = ".";
 			vuTmp.qrySeq = ".";
 
-			if (!isSnpPrevious) {
-				pos1end -= inc1;
-				pos2end -= inc2;
-			}
-			isSnpPrevious = false; // Previous setting
+			++i;
 			while (mapInfo[i] == '|' && i < mapInfo.size()) {
 				pos1end += inc1;
 				pos2end += inc2;
@@ -414,26 +412,30 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 			--i; // Rock back 1 position
 		} else if (mapInfo[i] == ' ') {
 		// New Indel!
-		// Still have bug here!!!
-cerr << ">> gap pos1start: " << pos1start << ", pos2start: " << pos2start << "\n";
-			if (m.first._sequence[i]  == '-') { 
+			vuTmp.type = (m.first._sequence[i] == '-') ? "INS" : "DEL";
+			if (vuTmp.type == "INS") { // Insertion
+			// Caution: pos2start -= inc2 is to make the first position  
+			// match with each other, which on the boundary of varaints
+			// not the base in variant region!!!
+				pos1start -= inc1; 
+				pos1end   -= inc1; 
+				pos2start -= inc2; 
+			} else { // Deletion
+			// Caution: pos1start -= inc1 is to make the first position  
+			// match with each other, which on the boundary of varaints
+			// not the base in variant region!!!
+				pos2start -= inc2; 
+				pos2end   -= inc2; 
 				pos1start -= inc1; 
 			}
-			if (m.second._sequence[i] == '-') { 
-				pos2start -= inc2; 
-			}
-cerr << ">> gap pos1start: " << pos1start << ", pos2start: " << pos2start << "\n";
 
-			vuTmp.type = (m.first._sequence[i] == '-') ? "INS" : "DEL";
+			++i;
 			while (mapInfo[i] == ' ' && i < mapInfo.size()) {
 				if (m.first._sequence[i]  != '-') pos1end += inc1; 
 				if (m.second._sequence[i] != '-') pos2end += inc2;
 				++i;
 			}
 			--i; // Rock back 1 position
-			isSnpPrevious = true;
-cerr << "** gap pos1start: " << pos1start << ", pos2start: " << pos2start << "\n";
-cerr << "** gap pos1end  : " << pos1end   << ", pos2end  : " << pos2end   << "\n";
 		} else if (mapInfo[i] == '.') {
 		// New SNP or Map 'N'!
 			if (toupper(m.first._sequence[i] == 'N')) {
@@ -449,15 +451,16 @@ cerr << "** gap pos1end  : " << pos1end   << ", pos2end  : " << pos2end   << "\n
 				vuTmp.tarSeq = " "; // char2str(m.first._sequence[i])
             	vuTmp.qrySeq = " ";
 			}
+
+			++i;
 			while (mapInfo[i] == '.' && i < mapInfo.size()) {
 				pos1end += inc1;
                 pos2end += inc2;
                 ++i;
 			}
 			--i;
-			//pos1end = pos1start;
-			//pos2end = pos2start;
-			isSnpPrevious = true;
+			if (vuTmp.type == "SNP" && pos1end - pos1start > 0) 
+				vuTmp.type = "MNP";
 		} else {
 		// Who knows...
 			cerr << "[ERROR] What is it?!" << mapInfo[i] 
@@ -480,8 +483,10 @@ cerr << "** gap pos1end  : " << pos1end   << ", pos2end  : " << pos2end   << "\n
 cerr << "## CallVarInFlank\n";
 vuTmp.OutErr(); // Debug
 
-        pos1start = pos1end + inc1;
-        pos2start = pos2end + inc2;
+		pos1end  += inc1;
+		pos2end  += inc2;
+        pos1start = pos1end;
+        pos2start = pos2end;
 	}
 
 	return vus;
