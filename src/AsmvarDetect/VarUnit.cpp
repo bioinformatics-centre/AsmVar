@@ -218,7 +218,7 @@ gettimeofday(&ali_s, NULL);
         }
     }
 
-///*
+/*
 if (isalign_) {
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
 	cerr << alignResult_._map[i].first._sequence << "\t" << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\n";
@@ -227,11 +227,11 @@ for (size_t i(0); i < alignResult_._map.size(); ++i) {
 }
 cerr << "\n";
 }
-//*/
+*/
 
 #ifdef AGE_TIME
 gettimeofday(&ali_e, NULL);
-cout << "\nAlignment time is " << ali_e.tv_sec - ali_s.tv_sec
+cerr << "\nAlignment time is " << ali_e.tv_sec - ali_s.tv_sec
     + (ali_e.tv_usec - ali_s.tv_usec)/1e+6 <<" s\n\n";
 #endif
 
@@ -272,6 +272,7 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 				vus.push_back(var);
 			}
 		}
+
 		// Call the variant in the flank sequence of variant
 		for (size_t i(0); i < alignResult_._map.size(); ++i) {
 			vector<VarUnit> var = CallVarInFlank(alignResult_._map[i], 
@@ -280,11 +281,8 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			for (size_t i(0); i < var.size(); ++i) vus.push_back(var[i]); 
 		}
 
-cerr << "\n###########################################################################\n\n";
-//exit(1);
-
-	} else {
-		vus.push_back(vu_); // No this is not good for the "No alignment made" situation!!!
+	//} else {
+	//vus.push_back(vu_); // No!! this is not good for the "No alignment made" situation!!!
 	}	
 
 	return vus;	
@@ -361,24 +359,16 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.query.end    = vu.query.start + qlen;
 	}
 
-cerr << "## CallVarInExcise\n";
-vu.OutErr(); // Debug
-cerr << "\n";
-
 	return vu;
 }
 
 vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m, 
                                              string &mapInfo, char strand) {
-
-
 /**
  * GNAGGAGGTAGGCAGATCC-TGGGGCCAGTGGCATATGGGGCCTGGACACAGGGCGGCCT first
  * |.||||||||||||||||| |||||||||||||| |||||||||||||.||||||||||| Map Info
  * GGAGGAGGTAGGCAGATCCCTGGGGCCAGTGGCA-ATGGGGCCTGGACTCAGGGCGGCCT second
  **/
-
-// Need Debug here!!!
 
 	int inc1 = 1;
     int inc2 = 1; if (strand == '-') inc2 = -1;
@@ -394,7 +384,6 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
     vuTmp.query.id  = m.second._id;
 
 	for (size_t i(0); i < mapInfo.size(); ++i) {
-
 
 		if (mapInfo[i] == '|') {
 		// Homo block		
@@ -448,8 +437,8 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
             	vuTmp.qrySeq = "N";
 			} else {
 				vuTmp.type   = "SNP";
-				vuTmp.tarSeq = " "; // char2str(m.first._sequence[i])
-            	vuTmp.qrySeq = " ";
+				vuTmp.tarSeq = "."; // Do not put base here! Not now!
+            	vuTmp.qrySeq = "."; // Do not put base here! Not now!
 			}
 
 			++i;
@@ -479,9 +468,6 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
         vuTmp.query.end    = (pos2end >= pos2start) ? pos2end   : pos2start;
 
 		vus.push_back(vuTmp);
-
-cerr << "## CallVarInFlank\n";
-vuTmp.OutErr(); // Debug
 
 		pos1end  += inc1;
 		pos2end  += inc2;
@@ -517,4 +503,3 @@ bool AgeAlignment::IsHugeMemory(unsigned long int n, unsigned long int m) {
 
 	return (5 * n * m / 1000000000 > 10); // 10G
 }
-
