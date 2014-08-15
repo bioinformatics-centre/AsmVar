@@ -790,7 +790,7 @@ unsigned int RegionMax   ( vector<Region> & region ) {
 	return pos;
 }
 
-string ReverseAndComplementary ( string & seq ) {
+string ReverseAndComplementary ( string &seq ) {
 
 	string tmpstr;
 	for ( int i(seq.size() - 1); i >= 0; --i ) {
