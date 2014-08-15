@@ -414,18 +414,26 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 			--i; // Rock back 1 position
 		} else if (mapInfo[i] == ' ') {
 		// New Indel!
-			if (m.first._sequence[i]  == '-') pos1start -= inc1;
-			if (m.second._sequence[i] == '-') pos2start -= inc2;
+		// Still have bug here!!!
+cerr << ">> gap pos1start: " << pos1start << ", pos2start: " << pos2start << "\n";
+			if (m.first._sequence[i]  == '-') { 
+				pos1start -= inc1; 
+			}
+			if (m.second._sequence[i] == '-') { 
+				pos2start -= inc2; 
+			}
+cerr << ">> gap pos1start: " << pos1start << ", pos2start: " << pos2start << "\n";
 
 			vuTmp.type = (m.first._sequence[i] == '-') ? "INS" : "DEL";
-			if (vuTmp.type == "DEL" && !isSnpPrevious) pos1end -= inc1;
-			if (vuTmp.type == "INS" && !isSnpPrevious) pos2end -= inc2;
 			while (mapInfo[i] == ' ' && i < mapInfo.size()) {
 				if (m.first._sequence[i]  != '-') pos1end += inc1; 
 				if (m.second._sequence[i] != '-') pos2end += inc2;
 				++i;
 			}
 			--i; // Rock back 1 position
+			isSnpPrevious = true;
+cerr << "** gap pos1start: " << pos1start << ", pos2start: " << pos2start << "\n";
+cerr << "** gap pos1end  : " << pos1end   << ", pos2end  : " << pos2end   << "\n";
 		} else if (mapInfo[i] == '.') {
 		// New SNP or Map 'N'!
 			if (toupper(m.first._sequence[i] == 'N')) {
@@ -438,11 +446,17 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
             	vuTmp.qrySeq = "N";
 			} else {
 				vuTmp.type   = "SNP";
-				vuTmp.tarSeq = m.first._sequence[i]; // char2str(m.first._sequence[i])
-            	vuTmp.qrySeq = m.second._sequence[i];
+				vuTmp.tarSeq = " "; // char2str(m.first._sequence[i])
+            	vuTmp.qrySeq = " ";
 			}
-			pos1end = pos1start;
-			pos2end = pos2start;
+			while (mapInfo[i] == '.' && i < mapInfo.size()) {
+				pos1end += inc1;
+                pos2end += inc2;
+                ++i;
+			}
+			--i;
+			//pos1end = pos1start;
+			//pos2end = pos2start;
 			isSnpPrevious = true;
 		} else {
 		// Who knows...
@@ -466,8 +480,8 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 cerr << "## CallVarInFlank\n";
 vuTmp.OutErr(); // Debug
 
-        pos1start = pos1end + 1;
-        pos2start = pos2end + 1;
+        pos1start = pos1end + inc1;
+        pos2start = pos2end + inc2;
 	}
 
 	return vus;
