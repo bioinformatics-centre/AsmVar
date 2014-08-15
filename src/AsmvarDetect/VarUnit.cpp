@@ -15,6 +15,8 @@ VarUnit::VarUnit() {
 	homoRun = 0;
 	isSuccessAlign = false;
 	isGoodReAlign  = false;
+	cipos = make_pair(0, 0);
+	ciend = make_pair(0, 0);
 
 	return;
 }
@@ -28,6 +30,8 @@ VarUnit::VarUnit(const VarUnit& V) {
 	score  = V.score;  
 	mismap = V.mismap;
 	homoRun= V.homoRun;
+	cipos  = V.cipos;
+	ciend  = V.ciend;
 	isSuccessAlign = V.isSuccessAlign;
 	isGoodReAlign  = V.isGoodReAlign;
 
@@ -283,7 +287,10 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 											  alignResult_._strand);
 				var.isSuccessAlign = true;
 				var.isGoodReAlign  = isgoodAlign();
-				var.homoRun        = HomoRun(); // hr is usefull here!
+				var.homoRun        = HomoRun(); //Just usefull in excise region
+				var.cipos          = cipos();   //Just usefull in excise region
+				var.ciend          = ciend();   //Just usefull in excise region
+				
 				vus.push_back(var);
 				pre_map = alignResult_._map[i];
 			}

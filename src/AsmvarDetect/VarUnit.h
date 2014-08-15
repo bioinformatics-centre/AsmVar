@@ -8,6 +8,7 @@
 #include<iostream> 
 #include<fstream>
 #include<stdlib.h>
+#include<utility>
 
 #ifdef AGE_TIME
 #include <sys/time.h>
@@ -52,6 +53,7 @@ public:
 	int homoRun;
 	bool isSuccessAlign; // Can be re-align but the result may be not good
 	bool isGoodReAlign;  // The result of realignment is good!
+	pair<int, int> cipos, ciend; // Just for reference postion
 
 	// Reserve target. Can only use in recording translocations.
 	// [Because Translocation have two target regions] 
@@ -117,6 +119,8 @@ public:
 
 	bool isgoodAlign() { return isgoodAlign_; }
 	int HomoRun() { return alignResult_._homo_run_atbp1; }
+	pair<int, int> cipos() { return alignResult_._ci_start1; }
+	pair<int, int> ciend() { return alignResult_._ci_end1;   }
 
 private:
 
