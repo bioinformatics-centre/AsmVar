@@ -50,6 +50,8 @@ private:
 	vector< VarUnit > clipreg; // clip regions 
 	vector< VarUnit > nomadic; // The query which totally can not map to target
 	vector< VarUnit > nosolution;
+	// Put all the VarUnit in this variant after 'AGE_Realign'
+vector< VarUnit > allvariant;
 
 	// Make 'CallIversion' function to be private, because this function can 
 	// only be call when all the alignments have been loaded in memerber value 
@@ -58,7 +60,6 @@ private:
 	bool CallTranslocat ( MapReg left, MapReg middle, MapReg right );
 	bool CallIversion   ( MapReg left, MapReg middle, MapReg right );
 	bool CallSimultan   ( MapReg left, MapReg right );
-	//void CallNoSolution ( MapReg mapreg );
 	bool IsSameStrand   ( vector<MapReg> & mapreg );
 	void FilterReg      ( map< string,vector<Region> >, map<string, size_t>, vector<VarUnit> & region );//just used in Filter ()
 	void Output         ( vector< VarUnit > &, ofstream& O );
@@ -78,6 +79,8 @@ public : // Can be called per-axt alignment. And will be called in main function
 	void CallInsertion ();
 	void CallDeletion  ();
 	void GetMapReg     ();
+void AGE_Realign   (); // AGE-Process
+void AGE_Realign   (vector<VarUnit> &var); // AGE-Process
 
 public : // Just can be call when all the axt alignments have been read!
 	void CallSV        (); //It's SV not Indel, which cannot be called by a single alignment. simultaneous gaps,Inversion,translocation and no solution region 

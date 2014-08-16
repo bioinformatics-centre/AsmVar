@@ -218,8 +218,10 @@ gettimeofday(&ali_s, NULL);
 			isalign_ = false;
 		} else if (aligner1.score() >= aligner2.score()) {
 			aligner1.SetAlignResult(); 
+aligner1.printAlignment();
 			alignResult_ = aligner1.align_result();
         } else {
+aligner2.printAlignment();
 			aligner2.SetAlignResult();
 			alignResult_ = aligner2.align_result();
         } 
@@ -229,6 +231,7 @@ gettimeofday(&ali_s, NULL);
 
         AGEaligner aligner(*tar, *qry);
         if (aligner.align(scr, flag)){
+aligner.printAlignment();
 			aligner.SetAlignResult();
 			alignResult_ = aligner.align_result();
         } else {
@@ -236,7 +239,6 @@ gettimeofday(&ali_s, NULL);
 			isalign_ = false; 
         }
     }
-
 /*
 if (isalign_) {
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
@@ -280,24 +282,22 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			cerr << "a bug, please contact the author to confirm!\n";
 		}
 			
-		if (alignResult_._map.size() > 1) {
 		// Call the variant in the excise region
-			pair<MapData, MapData> pre_map = alignResult_._map[0];
-			for (size_t i(1); i < alignResult_._map.size(); ++i) {
+		pair<MapData, MapData> pre_map = alignResult_._map[0];
+		for (size_t i(1); i < alignResult_._map.size(); ++i) {
 			// Variant in excise region	
-				VarUnit var = CallVarInExcise(pre_map, alignResult_._map[i], 
-											  alignResult_._strand);
-				var.isSuccessAlign = true;
-				var.isGoodReAlign  = isgoodAlign();
-				var.homoRun        = HomoRun(); //Just usefull in excise region
-				var.cipos.first    = (cipos().first > 0) ? cipos().first  - var.target.start : 0; // Just here
-				var.cipos.second   = (cipos().second> 0) ? cipos().second - var.target.start : 0; // Just here
-				var.ciend.first    = (ciend().first > 0) ? ciend().first  - var.target.end : 0;   // Just here
-				var.ciend.second   = (ciend().second> 0) ? ciend().second - var.target.end : 0;   // Just here
-				
-				vus.push_back(var);
-				pre_map = alignResult_._map[i];
-			}
+			VarUnit var = CallVarInExcise(pre_map, alignResult_._map[i], 
+					alignResult_._strand);
+			var.isSuccessAlign = true;
+			var.isGoodReAlign  = isgoodAlign();
+			var.homoRun        = HomoRun(); //Just usefull in excise region
+			var.cipos.first    = (cipos().first > 0) ? cipos().first  - var.target.start : 0; // Just here
+			var.cipos.second   = (cipos().second> 0) ? cipos().second - var.target.start : 0; // Just here
+			var.ciend.first    = (ciend().first > 0) ? ciend().first  - var.target.end : 0;   // Just here
+			var.ciend.second   = (ciend().second> 0) ? ciend().second - var.target.end : 0;   // Just here
+
+			vus.push_back(var);
+			pre_map = alignResult_._map[i];
 		}
 
 		// Call the variant in the flank sequence of variant
@@ -307,7 +307,7 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 												 alignResult_._strand);
 			for (size_t i(0); i < var.size(); ++i) {
 				var[i].isSuccessAlign = true;
-                var[i].isGoodReAlign  = isgoodAlign_;
+                var[i].isGoodReAlign  = isgoodAlign();
 				vus.push_back(var[i]); 
 			}
 		}

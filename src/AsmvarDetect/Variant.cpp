@@ -242,6 +242,50 @@ void Variant::GetMapReg () {
 	mapqry[query.id].push_back ( query  ); // stored the mapped query  regions here
 }
 
+void Variant::AGE_Realign() {
+
+	allvariant.clear(); // make sure the value is empty
+
+	//AGE_Realign(snp); // No need!!
+	AGE_Realign(intragap);
+	AGE_Realign(insertion);
+	AGE_Realign(deletion);
+	AGE_Realign(inversion);
+	//AGE_Realign(translocation);
+	AGE_Realign(simulreg);
+	AGE_Realign(nosolution);
+	//AGE_Realign(clipreg); No need!
+
+	return;
+}
+
+void Variant::AGE_Realign(vector<VarUnit> &R) {
+
+	// re-aligne :
+	AgeOption opt;
+	VarUnit vu;
+	vector<VarUnit> vus;
+	for (size_t i(0); i < R.size(); ++i) {
+
+		// R[i] should be replace by 'v' after ReAlign!
+		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
+		for (size_t j(0); j < v.size(); ++j) vus.push_back(v[j]);
+		
+cerr << "\n***********************************\n";
+R[i].OutErr();
+cerr << "\n********** AGE Process ************\n";
+for (size_t j(0); j < v.size(); ++j) v[j].OutErr();
+	}
+
+sort(vus.begin(), vus.end(), MySortByTarV);
+cerr << "\n************** Merge ***************\n";
+vector<VarUnit> meg = MergeVarUnit(vus);
+cerr << "Merge size : " << meg.size() << "\n";
+for (size_t i(0); i < meg.size(); ++i) meg[i].OutErr();
+
+
+}
+
 map< string, vector<Region> > Variant::VarTarRegs() {
 
 	map< string, vector<Region> > varTarRegs;
@@ -308,7 +352,7 @@ void Variant::CallSV () {
 							if ( CallSimultan(tmpreg[0], it->second[i]) ) tmpreg.clear(); // Call simultaneous gap
 						}
 					}
-				} else if( (labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) && (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1) ){ 
+				} else if ( (labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) && (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1) ){ 
 
 					if ( CallIversion(tmpreg[0], tmpreg[1], it->second[i]) ) { 
 						tmpreg.clear(); // Here 'tmpreg' just contain the two head element , in fact, I'm just clear the first and second elements.
@@ -571,10 +615,10 @@ void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 			R[i].OutStd( tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
 		}
 
-		// re-aligne :
-		AgeOption opt;
-		vector<VarUnit> vus = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
 /*
+// re-aligne :
+AgeOption opt;
+vector<VarUnit> vus = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
 cerr << "\n***********************************\n";
 R[i].OutErr();
 cerr << "\n********** AGE Process ************\n";
@@ -786,7 +830,7 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	return gap;
 }
 
-unsigned int RegionMin   ( vector<Region> & region ) {
+unsigned int RegionMin   (vector<Region> &region) {
 
 	if ( region.empty() ) { std::cerr << "[ERROR] Region is empty, when you're calling RegionMin() function.\n"; exit(1); }
 	unsigned int pos = region[0].start;
@@ -794,7 +838,7 @@ unsigned int RegionMin   ( vector<Region> & region ) {
 	return pos;
 }
 
-unsigned int RegionMax   ( vector<Region> & region ) {
+unsigned int RegionMax   (vector<Region> &region) {
 
 	if ( region.empty() ) { std::cerr << "[ERROR] Region is empty, when you're calling RegionMax() function.\n"; exit(1); }
 	unsigned int pos = region[0].end;
@@ -826,7 +870,7 @@ string ReverseAndComplementary ( string &seq ) {
 	return tmpstr;
 }
 
-vector<VarUnit> MergeVarUnit( vector<VarUnit>& VarUnitVector ){
+vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector) {
 // CAUTION : Merge vector<VarUnit>, but all new merge result just 
 // using the same strand of first element: VarUnitVector[0]!!
 

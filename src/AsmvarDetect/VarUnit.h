@@ -68,7 +68,7 @@ public:
     void ConvQryCoordinate(unsigned int qrySeqLen);
     void Swap();
 
-	// Here is the only function will use 'AgeAlignment' class
+	// Here is the only function that will use 'AgeAlignment' class
 	vector<VarUnit> ReAlignAndReCallVar(Fa &target, Fa &query, AgeOption opt);
 
     void Clear(){ isClear = true; }
@@ -99,7 +99,7 @@ private:
 /////////////////////////////////////////////////////////////////////////
 // Each single Indel or SV should AGE re-alignement. That's why I keep 
 // 'AgeAlignment' class together with 'VarUnit' class!
-// 'AgeAlignment' will just present in the memeber function:'ReAlign()'
+// 'AgeAlignment' will just present in the memeber function:'ReAlign...()'
 // of 'VarUnit' class! 
 class AgeAlignment {
 
