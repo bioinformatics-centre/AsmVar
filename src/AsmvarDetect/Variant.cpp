@@ -242,12 +242,20 @@ void Variant::GetMapReg () {
 	mapqry[query.id].push_back ( query  ); // stored the mapped query  regions here
 }
 
+void Variant::Assign2allvariant(vector<VarUnit> &v) {
+
+	for (size_t i(0); i < v.size(); ++i) {
+		allvariant[v[i].target.id].push_back(v[i]);
+	}
+	return;
+}
+
 void Variant::AGE_Realign() {
 
 	allvariant.clear(); // make sure the value is empty
 
 	//AGE_Realign(snp); // No need!!
-	AGE_Realign(intragap);
+	//AGE_Realign(intragap); // No need!
 	AGE_Realign(insertion);
 	AGE_Realign(deletion);
 	AGE_Realign(inversion);
@@ -255,6 +263,22 @@ void Variant::AGE_Realign() {
 	AGE_Realign(simulreg);
 	AGE_Realign(nosolution);
 	//AGE_Realign(clipreg); No need!
+	//AGE_Realign(nomadic); No need!
+
+	Assign2allvariant(snp);
+	Assign2allvariant(homoRef);
+	Assign2allvariant(nSeq);
+	
+	//Assign2allvariant(translocation);
+
+	map<string, size_t> index;
+	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin()); 
+		it != allvariant.end(); ++it) { 
+
+		Unique(it->second); 
+		sort(it->second.begin(), it->second.end(), MySortByTarV);
+		index[it->first] = 0;
+	}
 
 	return;
 }
@@ -269,7 +293,12 @@ void Variant::AGE_Realign(vector<VarUnit> &R) {
 
 		// R[i] should be replace by 'v' after ReAlign!
 		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
-		for (size_t j(0); j < v.size(); ++j) vus.push_back(v[j]);
+		// Not going to deal with the flankin region
+		if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
+			if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
+			allvariant[v[0].target.id].push_back(v[0]);  
+		}
+		//for (size_t j(0); j < v.size(); ++j) vus.push_back(v[j]);
 		
 cerr << "\n***********************************\n";
 R[i].OutErr();
@@ -277,13 +306,20 @@ cerr << "\n********** AGE Process ************\n";
 for (size_t j(0); j < v.size(); ++j) v[j].OutErr();
 	}
 
-sort(vus.begin(), vus.end(), MySortByTarV);
-cerr << "\n************** Merge ***************\n";
-vector<VarUnit> meg = MergeVarUnit(vus);
-cerr << "Merge size : " << meg.size() << "\n";
-for (size_t i(0); i < meg.size(); ++i) meg[i].OutErr();
+	return;
+}
 
+void Variant::Unique(vector<VarUnit> &v) {
 
+	cerr << "#[INFO] Masking all the repeat appear varaints.\n";
+	set<string> hasAppear;
+	for (size_t i(0); i < v.size(); ++i) {
+		string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
+					+ itoa(v[i].target.end) + "-" + v[i].query.id   + ":"
+					+ itoa(v[i].query.start)+ ":" + itoa(v[i].query.end);
+		if (hasAppear.count(key)) v[i].Clear(); // Mask the repeat appear var!
+		hasAppear.insert(key);
+	}
 }
 
 map< string, vector<Region> > Variant::VarTarRegs() {
@@ -507,7 +543,7 @@ void Variant::Filter () {
 	return;
 }
 
-void Variant::FilterReg( map< string,vector<Region> > tarregion, map<string, size_t> index, vector<VarUnit>& region ) {
+void Variant::FilterReg(map< string,vector<Region> > tarregion, map<string, size_t> index, vector<VarUnit> &region) {
 // Just used in Filter() function
 
 	if ( region.empty() || tarregion.empty() ) return;
@@ -601,6 +637,7 @@ void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 
 	sort (R.begin(), R.end(), MySortByTarV);
 	for ( size_t i(0); i < R.size(); ++i ) {
+
 		if ( R[i].Empty() ) continue;
 
 		R[i].tarSeq = ( R[i].target.id == "-" ) ? "-" : tarfa.fa[R[i].target.id].substr(R[i].target.start - 1, R[i].target.end - R[i].target.start + 1);
@@ -614,7 +651,6 @@ void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 			R[i].exp_tarSeq = tarfa.fa[ R[i].exp_target.id ].substr( R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
 			R[i].OutStd( tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
 		}
-
 /*
 // re-aligne :
 AgeOption opt;

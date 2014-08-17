@@ -71,7 +71,7 @@ public:
 	// Here is the only function that will use 'AgeAlignment' class
 	vector<VarUnit> ReAlignAndReCallVar(Fa &target, Fa &query, AgeOption opt);
 
-    void Clear(){ isClear = true; }
+    void Clear(){ tarSeq.clear(); qrySeq.clear(); isClear = true; }
     bool Empty(){ return isClear; } // Do not output if isClear==true
 
 public:

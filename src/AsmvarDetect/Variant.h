@@ -12,6 +12,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <set>
 
 #include "utility.h"
 #include "maf.h"
@@ -51,7 +52,7 @@ private:
 	vector< VarUnit > nomadic; // The query which totally can not map to target
 	vector< VarUnit > nosolution;
 	// Put all the VarUnit in this variant after 'AGE_Realign'
-vector< VarUnit > allvariant;
+map<string, vector<VarUnit> > allvariant; // refererce ID -> Variant
 
 	// Make 'CallIversion' function to be private, because this function can 
 	// only be call when all the alignments have been loaded in memerber value 
@@ -63,6 +64,9 @@ vector< VarUnit > allvariant;
 	bool IsSameStrand   ( vector<MapReg> & mapreg );
 	void FilterReg      ( map< string,vector<Region> >, map<string, size_t>, vector<VarUnit> & region );//just used in Filter ()
 	void Output         ( vector< VarUnit > &, ofstream& O );
+void Assign2allvariant(vector<VarUnit> &v);
+void Unique(vector<VarUnit> &v); // Unique the variant in 'allvariant'
+void AGE_Realign(vector<VarUnit> &var); // AGE-Process
 
 public :
 	map< string, vector<MapReg> > mapreg;  // Mapping region. use for getting novel region
@@ -80,7 +84,6 @@ public : // Can be called per-axt alignment. And will be called in main function
 	void CallDeletion  ();
 	void GetMapReg     ();
 void AGE_Realign   (); // AGE-Process
-void AGE_Realign   (vector<VarUnit> &var); // AGE-Process
 
 public : // Just can be call when all the axt alignments have been read!
 	void CallSV        (); //It's SV not Indel, which cannot be called by a single alignment. simultaneous gaps,Inversion,translocation and no solution region 
