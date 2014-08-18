@@ -960,7 +960,7 @@ void Variant::Output2VCF ( string file ) {
 			int qn = qryfa.Nlength(allvariant[it->second][i].query.id,
 							  allvariant[it->second][i].query.start > 100 ? 
 							  allvariant[it->second][i].query.start - 100 : 0, 
-							  vs + 200);
+							  allvariant[it->second][i].query.end + 100);
 			double nr = double (qn) / ( vs + 200);
 			format.Add("NR",ftoa(nr));
 			vcfline.sample_.push_back(format);
