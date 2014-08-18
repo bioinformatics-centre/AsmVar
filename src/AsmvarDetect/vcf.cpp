@@ -76,6 +76,17 @@ void VcfFormat::Add(string id, string dat) {
     return;
 }
 
+void VcfFormat::Set(string id, string dat) {
+
+	if (!data_.count(id)) {
+        cerr << "[ERROR] " << id << " is still not exists in FORMAT. ";
+		cerr << "You should call Add() first.\n";
+        exit(1);
+    }
+    data_[id] = dat;
+    return;
+}
+
 string VcfFormat::Combine() {
 
 	string gt = data_["GT"];

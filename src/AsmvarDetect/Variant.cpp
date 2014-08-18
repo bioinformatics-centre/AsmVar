@@ -923,7 +923,7 @@ void Variant::Output2VCF ( string file ) {
 
 			VcfFormat format;
 			if (allvariant[it->second][i].isGoodReAlign) 
-				format.Add("GT", "1/1");
+				format.Set("GT", "1/1");
 			format.Add("HR", itoa(allvariant[it->second][i].homoRun));
 			format.Add("CI", itoa(allvariant[it->second][i].cipos.first) +","+
 						   itoa(allvariant[it->second][i].cipos.second));

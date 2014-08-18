@@ -56,6 +56,7 @@ public:
 	VcfFormat()  { data_.clear(); data_["GT"] = "./."; }
     ~VcfFormat() { data_.clear(); }
     void Add(string id, string info);
+    void Set(string id, string info);
 	string Get(string id) { return data_[id]; };
 	string Combine();
 
