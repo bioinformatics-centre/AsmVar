@@ -14,7 +14,7 @@
 
 using namespace std;
 
-typedef unsigned int uint; // The biggest number of uint is 2^32 = 4294967296
+typedef unsigned long int uint; // The biggest number of uint is 2^32 = 4294967296
 
 class Fa {
 
@@ -73,7 +73,7 @@ public :
 	uint Nlength( string id, uint start, uint end ) {
 		if ( end < start )    { cerr << "[ERROR] start > end, in Nlength( string id, uint start, uint end ) in class 'Fa'\n"; exit(1); }
 		if ( !fa.count( id ) ){ cerr << "[ERROR] There is no " << id << " in the fasta reference.\n" ; exit(1); }
-		string str = fa[id].substr( start - 1, end - start + 1 );
+		string str = fa[id].substr( start - 1 > -1 ? start - 1: 0, end - start + 1 );
 
 		uint len(0);
 		for ( size_t i(0); i < str.size(); ++i ) {
