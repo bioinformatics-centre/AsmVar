@@ -87,6 +87,17 @@ void VcfFormat::Set(string id, string dat) {
     return;
 }
 
+string VcfFormat::GetFormat() {
+
+	string format = "GT";
+	for (map<string, string>::iterator it(data_.begin());
+		 it != data_.end();
+         ++it) {
+		if (it->first != "GT") format += ":" + it->first;
+	}
+	return format;
+}
+
 string VcfFormat::Combine() {
 
 	string gt = data_["GT"];
@@ -113,7 +124,11 @@ string VCF::Combine() {
            alt_       + "\t" +
            itoa(qual_)+ "\t" +
            filters_   + "\t" +
-		   info_.Combine() + "\t" + format_;
+		   info_.Combine();
+	if (sample_.size() > 0) { 
+		format_ = sample_[0].GetFormat();
+		data   += "\t" + format_;
+	}
 	for (size_t i(0); i < sample_.size(); ++i) 
 		data += "\t" + sample_[i].Combine();
 

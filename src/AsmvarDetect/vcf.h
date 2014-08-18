@@ -57,8 +57,10 @@ public:
     ~VcfFormat() { data_.clear(); }
     void Add(string id, string info);
     void Set(string id, string info);
-	string Get(string id) { return data_[id]; };
+	string GetFormat();
 	string Combine();
+
+	string Get(string id) { return data_[id]; };
 
 private:
 
