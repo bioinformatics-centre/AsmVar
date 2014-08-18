@@ -21,6 +21,7 @@ class Fa {
 public:
 
 	map<string, string> fa;
+	map<int, string> order2id; // Record the order of fa id
 	uint length; // Recorde the total size of fa. Should not bigger than 4G!
 	uint nsize;  // Recorde the total size of 'N' in fa. Should not bigger than 4G!
 public:
@@ -36,6 +37,7 @@ public:
         }
 
         string tmp, faId;
+		int order = 1;
         while ( 1 ) {
 
             I >> tmp;
@@ -48,6 +50,8 @@ public:
             } else {
                 faId.assign ( tmp, 1, string::npos );
                 fa[faId].clear();
+				order2id[order] = faId;
+				++order;
             }
             getline ( I, tmp, '\n' );
         }
