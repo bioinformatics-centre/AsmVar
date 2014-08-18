@@ -54,6 +54,7 @@ public:
 	bool isSuccessAlign; // Can be re-align but the result may be not good
 	bool isGoodReAlign;  // The result of realignment is good!
 	pair<int, int> cipos, ciend; // Just for reference postion
+    vector<pair<int,int> > identity; // Average, left, right
 
 	// Reserve target. Can only use in recording translocations.
 	// [Because Translocation have two target regions] 

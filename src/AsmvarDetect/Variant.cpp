@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <utility>
-
 #include "Variant.h"
 
 using namespace std;
@@ -866,6 +865,114 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	return gap;
 }
 
+void Variant::Output2VCF ( string file ) {
+
+	VcfHeader header;
+	string h = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + sample;
+	header.Add("#CHROM", h);
+
+    ofstream O (file.c_str());
+	map<string, string> hdata = header.data();
+	for (map<string, string>::iterator it(hdata.begin()); 
+		it != hdata.end(); ++it) {
+		O << it->second << "\n";
+	}
+	
+	for (map<int, string>::iterator it(tarfa.order2id.begin()); 
+		 it != tarfa.order2id.end(); ++it) {
+
+		if (!allvariant.count(it->second)) continue;// No such Fa id
+		for (size_t i(0); i < allvariant[it->second].size(); ++i) {
+
+			if (allvariant[it->second][i].type != "N" && 
+				allvariant[it->second][i].type.find("Homo") == string::npos) {
+
+				unsigned long int start = allvariant[it->second][i].target.start;
+				unsigned long int end   = allvariant[it->second][i].target.end;
+				allvariant[it->second][i].tarSeq = tarfa.fa[it->second].substr(
+						start - 1, end - start + 1);
+
+				start = allvariant[it->second][i].query.start;
+				end   = allvariant[it->second][i].query.end;
+				allvariant[it->second][i].qrySeq = 
+					qryfa.fa[allvariant[it->second][i].query.id].substr(
+						start - 1, end - start + 1);
+			
+				if (allvariant[it->second][i].strand == '-') 
+					allvariant[it->second][i].qrySeq = ReverseAndComplementary(
+											  allvariant[it->second][i].qrySeq);
+			}
+
+			VCF vcfline;
+			vcfline.chrom_ = it->second;
+			vcfline.pos_   = allvariant[it->second][i].target.start;
+			vcfline.Id_    = ".";
+			vcfline.ref_   = allvariant[it->second][i].tarSeq;
+			vcfline.alt_   = allvariant[it->second][i].qrySeq;
+			vcfline.qual_  = 255;
+			if (allvariant[it->second][i].type == "N") {
+				vcfline.filters_ = "NCALL";
+			} else if (allvariant[it->second][i].type.find("Homo") != string::npos) {
+				vcfline.filters_ = "REFCALL"; // Homo reference region
+			} else {
+				vcfline.filters_ = (allvariant[it->second][i].isGoodReAlign) ? 
+									"PASS-AGE" : "PASS"; // Defualt
+			}
+			vcfline.info_.Add("HRun", "HRun=" + 
+							  itoa(allvariant[it->second][i].homoRun));
+
+			VcfFormat format;
+			if (allvariant[it->second][i].isGoodReAlign) 
+				format.Add("GT", "1/1");
+			format.Add("HR", itoa(allvariant[it->second][i].homoRun));
+			format.Add("CI", itoa(allvariant[it->second][i].cipos.first) +","+
+						   itoa(allvariant[it->second][i].cipos.second));
+			format.Add("CE", itoa(allvariant[it->second][i].ciend.first) +","+
+						   itoa(allvariant[it->second][i].ciend.second));
+			format.Add("TR", allvariant[it->second][i].target.id + "-" +
+						   itoa(allvariant[it->second][i].target.start)+ "-" +
+						   itoa(allvariant[it->second][i].target.end));
+			format.Add("QR", allvariant[it->second][i].query.id + "-" +
+						   itoa(allvariant[it->second][i].query.start) + "-" +
+						   itoa(allvariant[it->second][i].query.end));
+			// Align End position
+			format.Add("AE", itoa(allvariant[it->second][i].target.end));
+			format.Add("VT", allvariant[it->second][i].type);
+			int vs = allvariant[it->second][i].query.end - 
+					 allvariant[it->second][i].query.start; // Do not +1!!
+			format.Add("VS", itoa(vs));
+
+			string age;
+			if (allvariant[it->second][i].isSuccessAlign) {
+				age  = (allvariant[it->second][i].isGoodReAlign) ? "T," : "F,"; 
+				age += 
+					itoa(allvariant[it->second][i].identity[0].first) + "," +
+					itoa(allvariant[it->second][i].identity[0].second)+ "," +
+					itoa(allvariant[it->second][i].identity[1].first) + "," +
+					itoa(allvariant[it->second][i].identity[1].second)+ "," +
+					itoa(allvariant[it->second][i].identity[2].first) + "," +
+					itoa(allvariant[it->second][i].identity[2].second);
+			} else {
+				age = ".";
+			}
+			format.Add("AGE", age);
+
+			int qn = qryfa.Nlength(allvariant[it->second][i].query.id,
+							  allvariant[it->second][i].query.start > 100 ? 
+							  allvariant[it->second][i].query.start - 100 : 0, 
+							  vs + 200);
+			double nr = double (qn) / ( vs + 200);
+			format.Add("NR",ftoa(nr));
+			vcfline.sample_.push_back(format);
+
+			O << vcfline << "\n";
+		}
+	}
+
+	O.close();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 unsigned int RegionMin   (vector<Region> &region) {
 
 	if ( region.empty() ) { std::cerr << "[ERROR] Region is empty, when you're calling RegionMin() function.\n"; exit(1); }
@@ -967,5 +1074,4 @@ vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector) {
 
 	return newVector;
 }
-
 

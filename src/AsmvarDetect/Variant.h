@@ -20,6 +20,7 @@
 #include "MapReg.h"
 #include "Region.h"
 #include "Fa.h"
+#include "vcf.h"
 
 #include "AgeOption.h"
 
@@ -52,7 +53,7 @@ private:
 	vector< VarUnit > nomadic; // The query which totally can not map to target
 	vector< VarUnit > nosolution;
 	// Put all the VarUnit in this variant after 'AGE_Realign'
-map<string, vector<VarUnit> > allvariant; // refererce ID -> Variant
+	map<string, vector<VarUnit> > allvariant; // refererce ID -> Variant
 
 	// Make 'CallIversion' function to be private, because this function can 
 	// only be call when all the alignments have been loaded in memerber value 
@@ -94,6 +95,8 @@ public : // Just can be call when all the axt alignments have been read!
 	void OutputSNP( string file ); // Output SNP
 	void Summary  ( string file ); // Output Summary information
 	void OutputGap( string file ); // Output the inter-gaps between different scaffold of the same target chromosome.
+
+	void Output2VCF( string file ); // Output into a VCF format
 
 	// Use for get the gap region, which actually would be the indel regions. can call deletion or insertion
 	// Friend ship functions, but I fail to use friend function here, and I don't have enough time to figure out.

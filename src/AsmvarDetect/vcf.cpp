@@ -17,9 +17,9 @@ void VcfHeader::Add(string mark, string id, string num,
         exit(1);
     }
 
-	string key = "##%s=<ID=%s>" % (mark, id);
-	string val = "##%s=<ID=%s,Number=%s,Type=%s,Description=\"%s\">" % 
-				 (mark, id, num, type, description);
+	string key = "##" + mark + "=<ID=" + id + ">";
+	string val = "##" + mark + "=<ID=" + id + ",Number="+ num + 
+				 ",Type=" + type + ",Description=\""+ description + "\">";
     data_[key] = val;
 
 	return;
@@ -63,6 +63,7 @@ string VcfInfo::Combine() {
 
 	return info;
 }
+
 
 // For class VcfFormat
 void VcfFormat::Add(string id, string dat) {
@@ -108,6 +109,11 @@ string VCF::Combine() {
 	return data;
 }
 
+ostream &operator << (ostream &o, VCF vcf) {
+
+	o << vcf.Combine();
+    return o;
+}
 
 
 

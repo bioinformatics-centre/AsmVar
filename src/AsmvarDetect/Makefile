@@ -12,7 +12,7 @@ main.o : gzstream.h utility.h Variant.h
 VarUnit.o  : utility.h VarUnit.h AGEaligner.h Sequence.h Scorer.h
 AGEaligner.o : AGEaligner.h Sequence.h Scorer.h
 Variant.o  : Variant.h VarUnit.h vcf.h
-vcf.o      : vcf.h
+vcf.o      : vcf.h utility.h
 utility.o  : utility.h
 gzstream.o : gzstream.h
 

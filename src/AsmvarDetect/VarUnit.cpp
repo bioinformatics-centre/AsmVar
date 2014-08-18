@@ -32,6 +32,7 @@ VarUnit::VarUnit(const VarUnit& V) {
 	homoRun= V.homoRun;
 	cipos  = V.cipos;
 	ciend  = V.ciend;
+	identity       = V.identity;
 	isSuccessAlign = V.isSuccessAlign;
 	isGoodReAlign  = V.isGoodReAlign;
 
@@ -296,6 +297,8 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			var.ciend.first    = (ciend().first > 0) ? ciend().first  - var.target.end : 0;   // Just here
 			var.ciend.second   = (ciend().second> 0) ? ciend().second - var.target.end : 0;   // Just here
 
+			var.identity       = alignResult_._identity;
+
 			vus.push_back(var);
 			pre_map = alignResult_._map[i];
 		}
@@ -306,6 +309,7 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 												 alignResult_._map_info[i],
 												 alignResult_._strand);
 			for (size_t i(0); i < var.size(); ++i) {
+				var[i].identity       = alignResult_._identity;
 				var[i].isSuccessAlign = true;
                 var[i].isGoodReAlign  = isgoodAlign();
 				vus.push_back(var[i]); 

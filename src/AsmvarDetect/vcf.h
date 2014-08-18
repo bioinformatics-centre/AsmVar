@@ -9,7 +9,12 @@
 #define __VCF_H__
 
 #include <iostream>
+#include <stdlib.h>
 #include <map>
+#include <vector>
+#include <string>
+
+#include "utility.h" // Just use function itoa()
 
 using namespace std;
 
@@ -35,8 +40,8 @@ class VcfInfo {
 
 public :
 
-	VcfInfo() { data_.clear(); }
-	~VcfInfo() {data_.clear();}
+	VcfInfo()  { data_.clear(); }
+	~VcfInfo() { data_.clear(); }
 	void Add(string id, string info);
 	string Combine();
 

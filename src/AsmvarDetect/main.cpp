@@ -117,12 +117,14 @@ int main ( int argc, char* argv[] ) {
 	variant.CallClipReg();
 	variant.CallNomadic();
 	variant.Filter();      // Filter the indels' regions which in nosolution regions
-variant.AGE_Realign();
+	variant.AGE_Realign();
 
 	variant.Output   ( outFilePrefix + ".svd"     );
 	variant.OutputSNP( outFilePrefix + ".snp"     );
 	variant.OutputGap( outFilePrefix + ".gap.bed" );
 	variant.Summary  ( outFilePrefix + ".summary" );
+
+variant.Output2VCF( outFilePrefix + ".vcf" );
 
 	cerr << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> All Done <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
 
