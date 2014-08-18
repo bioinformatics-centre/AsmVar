@@ -9,6 +9,7 @@
 #define __VCF_H__
 
 #include <iostream>
+#include <map>
 
 using namespace std;
 
@@ -24,10 +25,39 @@ public:
 	void Add(string id, string description);
 
 	map<string, string> data() { return data_; }
+
 private:
 
 	map<string, string> data_;
 };
+
+class VcfInfo {
+
+public :
+
+	VcfInfo() { data_.clear(); }
+	~VcfInfo() {data_.clear();}
+	Add(string id, string info);
+	string Combine();
+
+private :
+	map<string, string> data_;
+};
+
+class VcfFormat {
+
+public:
+
+	VcfFormat()  { data_.clear(); data["GT"] = "./."; }
+    ~VcfFormat() { data_.clear(); }
+    Add(string id, string info);
+	string Combine();
+
+private:
+
+	map<string, string> data_;
+};
+
 
 class VCF {
 
@@ -41,9 +71,14 @@ public:
     int    qual_;
     string filters_;
 	VcfInfo info_;
-    string formats_;
-    vector<string> sample;
-}
+    string format_;
+    vector<VcfFormat> sample_;
+
+public :
+
+	string Combine();
+
+};
 
 #endif
 
