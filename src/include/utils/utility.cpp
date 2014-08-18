@@ -305,6 +305,13 @@ string itoa( int number ) {
 	return str;
 }
 
+string ftoa ( double dbl ) {
+
+	ostringstream strs;
+	strs << dbl;
+	return strs.str();
+}
+
 
 //2011/08/23
 inline string char2str( char c ) {
