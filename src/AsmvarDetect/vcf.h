@@ -37,7 +37,7 @@ public :
 
 	VcfInfo() { data_.clear(); }
 	~VcfInfo() {data_.clear();}
-	Add(string id, string info);
+	void Add(string id, string info);
 	string Combine();
 
 private :
@@ -48,9 +48,10 @@ class VcfFormat {
 
 public:
 
-	VcfFormat()  { data_.clear(); data["GT"] = "./."; }
+	VcfFormat()  { data_.clear(); data_["GT"] = "./."; }
     ~VcfFormat() { data_.clear(); }
-    Add(string id, string info);
+    void Add(string id, string info);
+	string Get(string id) { return data_[id]; };
 	string Combine();
 
 private:
@@ -77,6 +78,8 @@ public:
 public :
 
 	string Combine();
+
+friend ostream &operator << (ostream &o, VCF vcf);
 
 };
 
