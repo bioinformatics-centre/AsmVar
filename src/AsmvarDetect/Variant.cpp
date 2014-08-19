@@ -290,9 +290,13 @@ void Variant::AGE_Realign(vector<VarUnit> &R) {
 	vector<VarUnit> vus;
 	for (size_t i(0); i < R.size(); ++i) {
 
+cerr << "\n[INFO] Enter loop " << i + 1 << "\n";
 		// R[i] should be replace by 'v' after ReAlign!
+cerr << "[INFO] Before calling ReAlignAndReCallVar() ...\n";
 		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
+cerr << "[INFO] After calling ReAlignAndReCallVar() ...\n";
 		// Not going to deal with the flankin region
+		if (v.empty()) continue;
 		if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
 			if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
 			allvariant[v[0].target.id].push_back(v[0]);  
@@ -303,6 +307,7 @@ cerr << "\n***********************************\n";
 R[i].OutErr();
 cerr << "\n********** AGE Process ************\n";
 for (size_t j(0); j < v.size(); ++j) v[j].OutErr();
+cerr << "******* GOOD ******************\n";
 	}
 
 	return;
