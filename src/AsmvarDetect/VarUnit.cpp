@@ -224,10 +224,10 @@ cerr << "[INFO] Before Alignment..\n";
 			isalign_ = false;
 		} else if (aligner1.score() >= aligner2.score()) {
 			aligner1.SetAlignResult(); 
-//aligner1.printAlignment();
+aligner1.printAlignment();
 			alignResult_ = aligner1.align_result();
         } else {
-//aligner2.printAlignment();
+aligner2.printAlignment();
 			aligner2.SetAlignResult();
 			alignResult_ = aligner2.align_result();
         } 
@@ -237,7 +237,7 @@ cerr << "[INFO] Before Alignment..\n";
 
         AGEaligner aligner(*tar, *qry);
         if (aligner.align(scr, flag)){
-//aligner.printAlignment();
+aligner.printAlignment();
 			aligner.SetAlignResult();
 			alignResult_ = aligner.align_result();
         } else {
@@ -245,12 +245,7 @@ cerr << "[INFO] Before Alignment..\n";
 			isalign_ = false; 
         }
     }
-<<<<<<< HEAD
 //*
-=======
-
-// Debug
->>>>>>> 5392917c69157bc466e1dd72545385df41ef2c07
 if (isalign_) {
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
 	cerr << alignResult_._map[i].first._sequence << "\t" << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\n";
@@ -259,11 +254,7 @@ for (size_t i(0); i < alignResult_._map.size(); ++i) {
 }
 cerr << "\n";
 }
-<<<<<<< HEAD
 //*/
-=======
-
->>>>>>> 5392917c69157bc466e1dd72545385df41ef2c07
 
 #ifdef AGE_TIME
 gettimeofday(&ali_e, NULL);
