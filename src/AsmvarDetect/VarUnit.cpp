@@ -245,8 +245,7 @@ aligner.printAlignment();
 			isalign_ = false; 
         }
     }
-
-// Debug
+//*
 if (isalign_) {
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
 	cerr << alignResult_._map[i].first._sequence << "\t" << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\n";
@@ -255,7 +254,7 @@ for (size_t i(0); i < alignResult_._map.size(); ++i) {
 }
 cerr << "\n";
 }
-
+//*/
 
 #ifdef AGE_TIME
 gettimeofday(&ali_e, NULL);
