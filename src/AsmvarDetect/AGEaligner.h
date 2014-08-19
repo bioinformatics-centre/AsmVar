@@ -99,6 +99,10 @@ public :
 		_map.clear();
 		_map_info.clear();
 		_identity.clear();
+		_ci_start1 = make_pair(0, 0);
+		_ci_end1   = make_pair(0, 0);
+		_ci_start2 = make_pair(0, 0);
+		_ci_end2   = make_pair(0, 0);
 	}
 	
 	AlignResult(const AlignResult &ar) { // The copy construct function. 
