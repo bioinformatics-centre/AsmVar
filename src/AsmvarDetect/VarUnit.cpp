@@ -219,10 +219,10 @@ gettimeofday(&ali_s, NULL);
 			isalign_ = false;
 		} else if (aligner1.score() >= aligner2.score()) {
 			aligner1.SetAlignResult(); 
-aligner1.printAlignment();
+//aligner1.printAlignment();
 			alignResult_ = aligner1.align_result();
         } else {
-aligner2.printAlignment();
+//aligner2.printAlignment();
 			aligner2.SetAlignResult();
 			alignResult_ = aligner2.align_result();
         } 
@@ -232,7 +232,7 @@ aligner2.printAlignment();
 
         AGEaligner aligner(*tar, *qry);
         if (aligner.align(scr, flag)){
-aligner.printAlignment();
+//aligner.printAlignment();
 			aligner.SetAlignResult();
 			alignResult_ = aligner.align_result();
         } else {
@@ -240,7 +240,7 @@ aligner.printAlignment();
 			isalign_ = false; 
         }
     }
-/*
+//*
 if (isalign_) {
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
 	cerr << alignResult_._map[i].first._sequence << "\t" << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\n";
@@ -249,7 +249,7 @@ for (size_t i(0); i < alignResult_._map.size(); ++i) {
 }
 cerr << "\n";
 }
-*/
+//*/
 
 #ifdef AGE_TIME
 gettimeofday(&ali_e, NULL);
