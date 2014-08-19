@@ -290,11 +290,8 @@ void Variant::AGE_Realign(vector<VarUnit> &R) {
 	vector<VarUnit> vus;
 	for (size_t i(0); i < R.size(); ++i) {
 
-cerr << "\n[INFO] Enter loop " << i + 1 << "\n";
 		// R[i] should be replace by 'v' after ReAlign!
-cerr << "[INFO] Before calling ReAlignAndReCallVar() ...\n";
 		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
-cerr << "[INFO] After calling ReAlignAndReCallVar() ...\n";
 		// Not going to deal with the flankin region
 		if (v.empty()) continue;
 		if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
@@ -950,7 +947,7 @@ void Variant::Output2VCF ( string file ) {
 			string age;
 			if (allvariant[it->second][i].isSuccessAlign) {
 				age  = (allvariant[it->second][i].isGoodReAlign) ? "T," : "F,"; 
-				age += 
+				age += char2str(allvariant[it->second][i].strand)     + "," +
 					itoa(allvariant[it->second][i].identity[0].first) + "," +
 					itoa(allvariant[it->second][i].identity[0].second)+ "," +
 					itoa(allvariant[it->second][i].identity[1].first) + "," +

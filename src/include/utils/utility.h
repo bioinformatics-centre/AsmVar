@@ -40,7 +40,7 @@ string join ( char* goven[], int size ); // New 2013-05-28 17:20:18
 string itoa ( int number );
 string ftoa ( double dbl ); // double -> string
 string toupper ( string strLine );
-inline string char2str( char c ); // New 2011/08/23
+string char2str( char c ); // New 2011/08/23
 
 // 
 char mytolower( const char c );

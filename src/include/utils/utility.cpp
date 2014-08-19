@@ -314,7 +314,7 @@ string ftoa ( double dbl ) {
 
 
 //2011/08/23
-inline string char2str( char c ) {
+string char2str( char c ) {
 	
 	string str;
 	str.insert( str.begin(), c );

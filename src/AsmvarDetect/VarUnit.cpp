@@ -198,17 +198,12 @@ timeval ali_s,ali_e;
 gettimeofday(&ali_s, NULL);
 #endif
 
-cerr << "[INFO] Before tarSeq = new Sequence() ...\n";
 	Sequence *tarSeq = new Sequence(tarFa, vu_.target.id, 1, false);
-cerr << "[INFO] Before qrySeq = new Sequence() ...\n";
 	Sequence *qrySeq = new Sequence(qryFa, vu_.query.id , 1, false);
-cerr << "[INFO] Before tarSeq->substr ...\n";
 	Sequence *tar = tarSeq->substr(vu_.target.start, vu_.target.end);
-cerr << "[INFO] Before qrySeq->substr ...\n";
 	Sequence *qry = qrySeq->substr(vu_.query.start , vu_.query.end );
-cerr << "[INFO] Before Scorer scr ..\n";
 	Scorer scr(para_.match, para_.mismatch, para_.gapOpen, para_.gapExtend);
-cerr << "[INFO] Before Alignment..\n";
+
 	isalign_ = true;
 	if (para_.both) {
             
@@ -247,6 +242,7 @@ aligner.printAlignment();
     }
 //*
 if (isalign_) {
+cerr << "\n";
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
 	cerr << alignResult_._map[i].first._sequence << "\t" << alignResult_._map[i].first._id << " " << alignResult_._map[i].first._start << "\t" << alignResult_._map[i].first._end << "\n";
 	cerr << alignResult_._map_info[i] << "\n";
