@@ -255,18 +255,18 @@ void Variant::AGE_Realign() {
 
 	//AGE_Realign(snp); // No need!!
 	//AGE_Realign(intragap); // No need!
-	AGE_Realign(insertion);
-	AGE_Realign(deletion);
-	AGE_Realign(inversion);
+	AGE_Realign(insertion);  // New variant will store in 'allvariant' 
+	AGE_Realign(deletion);   // New variant will store in 'allvariant' 
+	AGE_Realign(inversion);  // New variant will store in 'allvariant' 
 	//AGE_Realign(translocation);
-	AGE_Realign(simulreg);
-	AGE_Realign(nosolution);
+	AGE_Realign(simulreg);   // New variant will store in 'allvariant' 
+	AGE_Realign(nosolution); // New variant will store in 'allvariant' 
 	//AGE_Realign(clipreg); No need!
 	//AGE_Realign(nomadic); No need!
 
-	Assign2allvariant(snp);
-	Assign2allvariant(homoRef);
-	Assign2allvariant(nSeq);
+	Assign2allvariant(snp);     // store in 'allvariant'
+	Assign2allvariant(homoRef); // store in 'allvariant'
+	Assign2allvariant(nSeq);    // store in 'allvariant'
 	
 	//Assign2allvariant(translocation);
 
@@ -303,7 +303,10 @@ void Variant::AGE_Realign(vector<VarUnit> &R) {
 cerr << "\n***********************************\n";
 R[i].OutErr();
 cerr << "\n********** AGE Process ************\n";
-for (size_t j(0); j < v.size(); ++j) v[j].OutErr();
+//for (size_t j(0); j < v.size(); ++j) v[j].OutErr();
+v[0].OutErr();
+cerr << "## allvariant ## " << itoa(allvariant[v[0].target.id].back().cipos.first) << "\n";
+allvariant[v[0].target.id].back().OutErr();
 cerr << "******* GOOD ******************\n";
 	}
 
@@ -912,20 +915,21 @@ void Variant::Output2VCF ( string file ) {
 			vcfline.ref_   = allvariant[it->second][i].tarSeq;
 			vcfline.alt_   = allvariant[it->second][i].qrySeq;
 			vcfline.qual_  = 255;
+			VcfFormat format;
 			if (allvariant[it->second][i].type == "N") {
 				vcfline.filters_ = "NCALL";
+				format.Set("GT", "./.");
 			} else if (allvariant[it->second][i].type.find("Homo") != string::npos) {
 				vcfline.filters_ = "REFCALL"; // Homo reference region
+				format.Set("GT", "0/0");
 			} else {
 				vcfline.filters_ = (allvariant[it->second][i].isGoodReAlign) ? 
 									"PASS-AGE" : "PASS"; // Defualt
+				format.Set("GT", "1/1");
 			}
 			vcfline.info_.Add("HRun", "HRun=" + 
 							  itoa(allvariant[it->second][i].homoRun));
 
-			VcfFormat format;
-			if (allvariant[it->second][i].isGoodReAlign) 
-				format.Set("GT", "1/1");
 			format.Add("HR", itoa(allvariant[it->second][i].homoRun));
 			format.Add("CI", itoa(allvariant[it->second][i].cipos.first) +","+
 						   itoa(allvariant[it->second][i].cipos.second));
@@ -940,11 +944,14 @@ void Variant::Output2VCF ( string file ) {
 			// Align End position
 			format.Add("AE", itoa(allvariant[it->second][i].target.end));
 			format.Add("VT", allvariant[it->second][i].type);
-			int vs = allvariant[it->second][i].query.end - 
-					 allvariant[it->second][i].query.start; // Do not +1!!
+			int qvs = allvariant[it->second][i].query.end - 
+					  allvariant[it->second][i].query.start; // Do not +1!!
+			int tvs = allvariant[it->second][i].target.end - 
+					  allvariant[it->second][i].target.start; // Do not +1!!
+			int vs = (qvs > 0) ? qvs : tvs; // Should be tvs if is DEL!
 			format.Add("VS", itoa(vs));
 
-			string age;
+			string age (".");
 			if (allvariant[it->second][i].isSuccessAlign) {
 				age  = (allvariant[it->second][i].isGoodReAlign) ? "T," : "F,"; 
 				age += char2str(allvariant[it->second][i].strand)     + "," +
@@ -954,15 +961,13 @@ void Variant::Output2VCF ( string file ) {
 					itoa(allvariant[it->second][i].identity[1].second)+ "," +
 					itoa(allvariant[it->second][i].identity[2].first) + "," +
 					itoa(allvariant[it->second][i].identity[2].second);
-			} else {
-				age = ".";
 			}
 			format.Add("AGE", age);
 
 			int qn = qryfa.Nlength(allvariant[it->second][i].query.id,
-							  allvariant[it->second][i].query.start > 100 ? 
-							  allvariant[it->second][i].query.start - 100 : 0, 
-							  allvariant[it->second][i].query.end + 100);
+						allvariant[it->second][i].query.start > 100 ? 
+						allvariant[it->second][i].query.start - 100 : 0, 
+						allvariant[it->second][i].query.end + 100);
 			double nr = double (qn) / ( vs + 200);
 			format.Add("NR",ftoa(nr));
 			vcfline.sample_.push_back(format);
@@ -970,7 +975,6 @@ void Variant::Output2VCF ( string file ) {
 			O << vcfline << "\n";
 		}
 	}
-
 	O.close();
 }
 

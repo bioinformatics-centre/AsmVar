@@ -384,7 +384,7 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.query.end    = vu.query.start + qlen - 1;
 	} else {
 		// Simultaneous gap or Unknown Type
-		// Actrually, "Unknown" should be imposible!!
+		// Actrually, "Unknown" should be impossible!!
 		vu.type = (tlen != qlen && tlen > 0) ? "Sgap" : "Unknown" ;
 		vu.target.start = lf.first._end;
 		vu.target.end   = vu.target.start + tlen;
