@@ -291,11 +291,13 @@ string itoa ( const int number ) {
 string itoa( int number ) {
 
     vector< int > meta;
+	bool isnegtive = (number < 0); // Negative number. e.g : -22
+	number = (number < 0) ? -number : number;
     do {
         meta.push_back( number % 10 );
     } while ( number /= 10 );
 
-    string str;
+    string str = (isnegtive) ? "-" : "";
     while ( !meta.empty() ) {
 
         str.insert( str.end(), meta.back() + '0' );
