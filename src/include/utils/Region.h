@@ -7,6 +7,8 @@
 #define __REGION_H__
 
 #include <iostream>
+#include <vector>
+#include <map>
 
 using namespace std;
 
@@ -14,8 +16,8 @@ class Region {
 
 public:
     string id;
-    unsigned long int start;
-    unsigned long int end;
+    long int start;
+    long int end;
 	string info;
 
 public:
@@ -37,6 +39,8 @@ public:
 	}
 	bool isEmpty () { return (end == 0); }
 };
+
+vector<Region> MergeRegion(vector<Region> &RegVector, int delta);
 
 #endif
 
