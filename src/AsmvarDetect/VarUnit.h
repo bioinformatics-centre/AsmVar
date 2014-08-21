@@ -9,6 +9,8 @@
 #include<fstream>
 #include<stdlib.h>
 #include<utility>
+#include<vector>
+#include<map>
 
 #ifdef AGE_TIME
 #include <sys/time.h>
@@ -66,7 +68,7 @@ public:
     VarUnit();
     VarUnit(const VarUnit &V);
 
-    void ConvQryCoordinate(unsigned int qrySeqLen);
+    void ConvQryCoordinate(long int qrySeqLen);
     void Swap();
 
 	// Here is the only function that will use 'AgeAlignment' class
@@ -78,14 +80,14 @@ public:
 public:
 
 	void OutErr();
-    void OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O);
-    void OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen, 
-				unsigned int qrySeqLen, ofstream &O);
+    void OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O);
+    void OutStd(long int tarSeqLen, long int exp_tarSeqLen, 
+				long int qrySeqLen, ofstream &O);
 private:
 	// Return the number of 'n' base in 'str'
-	unsigned int NLength ( string &str ) {
+	long int NLength ( string &str ) {
 
-    	unsigned int num(0);
+    	long int num(0);
     	for (size_t i(0); i < str.size(); ++i)
         	if (str[i] == 'N' || str[i] == 'n') ++num;
     	return num;
@@ -94,6 +96,8 @@ private:
 private:
     bool isClear;
 };
+
+vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int delta);
 
 /////////////////////////////////////////////////////////////////////////
 /************************* Class AgeAlignment **************************/
@@ -130,8 +134,8 @@ private:
 							pair<MapData, MapData> &m2, char strand);
 	vector<VarUnit> CallVarInFlank(pair<MapData, MapData> &m, string &mapInfo,
 								   char strand);
-    void ExtendVU(unsigned long int, unsigned long int, int extandFlankSzie);
-    bool IsHugeMemory(unsigned long int n, unsigned long int m);
+    void ExtendVU(long int, long int, int extandFlankSzie);
+    bool IsHugeMemory(long int n, long int m);
 
 private:
 
@@ -142,6 +146,7 @@ private:
 	bool isalign_;
 	bool isgoodAlign_;
 };
+
 
 #endif
 

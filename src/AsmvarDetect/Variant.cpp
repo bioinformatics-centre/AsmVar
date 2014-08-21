@@ -48,7 +48,7 @@ void Variant::CallnSeq() {
 		}
 		tmpVarVector.push_back(tmpnseq);
 	}
-	tmpVarVector = MergeVarUnit( tmpVarVector );
+	tmpVarVector = MergeVarUnit(tmpVarVector, 1);
 	for (size_t i(0); i < tmpVarVector.size(); ++i) {
 		// coordinates uniform to the positive strand
 		tmpVarVector[i].ConvQryCoordinate(qryfa.fa[query.id].length());
@@ -89,7 +89,7 @@ void Variant::CallHomoRef () {
         	tmpVarVector.push_back(tmphseq);
 		}
     }
-    tmpVarVector = MergeVarUnit( tmpVarVector );
+    tmpVarVector = MergeVarUnit(tmpVarVector, 1);
     for (size_t i(0); i < tmpVarVector.size(); ++i){
 		// coordinates uniform to the positive strand!
 		tmpVarVector[i].ConvQryCoordinate(qryfa.fa[query.id].length());
@@ -167,8 +167,8 @@ bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
 	bool flag(false);
 	if ( left.target.id != right.target.id || left.target.id != middle.target.id ) return flag;
 
-	unsigned int rStart = min ( left.target.start, right.target.start );
-	unsigned int rEnd   = max ( left.target.end  , left.target.end    ); 
+	long int rStart = min ( left.target.start, right.target.start );
+	long int rEnd   = max ( left.target.end  , left.target.end    ); 
 	if ( left.strand   != right.strand ||
 		 middle.strand == left.strand  ||
 		 middle.target.start < rStart  ||
@@ -194,8 +194,8 @@ bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 	// The target id should be the same of 'left' and 'right'
 	if ( left.target.id != right.target.id ) return flag;
 
-	unsigned int rStart = min ( left.target.start, right.target.start );
-	unsigned int rEnd   = max ( left.target.end  , left.target.end    ); 
+	long int rStart = min ( left.target.start, right.target.start );
+	long int rEnd   = max ( left.target.end  , left.target.end    ); 
 
 	// Do not overlap with 'left' or 'right'. And be the same strand on either side of the 'middle' region
 	if ( left.strand != right.strand || (middle.target.start <= rEnd && middle.target.end >= rStart) ) return flag;
@@ -270,7 +270,7 @@ void Variant::AGE_Realign() {
 	
 	//Assign2allvariant(translocation);
 
-	map<string, size_t> index;
+	map<string, size_t> index; // Target Id => index
 	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin()); 
 		it != allvariant.end(); ++it) { 
 
@@ -305,7 +305,7 @@ R[i].OutErr();
 cerr << "\n********** AGE Process ************\n";
 //for (size_t j(0); j < v.size(); ++j) v[j].OutErr();
 v[0].OutErr();
-cerr << "## allvariant ## " << itoa(allvariant[v[0].target.id].back().cipos.first) << "\n";
+cerr << "## allvariant ## " << itoa(allvariant[v[0].target.id].back().cipos.first) << "\t" << ftoa(allvariant[v[0].target.id].back().mismap) << "\n";
 allvariant[v[0].target.id].back().OutErr();
 cerr << "******* GOOD ******************\n";
 	}
@@ -315,7 +315,7 @@ cerr << "******* GOOD ******************\n";
 
 void Variant::Unique(vector<VarUnit> &v) {
 
-	cerr << "#[INFO] Masking all the repeat appear varaints.\n";
+	cerr << "#[INFO] Masking all the duplication varaints.\n";
 	set<string> hasAppear;
 	for (size_t i(0); i < v.size(); ++i) {
 		string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
@@ -363,13 +363,13 @@ void Variant::CallSV () {
 	for ( map<string, vector<MapReg> >::iterator it( mapreg.begin() ); it != mapreg.end(); ++it ) {
 		if ( it->second.size() < 2 ) continue; // More than 2
 
-		map<unsigned int, size_t> qry2tarOrder;
+		map<long int, size_t> qry2tarOrder;
 		sort( it->second.begin(), it->second.end(), MySortByTarM ); // Sort by the coordinate of target mapping positions
 		for ( size_t i(0); i < it->second.size(); ++i ) { qry2tarOrder[it->second[i].query.start] = i; }
 		sort( it->second.begin(), it->second.end(), MySortByQryM ); // Sort by the coordinate of query  mapping positions
 
 		vector<MapReg> tmpreg;
-		unsigned int pos1, pos2, pos;
+		long int pos1, pos2, pos;
 		for ( size_t i(0); i < it->second.size(); ++i ) {
 
 			pos = it->second[i].query.start;   // right (side)
@@ -455,7 +455,7 @@ void Variant::CallClipReg () {
 
 	if ( qryfa.fa.empty() ) { std::cerr << "[WARNING] No Clip regions. Because the query fa is empty!" << endl; return; }
 	VarUnit tmp;
-	unsigned int rStart, rEnd;
+	long int rStart, rEnd;
 	for ( map< string, vector<Region> >::iterator it( mapqry.begin() ); it != mapqry.end(); ++it ) {
 
 		rStart = RegionMin( it->second );
@@ -555,7 +555,7 @@ void Variant::FilterReg(map< string,vector<Region> > tarregion, map<string, size
 
 	string key;
 	bool flag;
-	unsigned int prepos = region[0].query.start; 
+	long int prepos = region[0].query.start; 
 	for ( size_t i(0); i < region.size(); ++i ) {
 
 		if ( !index.count(key) ) continue;
@@ -588,7 +588,7 @@ void Variant::Summary( string file ) {
 	for ( size_t i(0); i < nosolution.size();    ++i ) summary[nosolution[i].type]++;
 	for ( size_t i(0); i < simulreg.size();      ++i ) summary[simulreg[i].type]++;
 
-	map< string, unsigned int > tarCov, qryCov;
+	map< string, long int > tarCov, qryCov;
 	map< string, vector<Region> >::iterator p( mapqry.begin() );
 	for ( ; p != mapqry.end(); ++p ) { summary["qryCovlength"] += Covlength( p->second ); qryCov[p->first] += Covlength( p->second ); }
 	p = maptar.begin();
@@ -597,7 +597,7 @@ void Variant::Summary( string file ) {
 	ofstream O ( file.c_str() );
     if ( !O ) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
 	O << "Summary Information for " << sample << "\n\n";
-	for ( map<string, unsigned int>::iterator pt( summary.begin() ); pt!= summary.end(); ++pt ) 
+	for ( map<string, long int>::iterator pt( summary.begin() ); pt!= summary.end(); ++pt ) 
 		O << pt->first << "\t" << pt->second << "\n";
 	
 	O << "QryCovlength/querylength  " << double ( summary["qryCovlength"] ) / qryfa.length << "\n";
@@ -606,7 +606,7 @@ void Variant::Summary( string file ) {
 	O << "SNP/querylength           " << double(summary["SNP"]) / qryfa.length  << "\n";
 	O << "SNP/targetlength          " << double(summary["SNP"]) / tarfa.length  << "\n";
 	O << "\n";
-	for ( map<string, unsigned int>::iterator p(tarCov.begin()); p != tarCov.end(); ++p ) {
+	for ( map<string, long int>::iterator p(tarCov.begin()); p != tarCov.end(); ++p ) {
 
 		double ratio = double(p->second)/tarfa.fa[p->first].length();
 		O << "# " << p->first << "\t" << p->second << "/" << tarfa.fa[p->first].length() << "\t" << ratio << "\n";
@@ -752,12 +752,12 @@ void Variant::OutputGap( string file ) {
 }
 
 // friendship function in class 'Variant'
-unsigned int Variant::Covlength ( vector<Region> mapreg ) {
+long int Variant::Covlength ( vector<Region> mapreg ) {
 
 	if ( mapreg.empty() ) return 0;
 
 	sort ( mapreg.begin(), mapreg.end(), SortRegion );
-	unsigned int length(mapreg[0].end - mapreg[0].start + 1), prepos( mapreg[0].end );
+	long int length(mapreg[0].end - mapreg[0].start + 1), prepos( mapreg[0].end );
 
 	for ( size_t i(1); i < mapreg.size(); ++i ) {
 
@@ -889,11 +889,12 @@ void Variant::Output2VCF ( string file ) {
 		if (!allvariant.count(it->second)) continue;// No such Fa id
 		for (size_t i(0); i < allvariant[it->second].size(); ++i) {
 
+			if (allvariant[it->second][i].Empty()) continue;
 			if (allvariant[it->second][i].type != "N" && 
 				allvariant[it->second][i].type.find("Homo") == string::npos) {
 
-				unsigned long int start = allvariant[it->second][i].target.start;
-				unsigned long int end   = allvariant[it->second][i].target.end;
+				long int start = allvariant[it->second][i].target.start;
+				long int end   = allvariant[it->second][i].target.end;
 				allvariant[it->second][i].tarSeq = tarfa.fa[it->second].substr(
 						start - 1, end - start + 1);
 
@@ -950,6 +951,8 @@ void Variant::Output2VCF ( string file ) {
 					  allvariant[it->second][i].target.start; // Do not +1!!
 			int vs = (qvs > 0) ? qvs : tvs; // Should be tvs if is DEL!
 			format.Add("VS", itoa(vs));
+			format.Add("SC", itoa(allvariant[it->second][i].score));
+			format.Add("MS", ftoa(allvariant[it->second][i].mismap)); // Mismap
 
 			string age (".");
 			if (allvariant[it->second][i].isSuccessAlign) {
@@ -979,18 +982,18 @@ void Variant::Output2VCF ( string file ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-unsigned int RegionMin   (vector<Region> &region) {
+long int RegionMin(vector<Region> &region) {
 
 	if ( region.empty() ) { std::cerr << "[ERROR] Region is empty, when you're calling RegionMin() function.\n"; exit(1); }
-	unsigned int pos = region[0].start;
+	long int pos = region[0].start;
 	for ( size_t i(0); i < region.size(); ++i ) { if (region[i].start < pos ) pos = region[i].start; }
 	return pos;
 }
 
-unsigned int RegionMax   (vector<Region> &region) {
+long int RegionMax(vector<Region> &region) {
 
 	if ( region.empty() ) { std::cerr << "[ERROR] Region is empty, when you're calling RegionMax() function.\n"; exit(1); }
-	unsigned int pos = region[0].end;
+	long int pos = region[0].end;
 	for ( size_t i(0); i < region.size(); ++i ) { if (region[i].end > pos ) pos = region[i].end; }
 	return pos;
 }
@@ -1017,67 +1020,5 @@ string ReverseAndComplementary ( string &seq ) {
 	}
 
 	return tmpstr;
-}
-
-vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector) {
-// CAUTION : Merge vector<VarUnit>, but all new merge result just 
-// using the same strand of first element: VarUnitVector[0]!!
-
-	int distDelta = 1;
-	bool flag(false);
-
-	VarUnit varunit;
-	vector<VarUnit> newVector;
-	map<string, unsigned long int> tarPrePos, qryPrePos;
-	map<string, string> id2seq;
-	for ( size_t i(0); i < VarUnitVector.size(); ++i ) {
-
-		string tarId = VarUnitVector[i].target.id;
-		string qryId = VarUnitVector[i].query.id ;
-		string id  = VarUnitVector[i].target.id + ":" + VarUnitVector[i].query.id;
-		string seq = VarUnitVector[i].tarSeq + "-" + VarUnitVector[i].qrySeq;
-
-		if (!tarPrePos.count(tarId) || !qryPrePos.count(qryId) || !id2seq.count(id)) {
-
-			// The light is on => Get the region!
-			if (flag) newVector.push_back(varunit);
-			varunit    = VarUnitVector[i];
-			id2seq[id] = seq;
-			flag       = true; // first time
-		} else {
-
-			if (tarPrePos[tarId] > VarUnitVector[i].target.start) {
-				std::cerr << "[ERROR]Your target hasn't been sorted.\n"; 
-				VarUnitVector[i].target.OutErrReg();
-				exit(1);
-			}
-			if (qryPrePos[qryId] > VarUnitVector[i].query.start) {
-				std::cerr << "[ERROR]Your query hasn't been  sorted.\n";
-				VarUnitVector[i].query.OutErrReg();
-				exit(1);
-			}
-
-			if (varunit.target.end + distDelta >= VarUnitVector[i].target.start
-				&& varunit.query.end + distDelta >= VarUnitVector[i].query.start
-				&& id2seq[id] == seq) {
-			
-				if (VarUnitVector[i].target.end > varunit.target.end)
-					varunit.target.end = VarUnitVector[i].target.end;
-
-				if (VarUnitVector[i].query.end > varunit.query.end)
-					varunit.query.end = VarUnitVector[i].query.end; 
-			} else {
-
-				newVector.push_back(varunit); 
-				varunit = VarUnitVector[i];
-			}
-		}
-		tarPrePos[tarId] = VarUnitVector[i].target.start;
-		qryPrePos[qryId] = VarUnitVector[i].query.start;
-		id2seq[id]       = seq;
-	}
-	if (flag) newVector.push_back(varunit);
-
-	return newVector;
 }
 

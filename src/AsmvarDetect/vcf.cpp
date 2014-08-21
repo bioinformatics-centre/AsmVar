@@ -69,7 +69,8 @@ string VcfInfo::Combine() {
 void VcfFormat::Add(string id, string dat) {
 
     if (data_.count(id)) {
-        cerr << "[ERROR] There is already exists " << id << "in FORMAT\n";
+        cerr << "[ERROR] There is already exists " << id << "in FORMAT. ";
+		cerr << "You can use Set(string, string) to reset the data.\n";
         exit(1);
     }
     data_[id] = dat;

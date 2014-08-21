@@ -99,7 +99,7 @@ int main ( int argc, char* argv[] ) {
 
             do {
 				getline ( I, tmp, '\n' );
-			} while ( tmp[0] == 'p'); 
+			} while (tmp[0] == 'p'); 
 
 			variant.CheckMAF();
 			variant.qryfa.CheckFaId(variant.query.id);
@@ -124,7 +124,7 @@ int main ( int argc, char* argv[] ) {
 	variant.OutputGap( outFilePrefix + ".gap.bed" );
 	variant.Summary  ( outFilePrefix + ".summary" );
 
-variant.Output2VCF( outFilePrefix + ".vcf" );
+	variant.Output2VCF( outFilePrefix + ".vcf" );
 
 	cerr << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> All Done <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
 

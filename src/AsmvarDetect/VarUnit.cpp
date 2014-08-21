@@ -42,13 +42,13 @@ VarUnit::VarUnit(const VarUnit& V) {
 	return;
 }
 
-void VarUnit::ConvQryCoordinate(unsigned int qrySeqLen) {
+void VarUnit::ConvQryCoordinate(long int qrySeqLen) {
 
 	// This funtion just conversion the coordinate of Axt/MAF format creat 
 	// by 'lastz'/'last ', which mapped to the '-' strand
 	if ( strand != '-' ) return;
 
-	unsigned int itemp = query.start;
+	long int itemp = query.start;
 	query.start = qrySeqLen - query.end + 1;
 	query.end   = qrySeqLen - itemp + 1;
 
@@ -89,8 +89,8 @@ void VarUnit::OutErr() {
         std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1);
     }
 
-    unsigned int qnl = NLength ( qrySeq );
-    unsigned int tnl = NLength ( tarSeq );
+    long int qnl = NLength ( qrySeq );
+    long int tnl = NLength ( tarSeq );
     cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
       << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
 	  << "\t" << cipos.first  << "," << cipos.second << "\t" << ciend.first 
@@ -102,15 +102,15 @@ void VarUnit::OutErr() {
     return;
 }
 
-void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O) { 
+void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) { 
 // Output the alignment to STDERR
 
 	if (tarSeq.empty() || qrySeq.empty()){ 
 		std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); 
 	}
 
-	unsigned int qnl = NLength ( qrySeq );
-	unsigned int tnl = NLength ( tarSeq );
+	long int qnl = NLength ( qrySeq );
+	long int tnl = NLength ( tarSeq );
 	//O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
 	cout << target.id << "\t" << target.start << "\t" << target.end << "\t" 
 	  << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
@@ -122,16 +122,16 @@ void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int qrySeqLen, ofstream &O
 	return;
 }
 
-void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen, 
-					 unsigned int qrySeqLen, ofstream &O) {
+void VarUnit::OutStd(long int tarSeqLen, long int exp_tarSeqLen, 
+					 long int qrySeqLen, ofstream &O) {
 
 	if (exp_target.isEmpty()) cerr << "[ERROR]exp_target is empty!\n";
 	OutStd(tarSeqLen, qrySeqLen, O);
 
 	if (exp_tarSeq.empty()){ cerr << "exp_tarSeq.empty() \n"; exit(1); }
 
-	unsigned int qnl = NLength ( qrySeq     );
-	unsigned int tnl = NLength ( exp_tarSeq );
+	long int qnl = NLength ( qrySeq     );
+	long int tnl = NLength ( exp_tarSeq );
 	//O << exp_target.id << "\t" << exp_target.start     << "\t" << exp_target.end 
 	cout << exp_target.id << "\t" << exp_target.start  << "\t" << exp_target.end 
 	  << "\t" << exp_target.end - exp_target.start + 1 << "\t" 
@@ -141,6 +141,67 @@ void VarUnit::OutStd(unsigned int tarSeqLen, unsigned int exp_tarSeqLen,
 	  << "\t" << qrySeqLen  << "\t" << strand << "\t" << score << "\t" << mismap 
 	  << "\t" << type + "-E"<< endl;
 	return;
+}
+
+vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int distDelta = 1) {
+// CAUTION : Merge vector<VarUnit>, but all new merge result just 
+// using the same strand of first element: VarUnitVector[0]!!
+
+    bool flag(false);
+
+    VarUnit varunit;
+    vector<VarUnit> newVector;
+    map<string, long int> tarPrePos, qryPrePos;
+    map<string, string> id2seq;
+    for ( size_t i(0); i < VarUnitVector.size(); ++i ) {
+
+        string tarId = VarUnitVector[i].target.id;
+        string qryId = VarUnitVector[i].query.id ;
+        string id  = VarUnitVector[i].target.id + ":" + VarUnitVector[i].query.id;
+        string seq = VarUnitVector[i].tarSeq + "-" + VarUnitVector[i].qrySeq;
+
+        if (!tarPrePos.count(tarId) || !qryPrePos.count(qryId) || !id2seq.count(id)) {
+
+            // The light is on => Get the region!
+            if (flag) newVector.push_back(varunit);
+            varunit    = VarUnitVector[i];
+            id2seq[id] = seq;
+            flag       = true; // first time
+        } else {
+
+            if (tarPrePos[tarId] > VarUnitVector[i].target.start) {
+                std::cerr << "[ERROR]Your target hasn't been sorted.\n";
+                VarUnitVector[i].target.OutErrReg();
+                exit(1);
+            }
+            if (qryPrePos[qryId] > VarUnitVector[i].query.start) {
+                std::cerr << "[ERROR]Your query hasn't been  sorted.\n";
+                VarUnitVector[i].query.OutErrReg();
+                exit(1);
+            }
+
+            if (varunit.target.end + distDelta >= VarUnitVector[i].target.start
+                && varunit.query.end + distDelta >= VarUnitVector[i].query.start
+                && id2seq[id] == seq) {
+
+                if (VarUnitVector[i].target.end > varunit.target.end)
+                    varunit.target.end = VarUnitVector[i].target.end;
+
+                if (VarUnitVector[i].query.end > varunit.query.end)
+                    varunit.query.end = VarUnitVector[i].query.end;
+            } else {
+
+                newVector.push_back(varunit);
+                varunit = VarUnitVector[i];
+            }
+        }
+        tarPrePos[tarId] = VarUnitVector[i].target.start;
+        qryPrePos[qryId] = VarUnitVector[i].query.start;
+        id2seq[id]       = seq;
+    }
+    if (flag) newVector.push_back(varunit);
+
+    return newVector;
 }
 
 /**********************************
@@ -189,8 +250,8 @@ bool AgeAlignment::Align(string &tarFa, string &qryFa) {
 	
 	ExtendVU(tarFa.length(), qryFa.length(), para_.extendVarFlankSzie);
     // Do not AGE if the memory cost is bigger than 10G.
-    unsigned long int varTarSize = vu_.target.end - vu_.target.start;
-	unsigned long int varQrySize = vu_.query.end  - vu_.query.start;
+    long int varTarSize = vu_.target.end - vu_.target.start;
+	long int varQrySize = vu_.query.end  - vu_.query.start;
     if (IsHugeMemory(varTarSize, varQrySize)) return false;
 
 #ifdef AGE_TIME
@@ -511,8 +572,8 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 	return vus;
 }
 
-void AgeAlignment::ExtendVU(unsigned long int tarFaSize, 
-							unsigned long int qryFaSize,
+void AgeAlignment::ExtendVU(long int tarFaSize, 
+							long int qryFaSize,
 							int extandFlankSzie) {
 	if (!isInit_) { 
 		cerr<<"[ERROR]You should init AgeAlignment before calling ExtendVU()\n";
@@ -532,7 +593,7 @@ void AgeAlignment::ExtendVU(unsigned long int tarFaSize,
 	return;
 }
 
-bool AgeAlignment::IsHugeMemory(unsigned long int n, unsigned long int m) { 
+bool AgeAlignment::IsHugeMemory(long int n, long int m) { 
 
 	return (5 * n * m / 1000000000 > 10); // 10G
 }
