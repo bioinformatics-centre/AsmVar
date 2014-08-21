@@ -68,6 +68,9 @@ private:
 	void Assign2allvariant(vector<VarUnit> &v);
 	void Unique(vector<VarUnit> &v); // Unique the variant in 'allvariant'
 	void AGE_Realign(vector<VarUnit> &var); // AGE-Process
+	// Just could be call after read all the mapping file
+	vector<Region> GetUnmapReg(map<string, string> &fa,
+                               map<string, vector<Region> > &regs);
 
 public :
 	map< string, vector<MapReg> > mapreg;  // Mapping region. use for getting novel region
@@ -86,6 +89,7 @@ public : // Can be called per-axt alignment. And will be called in main function
 	void GetMapReg     ();
 	void AGE_Realign   (); // AGE-Process
 
+
 public : // Just can be call when all the axt alignments have been read!
 	void CallSV        (); //It's SV not Indel, which cannot be called by a single alignment. simultaneous gaps,Inversion,translocation and no solution region 
 	void CallClipReg   ();
@@ -100,7 +104,7 @@ public : // Just can be call when all the axt alignments have been read!
 
 	// Use for get the gap region, which actually would be the indel regions. can call deletion or insertion
 	// Friend ship functions, but I fail to use friend function here, and I don't have enough time to figure out.
-	vector< VarUnit > CallGap (Region& tar, string& tarSeq, Region& qry, string& qrySeq, char strand, long scroe, double mismap, string type);
+	vector< VarUnit > CallGap (Region &tar, string &tarSeq, Region &qry, string &qrySeq, char strand, long scroe, double mismap, string type);
 	VarUnit CallGap ( MapReg left, MapReg right ); // call simultaneous gaps.
 	long int Covlength ( vector<Region> mapreg );
 };

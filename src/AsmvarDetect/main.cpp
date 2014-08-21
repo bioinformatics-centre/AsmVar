@@ -116,7 +116,7 @@ int main ( int argc, char* argv[] ) {
 	variant.CallSV(); // It's SV not Indel, which cannot be called by a single alignment. The most important part of these program!!
 	variant.CallClipReg();
 	variant.CallNomadic();
-	variant.Filter();      // Filter the indels' regions which in nosolution regions
+	//variant.Filter();      // Filter the indels' regions which in nosolution regions. Maybe we don;t need it!
 	variant.AGE_Realign();
 
 	variant.Output   ( outFilePrefix + ".svd"     );

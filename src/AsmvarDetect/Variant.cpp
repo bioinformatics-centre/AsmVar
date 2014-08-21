@@ -222,7 +222,7 @@ bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 	return flag;
 }
 
-void Variant::GetMapReg () {
+void Variant::GetMapReg() {
 
 	// Call the query coverting function here to make the '-' strand coordinates 
 	// of query be the same as '+' strand.
@@ -239,6 +239,60 @@ void Variant::GetMapReg () {
 	query.info  = target.id;
 	maptar[target.id].push_back( target ); // stored the mapped target regions here
 	mapqry[query.id].push_back ( query  ); // stored the mapped query  regions here
+}
+
+vector<Region> Variant::GetUnmapReg(map<string, string> &fa,
+						            map<string, vector<Region> > &regs) {
+ 
+	vector<Region> unmapreg;
+	for (map<string, vector<Region> >::iterator it(regs.begin());
+		 it != regs.end(); ++it) {
+	
+		if (!fa.count(it->first)) {
+			cerr << "Missing some fa id or fa id can't match!!!\n"
+				 << "The unmatch id : " + it->first << "\n";
+			exit(1);
+		}
+
+		Region reg;
+		reg.id = it->first; // id
+		if (it->second.size() == 0) {
+			reg.start = 1;
+			reg.end   = fa[it->first].size();
+			unmapreg.push_back(reg);
+			continue;
+		}
+		
+		sort(it->second.begin(), it->second.end(), SortRegion);
+		//it->second = MergeRegion(it->second, 1); // I don't have to merge!
+		if (it->second.front().start > 1) { 
+			reg.start = 1;
+			reg.end   = it->second.front().start - 1;
+			unmapreg.push_back(reg);
+		}
+		if (it->second.back().end < fa[it->first].size()) {
+			reg.start = it->second.back().end + 1;
+			reg.end   = fa[it->first].size();
+			unmapreg.push_back(reg);
+		}
+				
+		Region prereg = it->second[0];
+		for (size_t i(1); i < it->second.size(); ++i) {
+			if (prereg.start > it->second[i].start) { 
+				cerr << "[BUG] Sorted ERROR\n"; exit(1);
+			} 
+			reg.start = prereg.end + 1;
+			reg.end   = it->second[i].start - 1;
+			if (reg.end < reg.start) continue;
+		
+			unmapreg.push_back(reg);
+
+			prereg.start = it->second[i].start;
+			if (it->second[i].end > prereg.end) prereg.end = it->second[i].end;
+		}
+	}
+
+	return unmapreg;
 }
 
 void Variant::Assign2allvariant(vector<VarUnit> &v) {
@@ -269,6 +323,14 @@ void Variant::AGE_Realign() {
 	Assign2allvariant(nSeq);    // store in 'allvariant'
 	
 	//Assign2allvariant(translocation);
+
+	vector<Region> tarunmap = GetUnmapReg(tarfa.fa, maptar);
+	for (size_t i(0); i < tarunmap.size(); ++i) {
+		VarUnit vu; 
+		vu.target = tarunmap[i];
+		vu.type   = "NOCALL";
+		allvariant[tarunmap[i].id].push_back(vu);
+	}
 
 	map<string, size_t> index; // Target Id => index
 	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin()); 
@@ -724,7 +786,6 @@ void Variant::OutputGap( string file ) {
 		// Get Inter scaffold gaps' regions
 		MapReg tmpMR = it->second[0];
 		for ( size_t i(1); i < it->second.size(); ++i ) {
-			//it->second[i].OutErrAlg();  // For Test
 			if ( tmpMR.query.id == it->second[i].query.id ) {
 				if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
 				continue;
@@ -751,7 +812,6 @@ void Variant::OutputGap( string file ) {
 	O.close();
 }
 
-// friendship function in class 'Variant'
 long int Variant::Covlength ( vector<Region> mapreg ) {
 
 	if ( mapreg.empty() ) return 0;
@@ -870,7 +930,7 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	return gap;
 }
 
-void Variant::Output2VCF ( string file ) {
+void Variant::Output2VCF(string file) {
 
 	VcfHeader header;
 	string h = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + sample;
@@ -890,7 +950,12 @@ void Variant::Output2VCF ( string file ) {
 		for (size_t i(0); i < allvariant[it->second].size(); ++i) {
 
 			if (allvariant[it->second][i].Empty()) continue;
-			if (allvariant[it->second][i].type != "N" && 
+
+			if (allvariant[it->second][i].type == "NOCALL") {
+
+				allvariant[it->second][i].tarSeq = ".";
+				allvariant[it->second][i].qrySeq = ".";
+			} else if (allvariant[it->second][i].type != "N" && 
 				allvariant[it->second][i].type.find("Homo") == string::npos) {
 
 				long int start = allvariant[it->second][i].target.start;
@@ -917,7 +982,10 @@ void Variant::Output2VCF ( string file ) {
 			vcfline.alt_   = allvariant[it->second][i].qrySeq;
 			vcfline.qual_  = 255;
 			VcfFormat format;
-			if (allvariant[it->second][i].type == "N") {
+			if (allvariant[it->second][i].type == "NOCALL") {
+				vcfline.filters_ = "NOCALL";
+				format.Set("GT", "./.");
+			} else if (allvariant[it->second][i].type == "N") {
 				vcfline.filters_ = "NCALL";
 				format.Set("GT", "./.");
 			} else if (allvariant[it->second][i].type.find("Homo") != string::npos) {
@@ -942,6 +1010,8 @@ void Variant::Output2VCF ( string file ) {
 			format.Add("QR", allvariant[it->second][i].query.id + "-" +
 						   itoa(allvariant[it->second][i].query.start) + "-" +
 						   itoa(allvariant[it->second][i].query.end));
+			if (allvariant[it->second][i].type == "NOCALL") 
+				format.Set("QR", ".");
 			// Align End position
 			format.Add("AE", itoa(allvariant[it->second][i].target.end));
 			format.Add("VT", allvariant[it->second][i].type);
