@@ -48,6 +48,14 @@ vector<Region> MergeRegion(vector<Region> &regVect, int delta=1) {
 	}
 	if (flag) newVect.push_back(reg);
 
+for (size_t i(0); i < regVect.size(); ++i) {
+regVect[i].OutErrReg();
+}
+cerr << "**** Test Region Merge ****\n";
+for (size_t i(0); i < newVect.size(); ++i) {
+newVect[i].OutErrReg();
+} 
+exit(1);
 	return newVect;
 }
 
