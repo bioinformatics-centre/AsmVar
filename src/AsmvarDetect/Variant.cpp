@@ -332,6 +332,7 @@ void Variant::AGE_Realign() {
 		allvariant[tarunmap[i].id].push_back(vu);
 	}
 
+	// Sort
 	map<string, size_t> index; // Target Id => index
 	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin()); 
 		it != allvariant.end(); ++it) { 
@@ -1037,10 +1038,13 @@ void Variant::Output2VCF(string file) {
 			}
 			format.Add("AGE", age);
 
-			int qn = qryfa.Nlength(allvariant[it->second][i].query.id,
+			int qn = 0;
+			if (allvariant[it->second][i].type != "NOCALL") {
+				qn = qryfa.Nlength(allvariant[it->second][i].query.id,
 						allvariant[it->second][i].query.start > 100 ? 
 						allvariant[it->second][i].query.start - 100 : 0, 
 						allvariant[it->second][i].query.end + 100);
+			}
 			double nr = double (qn) / ( vs + 200);
 			format.Add("NR",ftoa(nr));
 			vcfline.sample_.push_back(format);
