@@ -275,7 +275,7 @@ vector<Region> Variant::GetUnmapReg(map<string, string> &fa,
 			reg.end   = fa[it->first].size();
 			unmapreg.push_back(reg);
 		}
-				
+
 		Region prereg = it->second[0];
 		for (size_t i(1); i < it->second.size(); ++i) {
 			if (prereg.start > it->second[i].start) { 
@@ -324,6 +324,7 @@ void Variant::AGE_Realign() {
 	
 	//Assign2allvariant(translocation);
 
+	// Find un-coverage regions
 	vector<Region> tarunmap = GetUnmapReg(tarfa.fa, maptar);
 	for (size_t i(0); i < tarunmap.size(); ++i) {
 		VarUnit vu; 

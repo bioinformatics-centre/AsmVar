@@ -146,6 +146,7 @@ void VarUnit::OutStd(long int tarSeqLen, long int exp_tarSeqLen,
 vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int distDelta = 1) {
 // CAUTION : Merge vector<VarUnit>, but all new merge result just 
 // using the same strand of first element: VarUnitVector[0]!!
+// And I'm not going to keep all the query infomation after merging!!
 
     bool flag(false);
 
@@ -174,11 +175,13 @@ vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int distDelta = 1) 
                 VarUnitVector[i].target.OutErrReg();
                 exit(1);
             }
+			
             if (qryPrePos[qryId] > VarUnitVector[i].query.start) {
                 std::cerr << "[ERROR]Your query hasn't been  sorted.\n";
                 VarUnitVector[i].query.OutErrReg();
                 exit(1);
             }
+			
 
             if (varunit.target.end + distDelta >= VarUnitVector[i].target.start
                 && varunit.query.end + distDelta >= VarUnitVector[i].query.start
@@ -186,9 +189,10 @@ vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int distDelta = 1) 
 
                 if (VarUnitVector[i].target.end > varunit.target.end)
                     varunit.target.end = VarUnitVector[i].target.end;
-
+				
                 if (VarUnitVector[i].query.end > varunit.query.end)
                     varunit.query.end = VarUnitVector[i].query.end;
+				
             } else {
 
                 newVector.push_back(varunit);
@@ -393,7 +397,7 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		exit(1);
 	}
 
-	int qlen = abs(rt.second._start - lf.second._end - 1); // Query
+	int qlen = abs(rt.second._start - lf.second._end) - 1; // Query 
 	int tlen = rt.first._start  - lf.first._end  - 1;      // Reference
 	if (tlen < 0) cerr << "[WARNING] It'll cause bug below!\n";
 
@@ -418,7 +422,8 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		// CAUTION: Here is not just the variant region, but include one
 		// position which on the boundary of variant. So that we don't have 
 		// to add one base of reference at ALT field in VCF file.
-		vu.query.start = (strand == '+') ? lf.second._end : rt.second._start;
+		//vu.query.start = (strand == '+') ? lf.second._end : rt.second._start;
+		vu.query.start = lf.second._end; // lf.second._end is map lf.first._end
 		vu.query.end   = vu.query.start;
 
 	} else if (qlen > 0 && tlen == 0) {
@@ -435,12 +440,12 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		// CAUTION: Here is not just the variant region, but include one
 		// position which on the boundary of variant. So that we don't have 
 		// to add one base of reference at ALT field in VCF file.
-		vu.query.start = (strand == '+') ? lf.second._end : rt.second._start;
+		vu.query.start = (strand == '+') ? lf.second._end : rt.second._start + 1;
 		vu.query.end   = vu.query.start + qlen;
 	} else if (tlen == qlen) {
 		vu.type = (tlen == 1) ? "SNP" : "MNP";
 		vu.target.start = lf.first._end + 1;
-		vu.target.end   = vu.target.start + tlen -1;
+		vu.target.end   = vu.target.start + tlen - 1;
 		vu.query.start  = (strand == '+') ? lf.second._end + 1 : rt.second._start + 1;
 		vu.query.end    = vu.query.start + qlen - 1;
 	} else {
@@ -449,7 +454,7 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.type = (tlen != qlen && tlen > 0) ? "Sgap" : "Unknown" ;
 		vu.target.start = lf.first._end;
 		vu.target.end   = vu.target.start + tlen;
-		vu.query.start  = (strand == '+') ? lf.second._end : rt.second._start;
+		vu.query.start  = (strand == '+') ? lf.second._end : rt.second._start + 1;
 		vu.query.end    = vu.query.start + qlen;
 	}
 
@@ -463,6 +468,7 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
  * |.||||||||||||||||| |||||||||||||| |||||||||||||.||||||||||| Map Info
  * GGAGGAGGTAGGCAGATCCCTGGGGCCAGTGGCA-ATGGGGCCTGGACTCAGGGCGGCCT second
  **/
+// Should carefully about the breakpoint of Indel. 
 
 	int inc1 = 1;
     int inc2 = 1; if (strand == '-') inc2 = -1;
