@@ -69,8 +69,7 @@ private:
 	void Unique(vector<VarUnit> &v); // Unique the variant in 'allvariant'
 	void AGE_Realign(vector<VarUnit> &var); // AGE-Process
 	// Just could be call after read all the mapping file
-	vector<Region> GetUnmapReg(map<string, string> &fa,
-                               map<string, vector<Region> > &regs);
+	vector<Region> GetNoCallReg();
 
 public :
 	map< string, vector<MapReg> > mapreg;  // Mapping region. use for getting novel region

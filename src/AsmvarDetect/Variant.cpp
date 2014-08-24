@@ -198,7 +198,7 @@ bool Variant::CallTranslocat ( MapReg left, MapReg middle, MapReg right ) {
 	long int rEnd   = max ( left.target.end  , left.target.end    ); 
 
 	// Do not overlap with 'left' or 'right'. And be the same strand on either side of the 'middle' region
-	if ( left.strand != right.strand || (middle.target.start <= rEnd && middle.target.end >= rStart) ) return flag;
+	if (left.strand != right.strand || (middle.target.start <= rEnd && middle.target.end >= rStart)) return flag;
 
 	flag = true;
 	VarUnit reg, gap;
@@ -241,58 +241,59 @@ void Variant::GetMapReg() {
 	mapqry[query.id].push_back ( query  ); // stored the mapped query  regions here
 }
 
-vector<Region> Variant::GetUnmapReg(map<string, string> &fa,
-						            map<string, vector<Region> > &regs) {
- 
-	vector<Region> unmapreg;
-	for (map<string, vector<Region> >::iterator it(regs.begin());
-		 it != regs.end(); ++it) {
-	
-		if (!fa.count(it->first)) {
-			cerr << "Missing some fa id or fa id can't match!!!\n"
-				 << "The unmatch id : " + it->first << "\n";
-			exit(1);
-		}
+vector<Region> Variant::GetNoCallReg() {
 
+    map<string, vector<MapReg> > tmpmapreg;
+    for ( map<string, vector<MapReg> >::iterator it( mapreg.begin() ); it != mapreg.end(); ++it ) {
+        for ( size_t i(0); i < it->second.size(); ++i )
+            tmpmapreg[it->second[i].target.id].push_back( it->second[i] );
+    }
+
+	vector<Region> nocallreg;
+    // Get NoCall region, acturlly is the inter-scaffold gap!
+    for (map<string, vector<MapReg> >::iterator it(tmpmapreg.begin()); it != tmpmapreg.end(); ++it) {
+
+		// Sort by the coordinate of target mapping positions
+        sort(it->second.begin(), it->second.end(), MySortByTarM);
+        // Get Inter scaffold gaps' regions
+        MapReg tmpMR = it->second[0];
 		Region reg;
-		reg.id = it->first; // id
+		reg.id = tmpMR.target.id;
+
 		if (it->second.size() == 0) {
-			reg.start = 1;
-			reg.end   = fa[it->first].size();
-			unmapreg.push_back(reg);
-			continue;
-		}
-		
-		sort(it->second.begin(), it->second.end(), SortRegion);
-		//it->second = MergeRegion(it->second, 1); // I don't have to merge!
-		if (it->second.front().start > 1) { 
-			reg.start = 1;
-			reg.end   = it->second.front().start - 1;
-			unmapreg.push_back(reg);
-		}
-		if (it->second.back().end < fa[it->first].size()) {
-			reg.start = it->second.back().end + 1;
-			reg.end   = fa[it->first].size();
-			unmapreg.push_back(reg);
-		}
+            reg.start = 1;
+            reg.end   = tarfa.fa[it->first].size();
+            nocallreg.push_back(reg);
+            continue;
+        }
+		if (it->second.front().target.start > 1) {
+            reg.start = 1;
+            reg.end   = it->second.front().target.start - 1;
+            nocallreg.push_back(reg);
+        }
+        if (it->second.back().target.end < tarfa.fa[it->first].size()) {
+            reg.start = it->second.back().target.end + 1;
+            reg.end   = tarfa.fa[it->first].size();
+            nocallreg.push_back(reg);
+        }
 
-		Region prereg = it->second[0];
-		for (size_t i(1); i < it->second.size(); ++i) {
-			if (prereg.start > it->second[i].start) { 
-				cerr << "[BUG] Sorted ERROR\n"; exit(1);
-			} 
-			reg.start = prereg.end + 1;
-			reg.end   = it->second[i].start - 1;
-			if (reg.end < reg.start) continue;
-		
-			unmapreg.push_back(reg);
+        for (size_t i(1); i < it->second.size(); ++i) {
 
-			prereg.start = it->second[i].start;
-			if (it->second[i].end > prereg.end) prereg.end = it->second[i].end;
-		}
-	}
+            if (tmpMR.query.id == it->second[i].query.id) {
+                if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
+                continue;
+            }
+			// Get Inter-Scaffold Gap
 
-	return unmapreg;
+            if (tmpMR.target.end < it->second[i].target.start - 1) {
+				reg.start = tmpMR.target.end + 1;
+				reg.end   = it->second[i].target.start - 1;
+				nocallreg.push_back(reg);
+            }
+            if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
+        }
+    }
+	return nocallreg;
 }
 
 void Variant::Assign2allvariant(vector<VarUnit> &v) {
@@ -325,12 +326,12 @@ void Variant::AGE_Realign() {
 	//Assign2allvariant(translocation);
 
 	// Find un-coverage regions
-	vector<Region> tarunmap = GetUnmapReg(tarfa.fa, maptar);
-	for (size_t i(0); i < tarunmap.size(); ++i) {
+	vector<Region> tarnocall = GetNoCallReg();
+	for (size_t i(0); i < tarnocall.size(); ++i) {
 		VarUnit vu; 
-		vu.target = tarunmap[i];
+		vu.target = tarnocall[i];
 		vu.type   = "NOCALL";
-		allvariant[tarunmap[i].id].push_back(vu);
+		allvariant[tarnocall[i].id].push_back(vu);
 	}
 
 	// Sort
@@ -654,9 +655,9 @@ void Variant::Summary( string file ) {
 
 	map< string, long int > tarCov, qryCov;
 	map< string, vector<Region> >::iterator p( mapqry.begin() );
-	for ( ; p != mapqry.end(); ++p ) { summary["qryCovlength"] += Covlength( p->second ); qryCov[p->first] += Covlength( p->second ); }
+	for (; p != mapqry.end(); ++p) { summary["qryCovlength"] += Covlength(p->second); qryCov[p->first] += Covlength(p->second); }
 	p = maptar.begin();
-	for ( ; p != maptar.end(); ++p ) { summary["tarCovlength"] += Covlength( p->second ); tarCov[p->first] += Covlength( p->second ); }
+	for (; p != maptar.end(); ++p) { summary["tarCovlength"] += Covlength(p->second); tarCov[p->first] += Covlength(p->second); }
 
 	ofstream O ( file.c_str() );
     if ( !O ) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
@@ -664,8 +665,8 @@ void Variant::Summary( string file ) {
 	for ( map<string, long int>::iterator pt( summary.begin() ); pt!= summary.end(); ++pt ) 
 		O << pt->first << "\t" << pt->second << "\n";
 	
-	O << "QryCovlength/querylength  " << double ( summary["qryCovlength"] ) / qryfa.length << "\n";
-	O << "TarCovlength/targetlength " << double ( summary["tarCovlength"] ) / tarfa.length << "\n";
+	O << "QryCovlength/querylength  " << double(summary["qryCovlength"]) / qryfa.length << "\n";
+	O << "TarCovlength/targetlength " << double(summary["tarCovlength"]) / tarfa.length << "\n";
 	O << "TarCovlength/targetlength(NO 'N') "<< double(summary["tarCovlength"])/(tarfa.length-tarfa.nsize) << "\n";
 	O << "SNP/querylength           " << double(summary["SNP"]) / qryfa.length  << "\n";
 	O << "SNP/targetlength          " << double(summary["SNP"]) / tarfa.length  << "\n";
@@ -701,7 +702,7 @@ void Variant::Output ( string file ) {
 	return;
 }
 
-void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
+void Variant::Output(vector< VarUnit > & R, ofstream& O) {
 
 	sort (R.begin(), R.end(), MySortByTarV);
 	for ( size_t i(0); i < R.size(); ++i ) {
@@ -719,19 +720,10 @@ void Variant::Output ( vector< VarUnit > & R, ofstream& O ) {
 			R[i].exp_tarSeq = tarfa.fa[ R[i].exp_target.id ].substr( R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
 			R[i].OutStd( tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
 		}
-/*
-// re-aligne :
-AgeOption opt;
-vector<VarUnit> vus = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
-cerr << "\n***********************************\n";
-R[i].OutErr();
-cerr << "\n********** AGE Process ************\n";
-for (size_t i(0); i < vus.size(); ++i) vus[i].OutErr();
-*/
 	}
 }
 
-void Variant::OutputSNP ( string file ) {
+void Variant::OutputSNP(string file) {
 
 	ofstream O ( file.c_str() );
 	O <<  
@@ -768,9 +760,8 @@ void Variant::OutputSNP ( string file ) {
 	O.close();
 }
 
-void Variant::OutputGap( string file ) {
+void Variant::OutputGap(string file) {
 // The inter-gaps between different scaffolds in the same chromosome need to calculate.
-// Abort : 2013-11-04 13:20:30 !!!
 
 	ofstream O ( file.c_str() );
 	if ( !O ) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
@@ -779,6 +770,7 @@ void Variant::OutputGap( string file ) {
 	for ( map<string, vector<MapReg> >::iterator it( mapreg.begin() ); it != mapreg.end(); ++it ) {
 		for ( size_t i(0); i < it->second.size(); ++i ) {
 			tmpmapreg[it->second[i].target.id].push_back( it->second[i] );
+
 		}
 	}
 	// Get inter scaffold gaps
@@ -814,7 +806,7 @@ void Variant::OutputGap( string file ) {
 	O.close();
 }
 
-long int Variant::Covlength ( vector<Region> mapreg ) {
+long int Variant::Covlength(vector<Region> mapreg) {
 
 	if ( mapreg.empty() ) return 0;
 
@@ -837,17 +829,17 @@ long int Variant::Covlength ( vector<Region> mapreg ) {
 	return length;
 }
 
-vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Contig102837 1 81
-                                     string & tarSeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
-                                     Region & qry,    // Contig102837 1 81 or chrM 16308 16389
-                                     string & qrySeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
-                                     char   strand,   // + or -
-                                     long   score,    // 221 
-                                     double mismap,   // 1e-10
-                                     string type ) {  // insertion or deletion
+vector< VarUnit > Variant::CallGap(Region & tar,    // chrM 16308 16389  or Contig102837 1 81
+                                    string & tarSeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
+                                    Region & qry,    // Contig102837 1 81 or chrM 16308 16389
+                                    string & qrySeq, // CATAGTACATAAAGTCATTTACCGTACATAGCACATTACAG
+                                    char   strand,   // + or -
+                                    long   score,    // 221 
+                                    double mismap,   // 1e-10
+                                    string type) {   // insertion or deletion
 
 // This function is just used to call the gap regions of 'tar' (not for 'qry'!!). which will be indel actually ( indels are gaps ).
-	assert ( tarSeq.length() == qrySeq.length() );
+	assert (tarSeq.length() == qrySeq.length());
 
 	VarUnit tmpgap; 
 	tmpgap.target.id = tar.id;
@@ -863,7 +855,7 @@ vector< VarUnit > Variant::CallGap ( Region & tar,    // chrM 16308 16389  or Co
 	// I do have a program to debug this part at : /ifs1/ST_EPI/USER/huangshujia/bin/cpp_bin/learn_cpp/test_string.cpp
 	// e.g. : tarSeq = "-ab-c-t--", 
 	//        qrySeq = "aa-ccdcdt",
-		for ( size_t k(j); k < i; ++k ) { if( qrySeq[k] == '-' ) ++qgaplen; }
+		for (size_t k(j); k < i; ++k) { if(qrySeq[k] == '-') ++qgaplen; }
 		tmpgap.query.start = qry.start + i - qgaplen; // Get the query start position which in the tar-gap region.
 
 		if ( ( j = tarSeq.find_first_not_of('-',i) ) == string::npos ) j = tarSeq.length();

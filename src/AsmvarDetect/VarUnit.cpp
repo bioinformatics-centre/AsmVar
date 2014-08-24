@@ -305,7 +305,7 @@ aligner.printAlignment();
 			isalign_ = false; 
         }
     }
-//*
+/*
 if (isalign_) {
 cerr << "\n";
 for (size_t i(0); i < alignResult_._map.size(); ++i) {
@@ -315,7 +315,7 @@ for (size_t i(0); i < alignResult_._map.size(); ++i) {
 }
 cerr << "\n";
 }
-//*/
+*/
 
 #ifdef AGE_TIME
 gettimeofday(&ali_e, NULL);
