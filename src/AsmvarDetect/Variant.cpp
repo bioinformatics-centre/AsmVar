@@ -253,30 +253,26 @@ vector<Region> Variant::GetNoCallReg() {
     // Get NoCall region, acturlly is the inter-scaffold gap!
     for (map<string, vector<MapReg> >::iterator it(tmpmapreg.begin()); it != tmpmapreg.end(); ++it) {
 
-		// Sort by the coordinate of target mapping positions
-        sort(it->second.begin(), it->second.end(), MySortByTarM);
         // Get Inter scaffold gaps' regions
-        MapReg tmpMR = it->second[0];
 		Region reg;
-		reg.id = tmpMR.target.id;
-
+		reg.id = it->first;
 		if (it->second.size() == 0) {
             reg.start = 1;
             reg.end   = tarfa.fa[it->first].size();
             nocallreg.push_back(reg);
             continue;
         }
+
+		// Sort by the coordinate of target mapping positions
+        sort(it->second.begin(), it->second.end(), MySortByTarM);
+
 		if (it->second.front().target.start > 1) {
             reg.start = 1;
             reg.end   = it->second.front().target.start - 1;
             nocallreg.push_back(reg);
         }
-        if (it->second.back().target.end < tarfa.fa[it->first].size()) {
-            reg.start = it->second.back().target.end + 1;
-            reg.end   = tarfa.fa[it->first].size();
-            nocallreg.push_back(reg);
-        }
 
+        MapReg tmpMR = it->second.front();
         for (size_t i(1); i < it->second.size(); ++i) {
 
             if (tmpMR.query.id == it->second[i].query.id) {
@@ -284,13 +280,18 @@ vector<Region> Variant::GetNoCallReg() {
                 continue;
             }
 			// Get Inter-Scaffold Gap
-
             if (tmpMR.target.end < it->second[i].target.start - 1) {
 				reg.start = tmpMR.target.end + 1;
 				reg.end   = it->second[i].target.start - 1;
 				nocallreg.push_back(reg);
             }
             if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
+        }
+
+        if (tmpMR.target.end < tarfa.fa[it->first].size()) {
+            reg.start = tmpMR.target.end + 1;
+            reg.end   = tarfa.fa[it->first].size();
+            nocallreg.push_back(reg);
         }
     }
 	return nocallreg;
