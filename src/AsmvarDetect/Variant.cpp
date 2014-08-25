@@ -425,7 +425,7 @@ void Variant::MarkHete() {
 
 void Variant::Unique(vector<VarUnit> &v) {
 
-	cerr << "#[INFO] Masking the duplication varaints.\n";
+	cerr << "[INFO] Masking the duplication varaints.\n";
 	set<string> hasAppear;
 	for (size_t i(0); i < v.size(); ++i) {
 		string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
