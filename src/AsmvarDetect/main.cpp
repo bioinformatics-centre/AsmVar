@@ -40,28 +40,28 @@ int main ( int argc, char* argv[] ) {
                 Usage( argv[0] );
         }
 	}
-	if ( argc == 1 || infile.empty() || outFilePrefix.empty() || qryRef.empty() || tarRef.empty() ) Usage( argv[0] );
+	if (argc == 1 || infile.empty() || outFilePrefix.empty() || qryRef.empty() || tarRef.empty() ) Usage( argv[0]);
 	if (sampleId.empty()) { cerr << "[ERROR] You miss the sample ID by the parameter '-s [sampleId]'\n"; exit(1); }
-	cerr << "#Parameter : " << join(argv, argc) << "\n" << endl;
+	cerr << "[INFO] Parameter : " << join(argv, argc) << "\n\n";
 
-	if ( !filelist.empty() ) ReadFileList( filelist.c_str(), infile );
+	if (!filelist.empty()) ReadFileList(filelist.c_str(), infile);
 
 	Variant variant;
 	variant.AssignSample(sampleId); // Assigne the name of sample into 'variant'
-	for ( size_t i (0); i < qryRef.size(); ++i ) { variant.qryfa.Load( qryRef[i] ); } // Load query sequence
-	for ( size_t i (0); i < tarRef.size(); ++i ) { variant.tarfa.Load( tarRef[i] ); } // Load query sequence
+	for (size_t i(0); i < qryRef.size(); ++i) { variant.qryfa.Load(qryRef[i]); } // Load query sequence
+	for (size_t i(0); i < tarRef.size(); ++i) { variant.tarfa.Load(tarRef[i]); } // Load query sequence
 
-	for ( size_t i (0); i < infile.size(); ++i ) {
+	for (size_t i (0); i < infile.size(); ++i) {
 
-		igzstream I ( infile[i].c_str() );
-        if ( !I ){
+		igzstream I(infile[i].c_str());
+        if (!I) {
             cerr << "Cannot open file : " << i + 1 << "\t" << infile[i] << endl;
             exit(1);
         }
         cerr << "***#    Reading file : " << i + 1 << "\t" << infile[i] << "    #*** " << endl;
 		string tmp;
-        vector< string > vect; 
-		while ( 1 ) {
+        vector<string> vect; 
+		while (1) {
 		/*  
             # Header ...
             # batch 1
@@ -73,33 +73,33 @@ int main ( int argc, char* argv[] ) {
 
 		*/
 			I >> tmp;
-			if ( I.eof() ){
+			if (I.eof()){
                 break;
-            } else if ( I.fail() ) {
+            } else if (I.fail()) {
                 cerr << "File read ERROR [I/O]!!\n" << tmp << endl;
                 exit(1);
             }
-			if ( tmp[0] == '#' ) { getline ( I, tmp, '\n' ); continue; }
-			if ( tmp[0] != 'a' ) { 
+			if (tmp[0] == '#') { getline (I, tmp, '\n'); continue; }
+			if (tmp[0] != 'a') { 
 				cerr << "[ERROR] Format crash. It's not the begin of a MAF alignment block\t" << tmp << endl; 
 				exit(1);
 			}
             //a score=221 mismap=1e-10
-            I >> tmp; split("=", tmp, vect); variant.score  = atoi( vect[1].c_str() );  // score=221
-            I >> tmp; split("=", tmp, vect); variant.mismap = atof( vect[1].c_str() );  // mismap=1e-10
-            getline ( I, tmp, '\n' );
+            I >> tmp; split("=", tmp, vect); variant.score  = atoi(vect[1].c_str());  // score=221
+            I >> tmp; split("=", tmp, vect); variant.mismap = atof(vect[1].c_str());  // mismap=1e-10
+            getline (I, tmp, '\n');
             I >> tmp >> variant.target.id >> variant.target.start >> variant.target.end //Here variant.target.end is just the mapping length
               >> tmp >> tmp >> variant.tarSeq; getline ( I, tmp, '\n' );
             variant.target.end += variant.target.start; // Now variant.target.end is the end of mapping region
             ++variant.target.start;                     // variant.target.start is 0-base , shift to 1-base
 
             I >> tmp >> variant.query.id  >> variant.query.start  >> variant.query.end
-              >> variant.strand >> tmp    >> variant.qrySeq; getline ( I, tmp, '\n' );
+              >> variant.strand >> tmp    >> variant.qrySeq; getline (I, tmp, '\n');
             variant.query.end += variant.query.start;
             ++variant.query.start;
 
             do {
-				getline ( I, tmp, '\n' );
+				getline (I, tmp, '\n');
 			} while (tmp[0] == 'p'); 
 
 			variant.CheckMAF();
@@ -120,10 +120,10 @@ int main ( int argc, char* argv[] ) {
 	//variant.Filter();      // Filter the indels' regions which in nosolution regions. Maybe we don;t need it!
 	variant.AGE_Realign(referenceId);
 
-	variant.Output   ( outFilePrefix + ".svd"     );
-	variant.OutputSNP( outFilePrefix + ".snp"     );
-	variant.OutputGap( outFilePrefix + ".gap.bed" );
-	variant.Summary  ( outFilePrefix + ".summary" );
+	variant.Output   (outFilePrefix + ".svd"    );
+	variant.OutputSNP(outFilePrefix + ".snp"    );
+	variant.OutputGap(outFilePrefix + ".gap.bed");
+	variant.Summary  (outFilePrefix + ".summary");
 
 	variant.Output2VCF(referenceId, outFilePrefix + ".vcf");
 
@@ -132,25 +132,25 @@ int main ( int argc, char* argv[] ) {
 	return 0;
 }
 
-void ReadFileList ( const char* filelist, vector< string > & infile ) {
+void ReadFileList (const char* filelist, vector< string > & infile) {
 
-    igzstream I ( filelist );
-    if ( !I ) { cerr << "Cannot open file : " << filelist << endl; exit(1); }
+    igzstream I(filelist);
+    if (!I) { cerr << "Cannot open file : " << filelist << endl; exit(1); }
     string tmp;
-    while ( 1 ) {
+    while (1) {
 
         I >> tmp;
-        if ( I.eof() ) break;
+        if (I.eof()) break;
 
-        infile.push_back( tmp );
-        getline( I, tmp, '\n');
+        infile.push_back(tmp);
+        getline(I, tmp, '\n');
     }
     I.close();
 
     return;
 }
 
-void Usage ( const char* prog ) {
+void Usage (const char* prog) {
 
     cerr << "Version : 0.0.0 ( 2013-10-18 )                                                          \n"
         << "Author  : Shujia Huang                                                                   \n"
