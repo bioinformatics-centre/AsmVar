@@ -969,6 +969,7 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 void Variant::Output2VCF(string file) {
 
 	VcfHeader header;
+	header.DefualtHeader();
 	string h = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + sample;
 	header.Add("#CHROM", h);
 
