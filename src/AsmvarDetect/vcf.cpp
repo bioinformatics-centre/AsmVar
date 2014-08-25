@@ -30,6 +30,15 @@ void VcfHeader::DefualtHeader() {
 	Add("FORMAT", "VT", "1", "String" , "SV Type");
 
 	Add("INFO", "HRun", "1", "Integer", "Homo-Run of reference");
+	Add("##FILTER=<ID=NOCALL>", 
+		"##FILTER=<ID=NOCALL,Description=\"Unmapped reference region.\">");
+	Add("##FILTER=<ID=NCALL>", 
+		"##FILTER=<ID=NCALL,Description=\"It's N on Reference or Query\">");
+	Add("##FILTER=<ID=REFCALL>", 
+		"##FILTER=<ID=REFCALL,Description=\"Represents a homozygous reference call\">");
+	Add("##FILTER=<ID=PASS-AGE>","##FILTER=<ID=PASS-AGE,Description=\"Good ReAligne\">");
+
+	return;
 }
 
 void VcfHeader::Add(string mark, string id, string num,
