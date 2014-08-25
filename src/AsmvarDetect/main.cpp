@@ -165,6 +165,7 @@ void Usage ( const char* prog ) {
         << "       -o  [str]   Output file prefix. require!                                          \n"
         << "       -t  [str]   target sequence, fa format. require!                                  \n"
         << "       -q  [str]   Query  sequence, fa format. require!                                  \n"
+        << "       -r  [str]   Specific chromosome ID. [ALL]                                         \n"
 		<< "       -s  [str]   Sample ID. require!                                                   \n"
         << "       -h          Output this help information.                                         \n"
         << endl;
