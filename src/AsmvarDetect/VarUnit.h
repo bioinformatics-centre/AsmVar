@@ -46,6 +46,7 @@ public:
 
     char   strand;
     string type;   // Variant type
+	bool isHete;   // Heterozygousity or not
 
     long score;    // LAST Alignment score
     double mismap; // mismatch probability, could be used to calcute 

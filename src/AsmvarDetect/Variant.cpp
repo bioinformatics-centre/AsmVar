@@ -176,7 +176,7 @@ bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
 
 	VarUnit reg;
 	flag       = true;
-    reg.type   = "Inv";
+    reg.type   = "INV";
     reg.target = middle.target;
 	reg.query  = middle.query ;
     reg.strand = middle.strand;
@@ -242,6 +242,7 @@ void Variant::GetMapReg() {
 }
 
 vector<Region> Variant::GetNoCallReg() {
+// Get NoCall region, acturlly is the inter-scaffold gap!
 
     map<string, vector<MapReg> > tmpmapreg;
     for ( map<string, vector<MapReg> >::iterator it( mapreg.begin() ); it != mapreg.end(); ++it ) {
@@ -250,7 +251,6 @@ vector<Region> Variant::GetNoCallReg() {
     }
 
 	vector<Region> nocallreg;
-    // Get NoCall region, acturlly is the inter-scaffold gap!
     for (map<string, vector<MapReg> >::iterator it(tmpmapreg.begin()); it != tmpmapreg.end(); ++it) {
 
         // Get Inter scaffold gaps' regions
@@ -335,15 +335,14 @@ void Variant::AGE_Realign() {
 		allvariant[tarnocall[i].id].push_back(vu);
 	}
 
-	// Sort
-	map<string, size_t> index; // Target Id => index
+	// Sorted and Unique All variants
 	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin()); 
 		it != allvariant.end(); ++it) { 
 
 		Unique(it->second); 
 		sort(it->second.begin(), it->second.end(), MySortByTarV);
-		index[it->first] = 0;
 	}
+	MarkHete();
 
 	return;
 }
@@ -365,7 +364,7 @@ void Variant::AGE_Realign(vector<VarUnit> &R) {
 			allvariant[v[0].target.id].push_back(v[0]);  
 		}
 		//for (size_t j(0); j < v.size(); ++j) vus.push_back(v[j]);
-		
+/*		
 cerr << "\n***********************************\n";
 R[i].OutErr();
 cerr << "\n********** AGE Process ************\n";
@@ -374,14 +373,56 @@ v[0].OutErr();
 cerr << "## allvariant ## " << itoa(allvariant[v[0].target.id].back().cipos.first) << "\t" << ftoa(allvariant[v[0].target.id].back().mismap) << "\n";
 allvariant[v[0].target.id].back().OutErr();
 cerr << "******* GOOD ******************\n";
+*/
 	}
 
 	return;
 }
 
+void Variant::MarkHete() {
+
+	map<string, size_t> index; // Target Id => index
+    for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
+        it != allvariant.end(); ++it) {
+
+        sort(it->second.begin(), it->second.end(), MySortByTarV);
+        index[it->first] = 0;
+
+		for (size_t i(0); i < it->second.size(); ++i) {
+
+			// Just deal with the variants 
+			if (it->second[i].type ==  "NCALL") continue;
+			if (it->second[i].type == "NOCALL") continue;
+			if (it->second[i].type ==   "Homo") continue;
+
+			bool flag(true);
+			for (size_t j(index[it->first]); j < it->second.size(); ++j) {
+
+				// Just Homo-RefCall here
+				if (i == j || it->second[j].type.find("Homo") == string::npos) continue;
+				if (it->second[i].target.end < it->second[j].target.start) break;
+				if (it->second[i].target.start > it->second[j].target.end) continue;
+
+				if (flag) {
+					flag = false; 
+					index[it->first] = j;
+				}
+				
+				// Other query totally covered the variant.
+				if (it->second[i].query.id != it->second[j].query.id &&
+					it->second[i].target.start >= it->second[j].target.start && 
+					it->second[i].target.end   <= it->second[j].target.end) {
+					it->second[i].isHete = true;
+					break;
+				}
+			}
+		}
+    }
+}
+
 void Variant::Unique(vector<VarUnit> &v) {
 
-	cerr << "#[INFO] Masking all the duplication varaints.\n";
+	cerr << "#[INFO] Masking the duplication varaints.\n";
 	set<string> hasAppear;
 	for (size_t i(0); i < v.size(); ++i) {
 		string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
@@ -396,22 +437,22 @@ map< string, vector<Region> > Variant::VarTarRegs() {
 
 	map< string, vector<Region> > varTarRegs;
 
-	for (size_t i(0); i < insertion.size(); ++i ) {
-		if ( insertion[i].Empty() ) continue;
+	for (size_t i(0); i < insertion.size(); ++i) {
+		if (insertion[i].Empty()) continue;
 		insertion[i].target.info = insertion[i].query.id;
 		varTarRegs[insertion[i].target.id].push_back(insertion[i].target);
 	}
-	for (size_t i(0); i < deletion.size(); ++i ) {
-        if ( deletion[i].Empty() ) continue;
+	for (size_t i(0); i < deletion.size(); ++i) {
+        if (deletion[i].Empty()) continue;
 		deletion[i].target.info = deletion[i].query.id;
         varTarRegs[deletion[i].target.id].push_back(deletion[i].target);
     }
-	for (size_t i(0); i < simulreg.size(); ++i ) {
+	for (size_t i(0); i < simulreg.size(); ++i) {
 		simulreg[i].target.info = simulreg[i].query.id;
 		varTarRegs[simulreg[i].target.id].push_back(simulreg[i].target);
 	}
 
-	for ( map< string,vector<Region> >::iterator it( varTarRegs.begin() ); it != varTarRegs.end(); ++it ) {
+	for (map< string,vector<Region> >::iterator it(varTarRegs.begin()); it != varTarRegs.end(); ++it) {
         sort ( varTarRegs[it->first].begin(), varTarRegs[it->first].end(), SortRegion );
     }
 
@@ -977,20 +1018,24 @@ void Variant::Output2VCF(string file) {
 			vcfline.alt_   = allvariant[it->second][i].qrySeq;
 			vcfline.qual_  = 255;
 			VcfFormat format;
+			string gt;
 			if (allvariant[it->second][i].type == "NOCALL") {
 				vcfline.filters_ = "NOCALL";
-				format.Set("GT", "./.");
+				gt = "./.";
 			} else if (allvariant[it->second][i].type == "N") {
 				vcfline.filters_ = "NCALL";
-				format.Set("GT", "./.");
+				gt = "./.";
 			} else if (allvariant[it->second][i].type.find("Homo") != string::npos) {
 				vcfline.filters_ = "REFCALL"; // Homo reference region
-				format.Set("GT", "0/0");
+				gt = "0/0";
 			} else {
+				// Variants
 				vcfline.filters_ = (allvariant[it->second][i].isGoodReAlign) ? 
-									"PASS-AGE" : "PASS"; // Defualt
-				format.Set("GT", "1/1");
+									"PASS-AGE" : "PASS";
+				gt = (allvariant[it->second][i].isHete) ? "0/1" : "1/1";
 			}
+			format.Set("GT", gt);
+
 			vcfline.info_.Add("HRun", "HRun=" + 
 							  itoa(allvariant[it->second][i].homoRun));
 
