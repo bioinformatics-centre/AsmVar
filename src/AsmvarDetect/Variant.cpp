@@ -995,15 +995,16 @@ void Variant::Output2VCF(string referenceId, string file) {
 
 			if (allvariant[it->second][i].Empty()) continue;
 
+			long int start = allvariant[it->second][i].target.start;
+			long int end   = allvariant[it->second][i].target.end;
+			allvariant[it->second][i].tarSeq = tarfa.fa[it->second][start - 1];
+
 			if (allvariant[it->second][i].type == "NOCALL") {
 
-				allvariant[it->second][i].tarSeq = ".";
 				allvariant[it->second][i].qrySeq = ".";
 			} else if (allvariant[it->second][i].type != "N" && 
 				allvariant[it->second][i].type.find("Homo") == string::npos) {
 
-				long int start = allvariant[it->second][i].target.start;
-				long int end   = allvariant[it->second][i].target.end;
 				allvariant[it->second][i].tarSeq = tarfa.fa[it->second].substr(
 						start - 1, end - start + 1);
 
