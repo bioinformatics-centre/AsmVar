@@ -43,6 +43,12 @@ int main ( int argc, char* argv[] ) {
 	if (argc == 1 || infile.empty() || outFilePrefix.empty() || qryRef.empty() || tarRef.empty() ) Usage( argv[0]);
 	if (sampleId.empty()) { cerr << "[ERROR] You miss the sample ID by the parameter '-s [sampleId]'\n"; exit(1); }
 	cerr << "[INFO] Parameter : " << join(argv, argc) << "\n\n";
+	if (toupper(referenceId) == "ALL") {
+		cerr << "[WARNING]!!! You're going to use all of the chromosome "
+			 << "instead of using '-r' to pick specific one in re-aligne "
+			 << "process. That will cause a long time!!! For human genome," 
+			 << "it may cause you 7-10 days!\n";
+	}
 
 	if (!filelist.empty()) ReadFileList(filelist.c_str(), infile);
 
