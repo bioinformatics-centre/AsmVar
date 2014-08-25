@@ -73,7 +73,8 @@ public:
     void Swap();
 
 	// Here is the only function that will use 'AgeAlignment' class
-	vector<VarUnit> ReAlignAndReCallVar(Fa &target, Fa &query, AgeOption opt);
+	vector<VarUnit> ReAlignAndReCallVar(string &target, string &query, 
+										AgeOption opt);
 
     void Clear(){ tarSeq.clear(); qrySeq.clear(); isClear = true; }
     bool Empty(){ return isClear; } // Do not output if isClear==true

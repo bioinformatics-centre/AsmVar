@@ -64,16 +64,15 @@ void VarUnit::Swap() { // Swap the target and query region. Ignore 'exp_target'
 	return;
 }
 
-vector<VarUnit> VarUnit::ReAlignAndReCallVar(Fa &targetSeq, Fa &querySeq, AgeOption opt) {
+vector<VarUnit> VarUnit::ReAlignAndReCallVar(string &targetSeq,
+											 string &querySeq, 
+											 AgeOption opt) {
 // Return new VarUnit after AGE Realignment
 // This is a design strategy, I'm not going to simply update the raw VarUnit!
 
-	targetSeq.CheckFaId(target.id); // make sure target fa is right
-	querySeq.CheckFaId(query.id);   // make sure query  fa is right
-
 	vector<VarUnit> vus;
 	AgeAlignment alignment(*(this), opt);
-	if (alignment.Align(targetSeq.fa[target.id], querySeq.fa[query.id])){
+	if (alignment.Align(targetSeq, querySeq)) {
 	// Successful align!
 		isSuccessAlign = true;
 		vus = alignment.VarReCall();

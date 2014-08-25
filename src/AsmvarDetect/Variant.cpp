@@ -356,7 +356,11 @@ void Variant::AGE_Realign(vector<VarUnit> &R) {
 	for (size_t i(0); i < R.size(); ++i) {
 
 		// R[i] should be replace by 'v' after ReAlign!
-		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa, qryfa, opt);
+		tarfa.CheckFaId(R[i].target.id);
+		qryfa.CheckFaId(R[i].query.id);
+		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id], 
+													 qryfa.fa[R[i].query.id], 
+													 opt);
 		// Not going to deal with the flankin region
 		if (v.empty()) continue;
 		if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
