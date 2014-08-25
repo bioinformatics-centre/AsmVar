@@ -305,25 +305,20 @@ void Variant::Assign2allvariant(vector<VarUnit> &v) {
 	return;
 }
 
-void Variant::AGE_Realign() {
+void Variant::AGE_Realign(string referenceId) {
 
 	allvariant.clear(); // make sure the value is empty
 
-	//AGE_Realign(snp); // No need!!
-	//AGE_Realign(intragap); // No need!
-	AGE_Realign(insertion);  // New variant will store in 'allvariant' 
-	AGE_Realign(deletion);   // New variant will store in 'allvariant' 
-	AGE_Realign(inversion);  // New variant will store in 'allvariant' 
+	AGE_Realign(referenceId, insertion);//New variant will store in 'allvariant' 
+	AGE_Realign(referenceId, deletion); //New variant will store in 'allvariant' 
+	AGE_Realign(referenceId, inversion);//New variant will store in 'allvariant' 
 	//AGE_Realign(translocation);
-	AGE_Realign(simulreg);   // New variant will store in 'allvariant' 
-	AGE_Realign(nosolution); // New variant will store in 'allvariant' 
-	//AGE_Realign(clipreg); No need!
-	//AGE_Realign(nomadic); No need!
+	AGE_Realign(referenceId, simulreg); //New variant will store in 'allvariant' 
+	AGE_Realign(referenceId, nosolution);//New variant will store in 'allvariant' 
 
 	Assign2allvariant(snp);     // store in 'allvariant'
 	Assign2allvariant(homoRef); // store in 'allvariant'
 	Assign2allvariant(nSeq);    // store in 'allvariant'
-	
 	//Assign2allvariant(translocation);
 
 	// Find un-coverage regions
@@ -347,13 +342,16 @@ void Variant::AGE_Realign() {
 	return;
 }
 
-void Variant::AGE_Realign(vector<VarUnit> &R) {
+void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
 
 	// re-aligne :
 	AgeOption opt;
 	VarUnit vu;
 	vector<VarUnit> vus;
 	for (size_t i(0); i < R.size(); ++i) {
+
+		if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id) 
+			continue;
 
 		// R[i] should be replace by 'v' after ReAlign!
 		tarfa.CheckFaId(R[i].target.id);
@@ -970,7 +968,7 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 	return gap;
 }
 
-void Variant::Output2VCF(string file) {
+void Variant::Output2VCF(string referenceId, string file) {
 
 	VcfHeader header;
 	header.DefualtHeader();
@@ -987,7 +985,10 @@ void Variant::Output2VCF(string file) {
 	for (map<int, string>::iterator it(tarfa.order2id.begin()); 
 		 it != tarfa.order2id.end(); ++it) {
 
+		if (toupper(referenceId) != "ALL" && referenceId != it->second) 
+			continue;
 		if (!allvariant.count(it->second)) continue;// No such Fa id
+
 		for (size_t i(0); i < allvariant[it->second].size(); ++i) {
 
 			if (allvariant[it->second][i].Empty()) continue;

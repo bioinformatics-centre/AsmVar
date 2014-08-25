@@ -24,13 +24,14 @@ int main ( int argc, char* argv[] ) {
 	char c;
 	vector< string > infile, tarRef, qryRef;
 	string filelist, outFilePrefix;
-	string sampleId;
-	while ( (c = getopt( argc, argv, "i:l:o:t:q:s:h" )) != -1 ) {
+	string sampleId, referenceId("ALL");
+	while ((c = getopt(argc, argv, "i:l:o:t:r:q:s:h")) != -1) {
 		switch ( c ){
             case 'i' : infile.push_back(optarg); break; // .maf file
             case 't' : tarRef.push_back(optarg); break; // Target fa in .maf files. [fa format]
             case 'q' : qryRef.push_back(optarg); break; // Query fa in .maf  files. [fa format]
 			case 'o' : outFilePrefix = optarg;   break;
+			case 'r' : referenceId   = optarg;   break;
             case 'l' : filelist      = optarg;   break; // .maf file list
 			case 's' : sampleId      = optarg;   break; // Sample ID
             case 'h' : Usage( argv[0] );
@@ -117,14 +118,14 @@ int main ( int argc, char* argv[] ) {
 	variant.CallClipReg();
 	variant.CallNomadic();
 	//variant.Filter();      // Filter the indels' regions which in nosolution regions. Maybe we don;t need it!
-	variant.AGE_Realign();
+	variant.AGE_Realign(referenceId);
 
 	variant.Output   ( outFilePrefix + ".svd"     );
 	variant.OutputSNP( outFilePrefix + ".snp"     );
 	variant.OutputGap( outFilePrefix + ".gap.bed" );
 	variant.Summary  ( outFilePrefix + ".summary" );
 
-	variant.Output2VCF( outFilePrefix + ".vcf" );
+	variant.Output2VCF(referenceId, outFilePrefix + ".vcf");
 
 	cerr << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> All Done <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
 

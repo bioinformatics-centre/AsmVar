@@ -67,7 +67,7 @@ private:
 	void Output         ( vector< VarUnit > &, ofstream& O );
 	void Assign2allvariant(vector<VarUnit> &v);
 	void Unique(vector<VarUnit> &v); // Unique the variant in 'allvariant'
-	void AGE_Realign(vector<VarUnit> &var); // AGE-Process
+	void AGE_Realign(string refId, vector<VarUnit> &var); // AGE-Process
 	// Just could be call after read all the mapping file
 	vector<Region> GetNoCallReg();
 	void MarkHete();
@@ -87,7 +87,7 @@ public : // Can be called per-axt alignment. And will be called in main function
 	void CallInsertion ();
 	void CallDeletion  ();
 	void GetMapReg     ();
-	void AGE_Realign   (); // AGE-Process
+	void AGE_Realign   (string refId); // AGE-Process
 
 
 public : // Just can be call when all the axt alignments have been read!
@@ -100,7 +100,7 @@ public : // Just can be call when all the axt alignments have been read!
 	void Summary  ( string file ); // Output Summary information
 	void OutputGap( string file ); // Output the inter-gaps between different scaffold of the same target chromosome.
 
-	void Output2VCF( string file ); // Output into a VCF format
+	void Output2VCF(string refId, string file ); // Output into a VCF format
 
 	// Use for get the gap region, which actually would be the indel regions. can call deletion or insertion
 	// Friend ship functions, but I fail to use friend function here, and I don't have enough time to figure out.
