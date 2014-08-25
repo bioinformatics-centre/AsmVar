@@ -9,6 +9,7 @@
 // For Class Header
 void VcfHeader::DefualtHeader() {
 
+	Add("FORMAT", "GT", "1", "String", "Genotype");
 	Add("FORMAT", "AE", "1", "Integer",
 		"End position of reference call block");
 	Add("FORMAT", "AGE", "1", "String", 
