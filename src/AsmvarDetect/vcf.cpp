@@ -7,6 +7,31 @@
 #include "vcf.h"
 
 // For Class Header
+void VcfHeader::DefualtHeader() {
+
+	Add("FORMAT", "AE", "1", "Integer",
+		"End position of reference call block");
+	Add("FORMAT", "AGE", "1", "String", 
+		"AGE aligment information. (T/F,Strand,ave_base,ave_iden,left_base,left_iden,right_base,right_iden)");
+	Add("FORMAT", "CI", "2", "Integer", 
+		"Confidence interval around POS for imprecise variants");
+	Add("FORMAT", "CE", "2", "Integer", 
+        "Confidence interval around END for imprecise variants");
+	Add("FORMAT", "HR", "1", "Integer", "Homo-Run");
+	Add("FORMAT", "MS", "1", "Float", "Mismatch probability In LAST Align");
+	Add("FORMAT", "NR", "1", "Float", 
+		"The 'N' ratio around variant region on query");
+	Add("FORMAT", "SC", "1", "Integer", "Alignment score In LAST Align");
+	Add("FORMAT", "TR", "1", "String", 
+		"Variant regions on common huamn reference");
+	Add("FORMAT", "QR", "1", "String", 
+		"Variant regions on personal assembly");
+	Add("FORMAT", "VS", "1", "Integer", "SV Size");
+	Add("FORMAT", "VT", "1", "String" , "SV Type");
+
+	Add("INFO", "HRun", "1", "Integer", "Homo-Run of reference");
+}
+
 void VcfHeader::Add(string mark, string id, string num,
 					string type, string description) {
 

@@ -22,9 +22,10 @@ class VcfHeader {
 
 public:
 
-	VcfHeader() { data_.clear(); Add("###","##fileformat=VCFv4.1"); }	
+	VcfHeader()  { data_.clear(); Add("###","##fileformat=VCFv4.1"); }
 	~VcfHeader() { data_.clear(); }
 
+	void DefualtHeader();
 	void Add(string mark, string id, string num, 
 			 string type, string description);
 	void Add(string id, string description);

@@ -1017,7 +1017,6 @@ void Variant::Output2VCF(string file) {
 			vcfline.ref_   = allvariant[it->second][i].tarSeq;
 			vcfline.alt_   = allvariant[it->second][i].qrySeq;
 			vcfline.qual_  = 255;
-			VcfFormat format;
 			string gt;
 			if (allvariant[it->second][i].type == "NOCALL") {
 				vcfline.filters_ = "NOCALL";
@@ -1034,10 +1033,11 @@ void Variant::Output2VCF(string file) {
 									"PASS-AGE" : "PASS";
 				gt = (allvariant[it->second][i].isHete) ? "0/1" : "1/1";
 			}
-			format.Set("GT", gt);
-
 			vcfline.info_.Add("HRun", "HRun=" + 
 							  itoa(allvariant[it->second][i].homoRun));
+
+			VcfFormat format;
+			format.Set("GT", gt);
 
 			format.Add("HR", itoa(allvariant[it->second][i].homoRun));
 			format.Add("CI", itoa(allvariant[it->second][i].cipos.first) +","+
