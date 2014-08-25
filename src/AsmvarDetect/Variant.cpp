@@ -1066,6 +1066,9 @@ void Variant::Output2VCF(string referenceId, string file) {
 			int tvs = allvariant[it->second][i].target.end - 
 					  allvariant[it->second][i].target.start; // Do not +1!!
 			int vs = (qvs > 0) ? qvs : tvs; // Should be tvs if is DEL!
+			if (vcfline.filters_ == "REFCALL" || 
+				vcfline.filters_ == "NCALL"   ||
+				vcfline.filters_ == "NOCALL") ++vs; //Not Variant, should +1!
 			format.Add("VS", itoa(vs));
 			format.Add("SC", itoa(allvariant[it->second][i].score));
 			format.Add("MS", ftoa(allvariant[it->second][i].mismap)); // Mismap
