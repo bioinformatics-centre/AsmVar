@@ -352,6 +352,7 @@ void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
 
 		if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id) 
 			continue;
+		if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
 
 		// R[i] should be replace by 'v' after ReAlign!
 		tarfa.CheckFaId(R[i].target.id);
@@ -970,6 +971,7 @@ VarUnit Variant::CallGap ( MapReg left, MapReg right ) {
 
 void Variant::Output2VCF(string referenceId, string file) {
 
+	
 	VcfHeader header;
 	header.DefualtHeader();
 	string h = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + sample;

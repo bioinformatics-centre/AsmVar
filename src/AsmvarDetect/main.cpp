@@ -117,14 +117,15 @@ int main ( int argc, char* argv[] ) {
 	variant.CallSV(); // It's SV not Indel, which cannot be called by a single alignment. The most important part of these program!!
 	variant.CallClipReg();
 	variant.CallNomadic();
-	//variant.Filter();      // Filter the indels' regions which in nosolution regions. Maybe we don;t need it!
+	variant.Filter();      // Filter the indels' regions which in nosolution regions. Maybe we don;t need it! Maybe I should just call this function in AGE_Realign()
+	cerr << "[INFO] Doing re-aligne process ...\n";
 	variant.AGE_Realign(referenceId);
 
+	cerr << "[INFO] Outputting information into files.\n";
 	variant.Output   (outFilePrefix + ".svd"    );
 	variant.OutputSNP(outFilePrefix + ".snp"    );
 	variant.OutputGap(outFilePrefix + ".gap.bed");
 	variant.Summary  (outFilePrefix + ".summary");
-
 	variant.Output2VCF(referenceId, outFilePrefix + ".vcf");
 
 	cerr << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> All Done <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;

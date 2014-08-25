@@ -111,8 +111,7 @@ void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) {
 
 	long int qnl = NLength ( qrySeq );
 	long int tnl = NLength ( tarSeq );
-	//O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
-	cout << target.id << "\t" << target.start << "\t" << target.end << "\t" 
+	O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
 	  << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
 	  << "\t" << tarSeqLen                 << "\t"
 	  << query.id  << "\t" << query.start  << "\t" << query.end << "\t" 
@@ -132,8 +131,7 @@ void VarUnit::OutStd(long int tarSeqLen, long int exp_tarSeqLen,
 
 	long int qnl = NLength ( qrySeq     );
 	long int tnl = NLength ( exp_tarSeq );
-	//O << exp_target.id << "\t" << exp_target.start     << "\t" << exp_target.end 
-	cout << exp_target.id << "\t" << exp_target.start  << "\t" << exp_target.end 
+	O << exp_target.id << "\t" << exp_target.start     << "\t" << exp_target.end 
 	  << "\t" << exp_target.end - exp_target.start + 1 << "\t" 
 	  << double(tnl)/exp_tarSeq.length()      << "\t" << exp_tarSeqLen << "\t" 
 	  << query.id  << "\t"   << query.start   << "\t" << query.end     << "\t" 
@@ -284,10 +282,10 @@ gettimeofday(&ali_s, NULL);
 			isalign_ = false;
 		} else if (aligner1.score() >= aligner2.score()) {
 			aligner1.SetAlignResult(); 
-aligner1.printAlignment();
+//aligner1.printAlignment();
 			alignResult_ = aligner1.align_result();
         } else {
-aligner2.printAlignment();
+//aligner2.printAlignment();
 			aligner2.SetAlignResult();
 			alignResult_ = aligner2.align_result();
         } 
@@ -297,7 +295,7 @@ aligner2.printAlignment();
 
         AGEaligner aligner(*tar, *qry);
         if (aligner.align(scr, flag)){
-aligner.printAlignment();
+//aligner.printAlignment();
 			aligner.SetAlignResult();
 			alignResult_ = aligner.align_result();
         } else {
@@ -422,8 +420,8 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		// CAUTION: Here is not just the variant region, but include one
 		// position which on the boundary of variant. So that we don't have 
 		// to add one base of reference at ALT field in VCF file.
-		//vu.query.start = (strand == '+') ? lf.second._end : rt.second._start;
-		vu.query.start = lf.second._end; // lf.second._end is map lf.first._end
+		// vu.query.start = (strand == '+') ? lf.second._end : rt.second._start;
+		vu.query.start = lf.second._end; // lf.second._end mapped to lf.first._end
 		vu.query.end   = vu.query.start;
 
 	} else if (qlen > 0 && tlen == 0) {
