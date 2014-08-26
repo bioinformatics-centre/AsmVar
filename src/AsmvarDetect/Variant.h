@@ -13,6 +13,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <utility>
 
 #include "utility.h"
 #include "maf.h"
@@ -76,7 +77,7 @@ public :
 	map< string, vector<MapReg> > mapreg;  // Mapping region. use for getting novel region
 	map< string, vector<Region> > maptar;  // target's mapped regions
 	map< string, vector<Region> > mapqry;  // query's  mapped regions
-	map< string, long int > summary; // Used for record some summary information
+	map< string, pair<long int, long int> > summary; // Tab => <number, length>
 	map< string, vector<Region> > VarTarRegs();// Return the target region of variants
 
 public : // Can be called per-axt alignment. And will be called in main function
