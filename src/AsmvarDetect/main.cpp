@@ -139,7 +139,7 @@ int main ( int argc, char* argv[] ) {
 	return 0;
 }
 
-void ReadFileList (const char* filelist, vector< string > & infile) {
+void ReadFileList(const char* filelist, vector< string > & infile) {
 
     igzstream I(filelist);
     if (!I) { cerr << "Cannot open file : " << filelist << endl; exit(1); }
@@ -157,7 +157,7 @@ void ReadFileList (const char* filelist, vector< string > & infile) {
     return;
 }
 
-void Usage (const char* prog) {
+void Usage(const char* prog) {
 
     cerr << "Version : 0.0.0 ( 2013-10-18 )                                                          \n"
         << "Author  : Shujia Huang                                                                   \n"
