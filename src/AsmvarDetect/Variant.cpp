@@ -859,11 +859,11 @@ void Variant::Summary(string file) {
 		O << pt->first << "\t" << pt->second.first << "\t" << pt->second.second << "\n";
 	
 	O << "\n";
-	O << "2. QryCovlength/querylength  " << double(summary["0. qryCovlength"].second) / qryfa.length << "\n";
-	O << "2. TarCovlength/targetlength " << double(summary["0. tarCovlength"].second) / tarfa.length << "\n";
-	O << "2. TarCovlength/targetlength(NO 'N') "<< double(summary["0. tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
-	O << "2. SNP/querylength           " << double(summary["0. SNP"].second) / qryfa.length  << "\n";
-	O << "2. SNP/targetlength          " << double(summary["0. SNP"].second) / tarfa.length  << "\n";
+	O << "0. QryCovlength/querylength  " << double(summary["0. qryCovlength"].second) / qryfa.length << "\n";
+	O << "0. TarCovlength/targetlength " << double(summary["0. tarCovlength"].second) / tarfa.length << "\n";
+	O << "0. TarCovlength/targetlength(NO 'N') "<< double(summary["0. tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
+	O << "0. SNP/querylength           " << double(summary["0. SNP"].second) / qryfa.length  << "\n";
+	O << "0. SNP/targetlength          " << double(summary["0. SNP"].second) / tarfa.length  << "\n";
 	O << "\n";
 	for (map<string, long int>::iterator p(tarCov.begin()); p != tarCov.end(); ++p) {
 
