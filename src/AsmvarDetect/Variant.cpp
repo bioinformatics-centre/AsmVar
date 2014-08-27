@@ -157,20 +157,20 @@ void Variant::CallInsertion () {
 	}
 }
 
-void Variant::CallDeletion () { 
+void Variant::CallDeletion() { 
 // Actually, we just have to call  the query gap regions.
 // All the coordinate of query should be uniform to the positive strand!
-	vector< VarUnit > gap = CallGap ( query, qrySeq, target, tarSeq, strand, score, mismap, "DEL" );
+	vector<VarUnit> gap = CallGap(query, qrySeq, target, tarSeq, strand, score, mismap, "DEL");
 	for (size_t i(0); i < gap.size(); ++i) { 
 
 		gap[i].Swap(); // Swap query and target region!
-		if ( !qryfa.fa.count( query.id ) ) { err ("Missing some query id or query id can't match!!!\nThe unmatch query(main): "+query.id); } 
+		if (!qryfa.fa.count(query.id)) { err ("Missing some query id or query id can't match!!!\nThe unmatch query(main): "+query.id); } 
 
-		gap[i].ConvQryCoordinate( qryfa.fa[query.id].length() ); // coordinates uniform to the positive strand!
-		deletion.push_back( gap[i] );
+		gap[i].ConvQryCoordinate(qryfa.fa[query.id].length()); // coordinates uniform to the positive strand!
+		deletion.push_back(gap[i]);
 
 		++summary["0. DEL"].first;
-        summary["0. DEL"].second += gap[i].query.end - gap[i].query.start + 1;
+        summary["0. DEL"].second += gap[i].target.end - gap[i].target.start + 1;
 
         int qn = qryfa.Nlength(query.id, gap[i].query.start, gap[i].query.end);
         if (qn > 0) {
