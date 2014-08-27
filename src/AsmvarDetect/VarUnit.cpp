@@ -91,6 +91,7 @@ void VarUnit::OutErr() {
 
     long int qnl = NLength ( qrySeq );
     long int tnl = NLength ( tarSeq );
+	string reAlignStat = (isSuccessAlign) ? "CanAGE": "Can'tAGE";
     cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
       << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
 	  << "\t" << cipos.first  << "," << cipos.second << "\t" << ciend.first 
@@ -98,7 +99,8 @@ void VarUnit::OutErr() {
 	  << "\t" << query.end    << "\t"<< query.end  - query.start  + 1 << "\t" 
 	  << double(qnl)/qrySeq.length()
       << "\t" << strand << "\t" << homoRun << "\t" << isGoodReAlign 
-	  << "\t" << score  << "\t" << mismap  << "\t" << type << endl;
+	  << "\t" << score  << "\t" << mismap  << "\t" << type << "\t"
+	  << reAlignStat    << endl;
     return;
 }
 
@@ -111,13 +113,14 @@ void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) {
 
 	long int qnl = NLength ( qrySeq );
 	long int tnl = NLength ( tarSeq );
+	string reAlignStat = (isSuccessAlign) ? "CanAGE" : "Can'tAGE";
 	O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
 	  << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
 	  << "\t" << tarSeqLen                 << "\t"
 	  << query.id  << "\t" << query.start  << "\t" << query.end << "\t" 
 	  << query.end  - query.start  + 1     << "\t" << double(qnl)/qrySeq.length()
 	  << "\t" << qrySeqLen <<"\t"<< strand << "\t" << score << "\t" << mismap    
-	  << "\t" << type      << endl;
+	  << "\t" << type      <<"\t"<< reAlignStat    << endl;
 	return;
 }
 
