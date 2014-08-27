@@ -837,10 +837,8 @@ void Variant::FilterReg(map< string,vector<Region> > tarregion, map<string, size
 
 void Variant::Summary(string file) {
 
-	map<string, long int> qryCov;
 	map<string, vector<Region> >::iterator p(mapqry.begin());
 	for (; p != mapqry.end(); ++p) { 
-		qryCov[p->first] += Covlength(p->second); 
 		++summary["0. qryCovlength"].first;
 		summary["0. qryCovlength"].second += Covlength(p->second); 
 	}
@@ -856,16 +854,16 @@ void Variant::Summary(string file) {
 	ofstream O (file.c_str());
     if (!O) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
 	O << "Summary Information for " << sample << "\n\n";
-	O << "#Tyep\tNumber\tLength\n";
+	O << "#Type\tNumber\tLength\n";
 	for (map<string,pair<long int, long int> >::iterator pt(summary.begin()); pt != summary.end(); ++pt) 
 		O << pt->first << "\t" << pt->second.first << "\t" << pt->second.second << "\n";
 	
 	O << "\n";
-	O << "QryCovlength/querylength  " << double(summary["0. qryCovlength"].second) / qryfa.length << "\n";
-	O << "TarCovlength/targetlength " << double(summary["0. tarCovlength"].second) / tarfa.length << "\n";
-	O << "TarCovlength/targetlength(NO 'N') "<< double(summary["0. tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
-	O << "SNP/querylength           " << double(summary["0. SNP"].second) / qryfa.length  << "\n";
-	O << "SNP/targetlength          " << double(summary["0. SNP"].second) / tarfa.length  << "\n";
+	O << "2. QryCovlength/querylength  " << double(summary["0. qryCovlength"].second) / qryfa.length << "\n";
+	O << "2. TarCovlength/targetlength " << double(summary["0. tarCovlength"].second) / tarfa.length << "\n";
+	O << "2. TarCovlength/targetlength(NO 'N') "<< double(summary["0. tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
+	O << "2. SNP/querylength           " << double(summary["0. SNP"].second) / qryfa.length  << "\n";
+	O << "2. SNP/targetlength          " << double(summary["0. SNP"].second) / tarfa.length  << "\n";
 	O << "\n";
 	for (map<string, long int>::iterator p(tarCov.begin()); p != tarCov.end(); ++p) {
 
