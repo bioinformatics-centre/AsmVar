@@ -180,7 +180,7 @@ void Variant::CallDeletion () {
 	}
 }
 
-bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
+bool Variant::CallIversion(MapReg left, MapReg middle, MapReg right) {
 
 	assert (left.query.id == right.query.id && left.query.id == middle.query.id);
 
@@ -202,7 +202,7 @@ bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
     reg.strand = middle.strand;
 	reg.score  = middle.score;  // 2014-06-20 10:35:21
     reg.mismap = middle.mismap; // 2014-06-20 10:35:15
-	inversion.push_back( reg );
+	inversion.push_back(reg);
 
 	++summary["0. INV"].first;
 	summary["0. INV"].second += reg.query.end - reg.query.start + 1;
