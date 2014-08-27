@@ -209,15 +209,15 @@ bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
 	return flag;
 }
 
-bool Variant::CallTranslocat (MapReg left, MapReg middle, MapReg right) {
+bool Variant::CallTranslocat(MapReg left, MapReg middle, MapReg right) {
 
-	assert ( left.query.id == right.query.id && left.query.id  == middle.query.id );
+	assert(left.query.id == right.query.id && left.query.id  == middle.query.id);
 	bool flag(false);
 	// The target id should be the same of 'left' and 'right'
-	if ( left.target.id != right.target.id ) return flag;
+	if (left.target.id != right.target.id) return flag;
 
-	long int rStart = min ( left.target.start, right.target.start );
-	long int rEnd   = max ( left.target.end  , left.target.end    ); 
+	long int rStart = min (left.target.start, right.target.start);
+	long int rEnd   = max (left.target.end  , left.target.end   ); 
 
 	// Do not overlap with 'left' or 'right'. And be the same strand on either side of the 'middle' region
 	if (left.strand != right.strand || (middle.target.start <= rEnd && middle.target.end >= rStart)) return flag;
@@ -233,13 +233,13 @@ bool Variant::CallTranslocat (MapReg left, MapReg middle, MapReg right) {
 	reg.strand = middle.strand;
 	reg.score  = middle.score;  // 2014-06-20 10:35:21
 	reg.mismap = middle.mismap; // 2014-06-20 10:35:15
-	reg.type   = ( middle.target.id == left.target.id ) ? "Trans-Intra" : "Trans-Inter";
+	reg.type   = (middle.target.id == left.target.id) ? "Trans-Intra" : "Trans-Inter";
 	if ( middle.strand == left.strand ) {
 		reg.type += "1";
 	} else {
 		reg.type += "2";
 	}
-	translocation.push_back( reg );
+	translocation.push_back(reg);
 
 	++summary["0. " + reg.type].first;
 	summary["0. " + reg.type].second += reg.query.end - reg.query.start + 1;
@@ -337,15 +337,14 @@ void Variant::AGE_Realign(string referenceId) {
 
 	AGE_Realign(referenceId, insertion);//New variant will store in 'allvariant' 
 	AGE_Realign(referenceId, deletion); //New variant will store in 'allvariant' 
-	AGE_Realign(referenceId, inversion);//New variant will store in 'allvariant' 
-	//AGE_Realign(translocation);
 	AGE_Realign(referenceId, simulreg); //New variant will store in 'allvariant' 
 	AGE_Realign(referenceId, nosolution);//New variant will store in 'allvariant' 
+	AGE_RealignTr(referenceId, translocation); //New variant will store in 'allvariant'
+	AGE_RealignIv(referenceId, inversion);//New variant will store in 'allvariant'
 
 	Assign2allvariant(snp);     // store in 'allvariant'
 	Assign2allvariant(homoRef); // store in 'allvariant'
 	Assign2allvariant(nSeq);    // store in 'allvariant'
-	//Assign2allvariant(translocation);
 
 	// Find un-coverage regions
 	vector<Region> tarnocall = GetNoCallReg(); // Inter-gap is No Call region
@@ -412,6 +411,101 @@ cerr << "## allvariant ## " << itoa(allvariant[v[0].target.id].back().cipos.firs
 allvariant[v[0].target.id].back().OutErr();
 cerr << "******* GOOD ******************\n";
 */
+	}
+	return;
+}
+
+void Variant::AGE_RealignIv(string referenceId, vector<VarUnit> &R) {
+// Specific for iversion
+
+    // re-aligne :
+    AgeOption opt;
+    VarUnit vu;
+	Region rawTarReg, rawQryReg;
+    vector<VarUnit> vus;
+    string ks;
+    for (size_t i(0); i < R.size(); ++i) {
+
+        if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id)
+            continue;
+        if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
+
+        // R[i] should be replace by 'v' after ReAlign!
+		rawTarReg      = R[i].target;
+        rawQryReg      = R[i].query;
+        tarfa.CheckFaId(R[i].target.id);
+        qryfa.CheckFaId(R[i].query.id);
+        vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id],
+                                                     qryfa.fa[R[i].query.id],
+                                                     opt);
+
+        // Don't have to deal with the flankin region for Inversion
+        if (v.empty()) continue;
+        if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
+            if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
+            ks = "1. " + R[i].type + "=>" + v[0].type;
+
+			v[0].type   = R[i].type;
+			v[0].target = rawTarReg; // Set to raw
+            v[0].query  = rawQryReg; // Set to raw
+            allvariant[v[0].target.id].push_back(v[0]);
+        } else {
+            ks = "1. " + R[i].type + "=>NULL";
+        }
+        ++summary[ks].first;
+        summary[ks].second += v[0].query.end  - v[0].query.start;
+    }
+
+    return;
+}
+
+void Variant::AGE_RealignTr(string referenceId, vector<VarUnit> &R) {
+// specific for translocation
+
+	// re-aligne :
+    AgeOption opt;
+    VarUnit vu;
+	Region rawTarReg, rawQryReg;
+    vector<VarUnit> vus;
+    string ks;
+    for (size_t i(0); i < R.size(); ++i) {
+
+        if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id)
+            continue;
+        if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
+
+        // R[i] should be replace by 'v' after ReAlign!
+		rawTarReg      = R[i].target;
+		rawQryReg      = R[i].query;
+		R[i].target = R[i].exp_target; // Expected region of translocation
+
+        tarfa.CheckFaId(R[i].target.id);
+        qryfa.CheckFaId(R[i].query.id);
+        vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id],
+                                                     qryfa.fa[R[i].query.id],
+                                                     opt);
+		R[i].target = rawTarReg; // Alignment is complete, now set back.
+
+        // Don't have to deal with the flankin region for translocation
+        if (v.empty()) continue;
+        if (v[0].type.find("-AGE") == string::npos) { 
+		// has variant in exci-reg
+            if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
+            ks = "1. " + R[i].type + "=>" + v[0].type;
+
+			v[0].type = "TRANS," + v[0].type  + "#" + 
+						v[0].target.id + "-"  + itoa(v[0].target.start) + "-" +
+						itoa(v[0].target.end) + "#" +
+						v[0].query.id  + "-"  + itoa(v[0].query.start)  + "-" +
+                        itoa(v[0].query.end);
+			v[0].target = rawTarReg; // Set to raw
+			v[0].query  = rawQryReg; // Set to raw
+            allvariant[v[0].target.id].push_back(v[0]);
+        } else {
+            ks = "1. " + R[i].type + "=>NULL";
+        }
+        ++summary[ks].first;
+        summary[ks].second += v[0].query.end  - v[0].query.start;
 	}
 
 	return;

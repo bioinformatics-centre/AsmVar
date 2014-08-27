@@ -68,7 +68,9 @@ private:
 	void Output         ( vector< VarUnit > &, ofstream& O );
 	void Assign2allvariant(vector<VarUnit> &v);
 	void Unique(vector<VarUnit> &v); // Unique the variant in 'allvariant'
-	void AGE_Realign(string refId, vector<VarUnit> &var); // AGE-Process
+	void AGE_Realign(string refId, vector<VarUnit> &var);       // AGE-Process
+	void AGE_RealignTr(string referenceId, vector<VarUnit> &R); // Translocation
+	void AGE_RealignIv(string referenceId, vector<VarUnit> &R); // Iversion
 	// Just could be call after read all the mapping file
 	vector<Region> GetNoCallReg();
 	void MarkHete();

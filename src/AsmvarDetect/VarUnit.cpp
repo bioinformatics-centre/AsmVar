@@ -330,6 +330,7 @@ cerr << "\nAlignment time is " << ali_e.tv_sec - ali_s.tv_sec
 vector<VarUnit> AgeAlignment::VarReCall() {
 // debug here carefully
 
+	const double MISMAP_VALE = 0.01;
 	vector<VarUnit> vus;
 	if (isalign_) {
 
@@ -354,7 +355,7 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			VarUnit var = CallVarInExcise(pre_map, alignResult_._map[i], 
 					alignResult_._strand);
 			var.isSuccessAlign = true;
-			var.isGoodReAlign  = isgoodAlign();
+			var.isGoodReAlign  = isgoodAlign() && (var.mismap < MISMAP_VALE); // mismatch probability is low!
 			var.homoRun        = HomoRun(); //Just usefull in excise region
 			var.cipos.first    = (cipos().first > 0) ? cipos().first  - var.target.start : 0; // Just here
 			var.cipos.second   = (cipos().second> 0) ? cipos().second - var.target.start : 0; // Just here
@@ -375,7 +376,7 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			for (size_t i(0); i < var.size(); ++i) {
 				var[i].identity       = alignResult_._identity;
 				var[i].isSuccessAlign = true;
-                var[i].isGoodReAlign  = isgoodAlign();
+                var[i].isGoodReAlign  = isgoodAlign() && (var[i].mismap < MISMAP_VALE);;
 				vus.push_back(var[i]); 
 			}
 		}
