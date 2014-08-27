@@ -185,14 +185,14 @@ bool Variant::CallIversion( MapReg left, MapReg middle, MapReg right ) {
 	assert (left.query.id == right.query.id && left.query.id == middle.query.id);
 
 	bool flag(false);
-	if ( left.target.id != right.target.id || left.target.id != middle.target.id ) return flag;
+	if (left.target.id != right.target.id || left.target.id != middle.target.id) return flag;
 
-	long int rStart = min ( left.target.start, right.target.start );
-	long int rEnd   = max ( left.target.end  , left.target.end    ); 
-	if ( left.strand   != right.strand ||
-		 middle.strand == left.strand  ||
-		 middle.target.start < rStart  ||
-		 middle.target.start > rEnd  ) return flag; // Just make sure the middle.target.start between [rStart,rEnd]
+	long int rStart = min(left.target.start, right.target.start);
+	long int rEnd   = max(left.target.end  , left.target.end   ); 
+	if (left.strand   != right.strand ||
+		middle.strand == left.strand  ||
+		middle.target.start < rStart  ||
+		middle.target.start > rEnd) return flag; // Just make sure the middle.target.start between [rStart,rEnd]
 
 	VarUnit reg;
 	flag       = true;
@@ -972,8 +972,8 @@ void Variant::OutputGap(string file) {
 		sort(it->second.begin(), it->second.end(), MySortByTarM); // Sort by the coordinate of target mapping positions
 		// Get Inter scaffold gaps' regions
 		MapReg tmpMR = it->second[0];
-		for ( size_t i(1); i < it->second.size(); ++i ) {
-			if ( tmpMR.query.id == it->second[i].query.id ) {
+		for (size_t i(1); i < it->second.size(); ++i) {
+			if (tmpMR.query.id == it->second[i].query.id) {
 				if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
 				continue;
 			}
