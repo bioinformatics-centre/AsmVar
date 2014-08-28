@@ -129,8 +129,8 @@ void Variant::CallSNP () {
 			tmpsnp.ConvQryCoordinate( qryfa.fa[query.id].length() ); // coordinates uniform to the positive strand!
 			snp.push_back(tmpsnp);
 
-			++summary["0. SNP"].first;
-			++summary["0. SNP"].second;
+			++summary["2. SNP"].first;
+			++summary["2. SNP"].second;
 		}
 	}
 }
@@ -148,12 +148,6 @@ void Variant::CallInsertion () {
 
 		++summary["0. INS"].first;
 		summary["0. INS"].second += gap[i].query.end - gap[i].query.start + 1;
-
-		int qn = qryfa.Nlength(query.id, gap[i].query.start, gap[i].query.end);
-		if (qn > 0) {
-			++summary["0. query-Intra-gap('N')"].first;
-			summary["0. query-Intra-gap('N')"].second += qn;
-		}
 	}
 }
 
@@ -172,11 +166,13 @@ void Variant::CallDeletion() {
 		++summary["0. DEL"].first;
         summary["0. DEL"].second += gap[i].target.end - gap[i].target.start + 1;
 
+/*
         int qn = qryfa.Nlength(query.id, gap[i].query.start, gap[i].query.end);
         if (qn > 0) {
             ++summary["0. query-Intra-gap('N')"].first;
             summary["0. query-Intra-gap('N')"].second += qn;
         }
+*/
 	}
 }
 
@@ -346,13 +342,17 @@ void Variant::AGE_Realign(string referenceId) {
 	Assign2allvariant(homoRef); // store in 'allvariant'
 	Assign2allvariant(nSeq);    // store in 'allvariant'
 
-	// Find un-coverage regions
+	// Find un-coverage reference region, in fact it's scaffold intergap
 	vector<Region> tarnocall = GetNoCallReg(); // Inter-gap is No Call region
 	VarUnit vu; 
 	for (size_t i(0); i < tarnocall.size(); ++i) {
+
 		vu.target = tarnocall[i];
-		vu.type   = "NOCALL";
+		vu.type   = "INTERGAP";
 		allvariant[tarnocall[i].id].push_back(vu);
+
+		++summary["0. INTERGAP"].first;
+		summary["0. INTERGAP"].second += vu.target.end - vu.target.start + 1;
 	}
 
 	// Sorted and Unique All variants
@@ -524,7 +524,7 @@ void Variant::MarkHete() {
 
 			// Just deal with the variants 
 			if (it->second[i].type ==  "NCALL") continue;
-			if (it->second[i].type == "NOCALL") continue;
+			if (it->second[i].type == "INTERGAP") continue;
 			if (it->second[i].type ==   "Homo") continue;
 
 			bool flag(true);
@@ -647,29 +647,31 @@ void Variant::CallSV() {
 					tmpreg.erase ( tmpreg.begin() );
 				}
 			} else if ( tmpreg.size() > 2 ) {
-				std::cerr << "\n[ERROR] Program bugs! " << endl;
+				cerr << "\n[ERROR] Program bugs! Please contact to the author!" 
+					 << endl;
+				exit(1);
 			}
-			tmpreg.push_back( it->second[i] );
+			tmpreg.push_back(it->second[i]);
 		}
-		if ( tmpreg.size() == 2 ) {
-			if ( CallSimultan ( tmpreg[0], tmpreg[1] ) ) {
+		if (tmpreg.size() == 2) {
+			if (CallSimultan(tmpreg[0], tmpreg[1])) {
 				tmpreg.clear();
-			} else if ( tmpreg[0].target.id == tmpreg[1].target.id ) { 
-				CallReg ( tmpreg[0], "Nos-Strand", nosolution );
-                CallReg ( tmpreg[1], "Nos-Strand", nosolution );
+			} else if (tmpreg[0].target.id == tmpreg[1].target.id) { 
+				CallReg(tmpreg[0], "Nos-Strand", nosolution);
+                CallReg(tmpreg[1], "Nos-Strand", nosolution);
 			} else { // Not in the same target
-				CallReg ( tmpreg[0], "Nos-Complex", nosolution );
-				CallReg ( tmpreg[1], "Nos-Complex", nosolution );
+				CallReg(tmpreg[0], "Nos-Complex", nosolution);
+				CallReg(tmpreg[1], "Nos-Complex", nosolution);
 			}
 		}
 	}
 }
 
-bool Variant::CallSimultan ( MapReg left, MapReg right ) {
+bool Variant::CallSimultan(MapReg left, MapReg right) {
 
-	bool success ( false );
+	bool success(false);
 	VarUnit simulgap;
-	if ( left.target.id != right.target.id || left.strand != right.strand ) return success;	// (2013-10-20 19:17:40)
+	if (left.target.id != right.target.id || left.strand != right.strand) return success;	// (2013-10-20 19:17:40)
 
 	simulgap = CallGap(left, right);
 	simulreg.push_back(simulgap);
@@ -698,7 +700,7 @@ void Variant::CallReg(MapReg mapreg, string type, vector< VarUnit > &varReg) {
 
 void Variant::CallClipReg () {
 
-	if ( qryfa.fa.empty() ) { std::cerr << "[WARNING] No Clip regions. Because the query fa is empty!" << endl; return; }
+	if (qryfa.fa.empty()) { cerr << "[WARNING] No Clip regions. Because the query fa is empty!" << endl; return; }
 	VarUnit tmp;
 	long int rStart, rEnd;
 	for ( map< string, vector<Region> >::iterator it( mapqry.begin() ); it != mapqry.end(); ++it ) {
@@ -715,27 +717,22 @@ void Variant::CallClipReg () {
 			exit(1);
 		}
 
-		if (rStart == 1 && rEnd == qryfa.fa[it->first].length()) { 
-			++summary["0. Full-Align"].first;
-			summary["0. Full-Align"].second += qryfa.fa[it->first].length();
-		}
-
 		tmp.query.id = it->first;
 		tmp.strand   = '.';
 		tmp.type     = "Clip";
 		if (rStart > 1) { 
 			tmp.query.start = 1; tmp.query.end = rStart - 1; 
 			clipreg.push_back(tmp); 
-			++summary["0. Clip"].first;
-			summary["0. Clip"].second += tmp.query.end - tmp.query.start + 1;
+			++summary["2. Clip"].first;
+			summary["2. Clip"].second += tmp.query.end - tmp.query.start + 1;
 		}
 		if (rEnd < qryfa.fa[it->first].length()) {
 			tmp.query.start = rEnd + 1;
 			tmp.query.end   = qryfa.fa[it->first].length();
 			clipreg.push_back(tmp);
 
-			++summary["0. Clip"].first;
-            summary["0. Clip"].second += tmp.query.end - tmp.query.start + 1;
+			++summary["2. Clip"].first;
+            summary["2. Clip"].second += tmp.query.end - tmp.query.start + 1;
 		}
 	}
 	return;
@@ -755,23 +752,23 @@ void Variant::CallNomadic() {
 		tmp.type        = "Nomadic";
 		nomadic.push_back(tmp);
 
-		++summary["0. " + tmp.type].first;
-		summary["0. " + tmp.type].second += tmp.query.end - tmp.query.start + 1;
+		++summary["2. " + tmp.type].first;
+		summary["2. " + tmp.type].second += tmp.query.end - tmp.query.start + 1;
 	}
 	return;
 }
 
 bool Variant::IsSameStrand(vector<MapReg> &mapreg) {
 
-	bool same ( true );
+	bool same (true);
 	char strand = mapreg[0].strand;
-	for ( size_t i(1); i < mapreg.size(); ++i ) {
-		if ( strand != mapreg[i].strand ) { same = false; break; }
+	for (size_t i(1); i < mapreg.size(); ++i) {
+		if (strand != mapreg[i].strand) { same = false; break; }
 	}
 	return same;
 }
 
-void Variant::Filter () {
+void Variant::Filter() {
 
 	map<string,vector<Region> > filterReg;
 	map<string,size_t> index;
@@ -786,11 +783,11 @@ void Variant::Filter () {
 	}
 
 	// Filter insertion regions which in filterReg 
-	FilterReg (filterReg, index, insertion);
+	FilterReg(filterReg, index, insertion);
 	// Filter deletion regions which in filterReg
-	FilterReg (filterReg, index, deletion );
+	FilterReg(filterReg, index, deletion );
 	// Filter SNP which in filterReg
-	FilterReg (filterReg, index, snp      );
+	FilterReg(filterReg, index, snp      );
 
 	if (snp.empty()) return;
 	map <string, vector<size_t> > tmp;
@@ -835,21 +832,49 @@ void Variant::FilterReg(map< string,vector<Region> > tarregion, map<string, size
 	return;
 }
 
-void Variant::Summary(string file) {
+void Variant::SummaryVar() {
+
+	string ks;
+    int ts, qs, vs;
+    for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
+         it != allvariant.end();
+         ++it) {
+
+        for (size_t i(0); i < it->second.size(); ++i) {
+			ts = it->second[i].target.end - it->second[i].target.start;
+			qs = it->second[i].query.end  - it->second[i].query.start;
+            vs = (ts > qs) ? ts : qs;
+            if (it->second[i].type == "INTERGAP" ||
+                it->second[i].type == "N"        ||
+                it->second[i].type.find("Homo") != string::npos) ++vs;
+            if (it->second[i].type == "Sgap") vs = labs(ts - qs);
+
+            ks = "2. " + it->second[i].type;
+            ++summary[ks].first;
+            summary[ks].second += vs;
+        }
+    }
 
 	map<string, vector<Region> >::iterator p(mapqry.begin());
-	for (; p != mapqry.end(); ++p) { 
-		++summary["0. qryCovlength"].first;
-		summary["0. qryCovlength"].second += Covlength(p->second); 
-	}
+    for (; p != mapqry.end(); ++p) {
+        ++summary["2. qryCovlength"].first;
+        summary["2. qryCovlength"].second += Covlength(p->second);
+    }
+    p = maptar.begin();
+    for (; p != maptar.end(); ++p) {
+        ++summary["2. tarCovlength"].first;
+        summary["2. tarCovlength"].second += Covlength(p->second);
+    }
 
+	return;
+}
+
+void Variant::Summary(string file) {
+
+	SummaryVar();
 	map<string, long int> tarCov;
-	p = maptar.begin();
-	for (; p != maptar.end(); ++p) { 
-		tarCov[p->first] += Covlength(p->second); 
-		++summary["0. tarCovlength"].first; 
-		summary["0. tarCovlength"].second += Covlength(p->second); 
-	}
+	map<string, vector<Region> >::iterator p(maptar.begin());
+	for (; p != maptar.end(); ++p) tarCov[p->first] += Covlength(p->second);
 
 	ofstream O (file.c_str());
     if (!O) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
@@ -859,11 +884,11 @@ void Variant::Summary(string file) {
 		O << pt->first << "\t" << pt->second.first << "\t" << pt->second.second << "\n";
 	
 	O << "\n";
-	O << "0. QryCovlength/querylength  " << double(summary["0. qryCovlength"].second) / qryfa.length << "\n";
-	O << "0. TarCovlength/targetlength " << double(summary["0. tarCovlength"].second) / tarfa.length << "\n";
-	O << "0. TarCovlength/targetlength(NO 'N') "<< double(summary["0. tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
-	O << "0. SNP/querylength           " << double(summary["0. SNP"].second) / qryfa.length  << "\n";
-	O << "0. SNP/targetlength          " << double(summary["0. SNP"].second) / tarfa.length  << "\n";
+	O << "2. QryCovlength/querylength  " << double(summary["2. qryCovlength"].second) / qryfa.length << "\n";
+	O << "2. TarCovlength/targetlength " << double(summary["2. tarCovlength"].second) / tarfa.length << "\n";
+	O << "2. TarCovlength/targetlength(NO 'N') "<< double(summary["2. tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
+	O << "2. SNP/querylength           " << double(summary["2. SNP"].second) / qryfa.length  << "\n";
+	O << "2. SNP/targetlength          " << double(summary["2. SNP"].second) / tarfa.length  << "\n";
 	O << "\n";
 	for (map<string, long int>::iterator p(tarCov.begin()); p != tarCov.end(); ++p) {
 
@@ -1148,7 +1173,7 @@ void Variant::Output2VCF(string referenceId, string file) {
 			long int end   = allvariant[it->second][i].target.end;
 			allvariant[it->second][i].tarSeq = tarfa.fa[it->second][start - 1];
 
-			if (allvariant[it->second][i].type == "NOCALL") {
+			if (allvariant[it->second][i].type == "INTERGAP") {
 
 				allvariant[it->second][i].qrySeq = ".";
 			} else if (allvariant[it->second][i].type != "N" && 
@@ -1176,8 +1201,10 @@ void Variant::Output2VCF(string referenceId, string file) {
 			vcfline.alt_   = allvariant[it->second][i].qrySeq;
 			vcfline.qual_  = 255;
 			string gt;
-			if (allvariant[it->second][i].type == "NOCALL") {
-				vcfline.filters_ = "NOCALL";
+
+			vcfline.filters_ = "."; // Defualt set to '.', it means nothing
+			if (allvariant[it->second][i].type == "INTERGAP") {
+				vcfline.filters_ = "INTERGAP";
 				gt = "./.";
 			} else if (allvariant[it->second][i].type == "N") {
 				vcfline.filters_ = "NCALL";
@@ -1187,8 +1214,10 @@ void Variant::Output2VCF(string referenceId, string file) {
 				gt = "0/0";
 			} else {
 				// Variants
-				vcfline.filters_ = (allvariant[it->second][i].isGoodReAlign) ? 
-									"PASS-AGE" : "PASS";
+				if (allvariant[it->second][i].isSuccessAlign && 
+					!allvariant[it->second][i].isGoodReAlign) 
+						vcfline.filters_ = "AGEFALSE";
+
 				gt = (allvariant[it->second][i].isHete) ? "0/1" : "1/1";
 			}
 			vcfline.info_.Add("HRun", "HRun=" + 
@@ -1208,7 +1237,7 @@ void Variant::Output2VCF(string referenceId, string file) {
 			format.Add("QR", allvariant[it->second][i].query.id + "-" +
 						   itoa(allvariant[it->second][i].query.start) + "-" +
 						   itoa(allvariant[it->second][i].query.end));
-			if (allvariant[it->second][i].type == "NOCALL") 
+			if (allvariant[it->second][i].type == "INTERGAP") 
 				format.Set("QR", ".");
 			// Align End position
 			format.Add("AE", itoa(allvariant[it->second][i].target.end));
@@ -1220,7 +1249,7 @@ void Variant::Output2VCF(string referenceId, string file) {
 			int vs = (qvs > 0) ? qvs : tvs; // Should be tvs if is DEL!
 			if (vcfline.filters_ == "REFCALL" || 
 				vcfline.filters_ == "NCALL"   ||
-				vcfline.filters_ == "NOCALL") ++vs; //Not Variant, should +1!
+				vcfline.filters_ == "INTERGAP") ++vs; //Not Variant, should +1!
 			format.Add("VS", itoa(vs));
 			format.Add("SC", itoa(allvariant[it->second][i].score));
 			format.Add("MS", ftoa(allvariant[it->second][i].mismap)); // Mismap
@@ -1239,7 +1268,7 @@ void Variant::Output2VCF(string referenceId, string file) {
 			format.Add("AGE", age);
 
 			int qn = 0;
-			if (allvariant[it->second][i].type != "NOCALL") {
+			if (allvariant[it->second][i].type != "INTERGAP") {
 				qn = qryfa.Nlength(allvariant[it->second][i].query.id,
 						allvariant[it->second][i].query.start > 100 ? 
 						allvariant[it->second][i].query.start - 100 : 0, 

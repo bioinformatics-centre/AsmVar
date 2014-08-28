@@ -74,6 +74,7 @@ private:
 	// Just could be call after read all the mapping file
 	vector<Region> GetNoCallReg();
 	void MarkHete();
+	void SummaryVar(); // Just been used in Summary(string);
 
 public :
 	map< string, vector<MapReg> > mapreg;  // Mapping region. use for getting novel region

@@ -46,6 +46,7 @@ public:
 
     char   strand;
     string type;   // Variant type
+	int  varsize;  // the size of each variant
 	bool isHete;   // Heterozygousity or not
 
     long score;    // LAST Alignment score

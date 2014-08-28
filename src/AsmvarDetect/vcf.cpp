@@ -10,8 +10,7 @@
 void VcfHeader::DefualtHeader() {
 
 	Add("FORMAT", "GT", "1", "String", "Genotype");
-	Add("FORMAT", "AE", "1", "Integer",
-		"End position of reference call block");
+	Add("FORMAT", "AE", "1", "Integer", "End position of reference call block");
 	Add("FORMAT", "AGE", "1", "String", 
 		"AGE aligment information. (T/F,Strand,ave_base,ave_iden,left_base,left_iden,right_base,right_iden)");
 	Add("FORMAT", "CI", "2", "Integer", 
@@ -23,21 +22,19 @@ void VcfHeader::DefualtHeader() {
 	Add("FORMAT", "NR", "1", "Float", 
 		"The 'N' ratio around variant region on query");
 	Add("FORMAT", "SC", "1", "Integer", "Alignment score In LAST Align");
-	Add("FORMAT", "TR", "1", "String", 
-		"Variant regions on common huamn reference");
-	Add("FORMAT", "QR", "1", "String", 
-		"Variant regions on personal assembly");
+	Add("FORMAT", "TR", "1", "String",  "Variant regions on reference");
+	Add("FORMAT", "QR", "1", "String",  "Variant regions on query");
 	Add("FORMAT", "VS", "1", "Integer", "SV Size");
 	Add("FORMAT", "VT", "1", "String" , "SV Type");
 
 	Add("INFO", "HRun", "1", "Integer", "Homo-Run of reference");
-	Add("##FILTER=<ID=NOCALL>", 
-		"##FILTER=<ID=NOCALL,Description=\"Unmapped reference region.\">");
+	Add("##FILTER=<ID=INTERGAP>", 
+		"##FILTER=<ID=INTERGAP,Description=\"Unmapped reference region.\">");
 	Add("##FILTER=<ID=NCALL>", 
-		"##FILTER=<ID=NCALL,Description=\"It's N on Reference or Query\">");
+		"##FILTER=<ID=NCALL,Description=\"Covered by Query, but it's 'N' on Reference or Query or both of them are 'N'\">");
 	Add("##FILTER=<ID=REFCALL>", 
 		"##FILTER=<ID=REFCALL,Description=\"Represents a homozygous reference call\">");
-	Add("##FILTER=<ID=PASS-AGE>","##FILTER=<ID=PASS-AGE,Description=\"Good ReAligne\">");
+	Add("##FILTER=<ID=AGEFALSE>","##FILTER=<ID=AGEFALSE,Description=\"Filtered in AGE realignment process\">");
 
 	return;
 }

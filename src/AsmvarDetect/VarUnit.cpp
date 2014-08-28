@@ -8,6 +8,7 @@ VarUnit::VarUnit() {
 	qrySeq    = "."; 
 	strand    = '.'; 
 	type      = "."; 
+	varsize   = 0;
 	isHete    = false;
 	score     = 0;   
 	mismap    = 1.0;
@@ -24,9 +25,10 @@ VarUnit::VarUnit() {
 
 VarUnit::VarUnit(const VarUnit& V) {
 
-	target = V.target; query   = V.query; tarSeq = V.tarSeq; 
-	qrySeq = V.qrySeq; strand  = V.strand;
-	type   = V.type  ; isHete  = V.isHete; isClear = V.isClear; 
+	target  = V.target; query   = V.query; tarSeq = V.tarSeq; 
+	qrySeq  = V.qrySeq; strand  = V.strand;
+	type    = V.type  ; varsize = V.varsize; isHete  = V.isHete; 
+	isClear = V.isClear; 
 
 	score  = V.score;  
 	mismap = V.mismap;
