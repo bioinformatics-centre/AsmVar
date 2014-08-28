@@ -47,7 +47,9 @@ public:
 
                 fa[faId] += tmp;
 				length   += tmp.length();
-				for ( size_t i(0); i < tmp.size(); ++i ) if ( tmp[i] == 'N' || tmp[i] == 'n' ) ++nsize;
+				for (size_t i(0); i < tmp.size(); ++i) 
+					if (tmp[i] == 'N' || tmp[i] == 'n') ++nsize;
+
             } else {
                 faId.assign ( tmp, 1, string::npos );
                 fa[faId].clear();
