@@ -8,7 +8,6 @@ VarUnit::VarUnit() {
 	qrySeq    = "."; 
 	strand    = '.'; 
 	type      = "."; 
-	varsize   = 0;
 	isHete    = false;
 	score     = 0;   
 	mismap    = 1.0;
@@ -27,8 +26,7 @@ VarUnit::VarUnit(const VarUnit& V) {
 
 	target  = V.target; query   = V.query; tarSeq = V.tarSeq; 
 	qrySeq  = V.qrySeq; strand  = V.strand;
-	type    = V.type  ; varsize = V.varsize; isHete  = V.isHete; 
-	isClear = V.isClear; 
+	type    = V.type  ; isHete  = V.isHete; isClear = V.isClear; 
 
 	score  = V.score;  
 	mismap = V.mismap;
@@ -95,10 +93,10 @@ void VarUnit::OutErr() {
     long int tnl = NLength ( tarSeq );
 	string reAlignStat = (isSuccessAlign) ? "CanAGE": "Can'tAGE";
     cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
-      << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
-	  << "\t" << cipos.first  << "," << cipos.second << "\t" << ciend.first 
-	  << ","  << ciend.second << "\t"<< query.id     << "\t" << query.start   
-	  << "\t" << query.end    << "\t"<< query.end  - query.start  + 1 << "\t" 
+      << target.end - target.start + 1 << "\t" << double(tnl)/tarSeq.length()
+	  << "\t" << cipos.first  << ","   << cipos.second << "\t" << ciend.first 
+	  << ","  << ciend.second << "\t"  << query.id     << "\t" << query.start   
+	  << "\t" << query.end    << "\t"  << query.end  - query.start  + 1 << "\t" 
 	  << double(qnl)/qrySeq.length()
       << "\t" << strand << "\t" << homoRun << "\t" << isGoodReAlign 
 	  << "\t" << score  << "\t" << mismap  << "\t" << type << "\t"
@@ -113,8 +111,8 @@ void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) {
 		std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); 
 	}
 
-	long int qnl = NLength ( qrySeq );
-	long int tnl = NLength ( tarSeq );
+	long int qnl = NLength (qrySeq);
+	long int tnl = NLength (tarSeq);
 	string reAlignStat = (isSuccessAlign) ? "CanAGE" : "Can'tAGE";
 	O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
 	  << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
@@ -134,8 +132,8 @@ void VarUnit::OutStd(long int tarSeqLen, long int exp_tarSeqLen,
 
 	if (exp_tarSeq.empty()){ cerr << "exp_tarSeq.empty() \n"; exit(1); }
 
-	long int qnl = NLength ( qrySeq     );
-	long int tnl = NLength ( exp_tarSeq );
+	long int qnl = NLength (qrySeq    );
+	long int tnl = NLength (exp_tarSeq);
 	O << exp_target.id << "\t" << exp_target.start     << "\t" << exp_target.end 
 	  << "\t" << exp_target.end - exp_target.start + 1 << "\t" 
 	  << double(tnl)/exp_tarSeq.length()      << "\t" << exp_tarSeqLen << "\t" 
@@ -157,7 +155,7 @@ vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int distDelta = 1) 
     vector<VarUnit> newVector;
     map<string, long int> tarPrePos, qryPrePos;
     map<string, string> id2seq;
-    for ( size_t i(0); i < VarUnitVector.size(); ++i ) {
+    for (size_t i(0); i < VarUnitVector.size(); ++i) {
 
         string tarId = VarUnitVector[i].target.id;
         string qryId = VarUnitVector[i].query.id ;
@@ -180,12 +178,11 @@ vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int distDelta = 1) 
             }
 			
             if (qryPrePos[qryId] > VarUnitVector[i].query.start) {
-                std::cerr << "[ERROR]Your query hasn't been  sorted.\n";
+                std::cerr << "[ERROR]Your query hasn't been sorted.\n";
                 VarUnitVector[i].query.OutErrReg();
                 exit(1);
             }
 			
-
             if (varunit.target.end + distDelta >= VarUnitVector[i].target.start
                 && varunit.query.end + distDelta >= VarUnitVector[i].query.start
                 && id2seq[id] == seq) {
@@ -455,7 +452,7 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 	} else {
 		// Simultaneous gap or Unknown Type
 		// Actrually, "Unknown" should be impossible!!
-		vu.type = (tlen != qlen && tlen > 0) ? "Sgap" : "Unknown" ;
+		vu.type = (tlen != qlen && tlen > 0) ? "Sgap" : "Unknown";
 		vu.target.start = lf.first._end;
 		vu.target.end   = vu.target.start + tlen;
 		vu.query.start  = (strand == '+') ? lf.second._end : rt.second._start + 1;

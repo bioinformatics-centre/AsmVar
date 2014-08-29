@@ -17,7 +17,7 @@ void VcfHeader::DefualtHeader() {
 		"Confidence interval around POS for imprecise variants");
 	Add("FORMAT", "CE", "2", "Integer", 
         "Confidence interval around END for imprecise variants");
-	Add("FORMAT", "HR", "1", "Integer", "Homo-Run");
+	Add("FORMAT", "HR", "1", "Integer", "Homo-Run of reference");
 	Add("FORMAT", "MS", "1", "Float", "Mismatch probability In LAST Align");
 	Add("FORMAT", "NR", "1", "Float", 
 		"The 'N' ratio around variant region on query");
@@ -41,7 +41,6 @@ void VcfHeader::DefualtHeader() {
 
 void VcfHeader::Add(string mark, string id, string num,
 					string type, string description) {
-
 
 	if (mark == "CHROM") return; // Do not add 'CHROM' here!
 	if (data_.count(id)) {

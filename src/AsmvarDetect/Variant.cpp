@@ -165,14 +165,6 @@ void Variant::CallDeletion() {
 
 		++summary["0. DEL"].first;
         summary["0. DEL"].second += gap[i].target.end - gap[i].target.start + 1;
-
-/*
-        int qn = qryfa.Nlength(query.id, gap[i].query.start, gap[i].query.end);
-        if (qn > 0) {
-            ++summary["0. query-Intra-gap('N')"].first;
-            summary["0. query-Intra-gap('N')"].second += qn;
-        }
-*/
 	}
 }
 
@@ -584,8 +576,8 @@ map<string, vector<Region> > Variant::VarTarRegs() {
 		varTarRegs[simulreg[i].target.id].push_back(simulreg[i].target);
 	}
 
-	for (map< string,vector<Region> >::iterator it(varTarRegs.begin()); it != varTarRegs.end(); ++it) {
-        sort ( varTarRegs[it->first].begin(), varTarRegs[it->first].end(), SortRegion );
+	for (map<string,vector<Region> >::iterator it(varTarRegs.begin()); it != varTarRegs.end(); ++it) {
+        sort(varTarRegs[it->first].begin(), varTarRegs[it->first].end(), SortRegion);
     }
 
 	return varTarRegs;	
@@ -603,50 +595,52 @@ void Variant::CallSV() {
 		if (it->second.size() < 2) continue; // More than 2
 
 		map<long int, size_t> qry2tarOrder;
-		sort( it->second.begin(), it->second.end(), MySortByTarM ); // Sort by the coordinate of target mapping positions
-		for ( size_t i(0); i < it->second.size(); ++i ) { qry2tarOrder[it->second[i].query.start] = i; }
-		sort( it->second.begin(), it->second.end(), MySortByQryM ); // Sort by the coordinate of query  mapping positions
+		sort(it->second.begin(), it->second.end(), MySortByTarM); // Sort by the coordinate of target mapping positions
+		for (size_t i(0); i < it->second.size(); ++i) { 
+			qry2tarOrder[it->second[i].query.start] = i; 
+		}
+		sort(it->second.begin(), it->second.end(), MySortByQryM); // Sort by the coordinate of query  mapping positions
 
 		vector<MapReg> tmpreg;
 		long int pos1, pos2, pos;
-		for ( size_t i(0); i < it->second.size(); ++i ) {
+		for (size_t i(0); i < it->second.size(); ++i) {
 
 			pos = it->second[i].query.start;   // right (side)
-			if ( tmpreg.size() == 1 ) {
+			if (tmpreg.size() == 1) {
 				pos1 = tmpreg[0].query.start;
-				if ( labs(qry2tarOrder[pos] - qry2tarOrder[pos1]) == 1 ) {
+				if (labs(qry2tarOrder[pos] - qry2tarOrder[pos1]) == 1) {
 					// Regular simultaneous gap regions
-					if ( CallSimultan(tmpreg[0], it->second[i]) ) tmpreg.clear();
+					if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear();
 				}
-			} else if ( tmpreg.size() == 2 ) { // Candidate translocation or Candidate Inversion. It's not success when calling simultaneous gap
+			} else if (tmpreg.size() == 2) { // Candidate translocation or Candidate Inversion. It's not success when calling simultaneous gap
 				pos1 = tmpreg[0].query.start;  // left 
 				pos2 = tmpreg[1].query.start;  // middle
-				if ( labs(qry2tarOrder[pos] - qry2tarOrder[pos1]) == 1 ) { // Means tmpreg[0] and tmpreg[1] are not the neighbour
+				if (labs(qry2tarOrder[pos] - qry2tarOrder[pos1]) == 1) { // Means tmpreg[0] and tmpreg[1] are not the neighbour
 					
-					if ( CallTranslocat(tmpreg[0], tmpreg[1], it->second[i]) ) { 
+					if (CallTranslocat(tmpreg[0], tmpreg[1], it->second[i])) { 
 						tmpreg.clear(); // Here 'tmpreg' just contain the two head element, in fact, I'm just clear the first and second elements.
 					} else {
-						tmpreg.erase( tmpreg.begin() );
-						if ( labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1 ) { 
-							if ( CallSimultan(tmpreg[0], it->second[i]) ) tmpreg.clear(); // Call simultaneous gap
+						tmpreg.erase(tmpreg.begin());
+						if (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1) { 
+							if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear(); // Call simultaneous gap
 						}
 					}
-				} else if ( (labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) && (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1) ){ 
+				} else if ((labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) && (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1)) { 
 
-					if ( CallIversion(tmpreg[0], tmpreg[1], it->second[i]) ) { 
+					if (CallIversion(tmpreg[0], tmpreg[1], it->second[i])) { 
 						tmpreg.clear(); // Here 'tmpreg' just contain the two head element , in fact, I'm just clear the first and second elements.
 					} else {
-						tmpreg.erase ( tmpreg.begin() );
-						if ( CallSimultan(tmpreg[0], it->second[i]) ) tmpreg.clear();
+						tmpreg.erase (tmpreg.begin());
+						if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear();
 					}
 				} else if (labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) { // No solution
-					CallReg ( tmpreg[0], "Nos-JustNo", nosolution );
-					tmpreg.erase ( tmpreg.begin() );
+					CallReg (tmpreg[0], "Nos-JustNo", nosolution);
+					tmpreg.erase (tmpreg.begin());
 				} else {
-					CallReg ( tmpreg[0], "Nos-Complex", nosolution );
-					tmpreg.erase ( tmpreg.begin() );
+					CallReg (tmpreg[0], "Nos-Complex", nosolution);
+					tmpreg.erase (tmpreg.begin());
 				}
-			} else if ( tmpreg.size() > 2 ) {
+			} else if (tmpreg.size() > 2) {
 				cerr << "\n[ERROR] Program bugs! Please contact to the author!" 
 					 << endl;
 				exit(1);
@@ -834,7 +828,7 @@ void Variant::FilterReg(map< string,vector<Region> > tarregion, map<string, size
 
 void Variant::SummaryVar() {
 
-	string ks;
+	string ks, tseq, qseq;
     int ts, qs, vs;
     for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
          it != allvariant.end();
@@ -849,32 +843,56 @@ void Variant::SummaryVar() {
                 it->second[i].type.find("Homo") != string::npos) ++vs;
             if (it->second[i].type == "Sgap") vs = labs(ts - qs);
 
-            ks = "2. " + it->second[i].type;
-            ++summary[ks].first;
-            summary[ks].second += vs;
+			tseq = toupper(tarfa.fa[it->second[i].target.id].substr(
+					it->second[i].target.start-1, 
+					it->second[i].target.end - it->second[i].target.start + 1));
+			qseq = "";
+            if (it->second[i].type != "INTERGAP") {
+                qseq = toupper(qryfa.fa[it->second[i].query.id].substr(
+                        it->second[i].query.start - 1,
+                        it->second[i].query.end - it->second[i].query.start + 1));
+            }
+
+			if (it->second[i].type == "N" && qseq.find("N") != string::npos && 
+				tseq.find("N") != string::npos) { 
+            	ks = "2. BOTHGAP";
+				++summary[ks].first;
+                summary[ks].second += vs;
+			} else if (it->second[i].type == "N" && qseq.find("N") != string::npos) {
+				ks = "2. INTRAGAP";
+				++summary[ks].first;
+                summary[ks].second += vs;
+			} else if (it->second[i].type == "N" && tseq.find("N") != string::npos) {
+				ks = "2. REFGAP";
+            	++summary[ks].first;
+           		summary[ks].second += vs;
+			}
         }
     }
 
 	map<string, vector<Region> >::iterator p(mapqry.begin());
+	long int len;
     for (; p != mapqry.end(); ++p) {
+		len = Covlength(p->second);
+		assert(len <= qryfa.fa[p->second[0].id].length()); 
         ++summary["2. qryCovlength"].first;
-        summary["2. qryCovlength"].second += Covlength(p->second);
+        summary["2. qryCovlength"].second += len;
+		if (len == qryfa.fa[p->second[0].id].length()) {
+			++summary["2. Query-Full-Align"].first;
+			summary["2. Query-Full-Align"].second += len;
+		}
     }
     p = maptar.begin();
     for (; p != maptar.end(); ++p) {
         ++summary["2. tarCovlength"].first;
         summary["2. tarCovlength"].second += Covlength(p->second);
     }
-
 	return;
 }
 
 void Variant::Summary(string file) {
 
 	SummaryVar();
-	map<string, long int> tarCov;
-	map<string, vector<Region> >::iterator p(maptar.begin());
-	for (; p != maptar.end(); ++p) tarCov[p->first] += Covlength(p->second);
 
 	ofstream O (file.c_str());
     if (!O) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
@@ -890,10 +908,13 @@ void Variant::Summary(string file) {
 	O << "2. SNP/querylength           " << double(summary["2. SNP"].second) / qryfa.length  << "\n";
 	O << "2. SNP/targetlength          " << double(summary["2. SNP"].second) / tarfa.length  << "\n";
 	O << "\n";
-	for (map<string, long int>::iterator p(tarCov.begin()); p != tarCov.end(); ++p) {
 
-		double ratio = double(p->second)/tarfa.fa[p->first].length();
-		O << "# " << p->first << "\t" << p->second << "/" << tarfa.fa[p->first].length() << "\t" << ratio << "\n";
+	map<string, vector<Region> >::iterator p(maptar.begin());
+	for (; p != maptar.end(); ++p) {
+
+		long int cl  = Covlength(p->second);
+		double ratio = double(cl)/tarfa.fa[p->first].length();
+		O << "# " << p->first << "\t" << cl << "/" << tarfa.fa[p->first].length() << "\t" << ratio << "\n";
 	}
 	O << endl;
 	O.close();
@@ -1030,12 +1051,13 @@ long int Variant::Covlength(vector<Region> mapreg) {
 	if (mapreg.empty()) return 0;
 
 	sort (mapreg.begin(), mapreg.end(), SortRegion);
-	long int length(mapreg[0].end - mapreg[0].start + 1), prepos( mapreg[0].end );
+	long int length(mapreg[0].end - mapreg[0].start + 1);
+	long int prepos(mapreg[0].end);
 
 	for (size_t i(1); i < mapreg.size(); ++i) {
 
 		if (mapreg[i].start > prepos) {
-			length += ( mapreg[i].end - mapreg[i].start + 1 );
+			length += (mapreg[i].end - mapreg[i].start + 1);
 			prepos = mapreg[i].end;
 		} else if (mapreg[i].end > prepos) {
 			length += (mapreg[i].end - prepos);
@@ -1200,9 +1222,9 @@ void Variant::Output2VCF(string referenceId, string file) {
 			vcfline.ref_   = allvariant[it->second][i].tarSeq;
 			vcfline.alt_   = allvariant[it->second][i].qrySeq;
 			vcfline.qual_  = 255;
-			string gt;
 
-			vcfline.filters_ = "."; // Defualt set to '.', it means nothing
+			string gt;
+			vcfline.filters_ = "."; // Defualt set to '.', it means nothing filter
 			if (allvariant[it->second][i].type == "INTERGAP") {
 				vcfline.filters_ = "INTERGAP";
 				gt = "./.";
