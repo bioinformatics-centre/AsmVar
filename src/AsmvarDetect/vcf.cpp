@@ -24,7 +24,7 @@ void VcfHeader::DefualtHeader() {
 	Add("FORMAT", "SC", "1", "Integer", "Alignment score In LAST Align");
 	Add("FORMAT", "TR", "1", "String",  "Variant regions on reference");
 	Add("FORMAT", "QR", "1", "String",  "Variant regions on query");
-	Add("FORMAT", "VS", "1", "Integer", "SV Size");
+	Add("FORMAT", "VS", "1", "Integer", "SV Size. But for SNP it'll be 0");
 	Add("FORMAT", "VT", "1", "String" , "SV Type");
 
 	Add("INFO", "HRun", "1", "Integer", "Homo-Run of reference");
