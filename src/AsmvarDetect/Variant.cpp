@@ -812,10 +812,8 @@ void Variant::NormVu() { // Norm each variant
 			if (it->second[i].type == "INTERGAP") {
 
 				it->second[i].qrySeq = ".";
-			} else if (it->second[i].type != "N" && 
-					   it->second[i].type != "N-AGE" && 
-					   it->second[i].type.find("REFCALL") == string::npos) {
-				// Variant here
+			} else if (it->second[i].type.find("REFCALL") == string::npos) {
+				// Exclude homozygous
 
 				it->second[i].tarSeq = tarfa.fa[it->first].substr(
                         start - 1, end - start + 1);
