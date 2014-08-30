@@ -865,8 +865,8 @@ void Variant::SummaryVar() {
                 it->second[i].type.find("REFCALL") != string::npos) ++vs;
             if (it->second[i].type == "COMPLEX") vs = labs(ts - qs);
 
-			ks = "[VCF]" + it->second[i].type;
-			if (ks.find("TRANS") != string::npos) ks = "[VCF]TRANS";
+			ks = "2.[VCF]" + it->second[i].type;
+			if (ks.find("TRANS") != string::npos) ks = "2.[VCF]TRANS";
 			++summary[ks].first;
 			summary[ks].second += vs;
 		}
