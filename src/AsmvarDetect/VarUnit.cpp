@@ -302,12 +302,14 @@ gettimeofday(&ali_s, NULL);
 
 			rvu_.PrintStd();
 			aligner1.printAlignment();
+			cout << "\n";
         } else {
 			aligner2.SetAlignResult();
 			alignResult_ = aligner2.align_result();
 
 			rvu_.PrintStd();
 			aligner2.printAlignment();
+			cout << "\n";
         } 
         delete qryClone;
 
@@ -320,6 +322,7 @@ gettimeofday(&ali_s, NULL);
 
 			rvu_.PrintStd();
 			aligner.printAlignment();
+			cout << "\n";
         } else {
             cerr << "No alignment made.\n";
 			isalign_ = false; 

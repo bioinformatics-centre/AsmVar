@@ -485,7 +485,7 @@ void Variant::AGE_RealignTr(string referenceId, vector<VarUnit> &R) {
         if (v[0].type.find("-AGE") == string::npos) { 
 		// has variant in exci-reg
             if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
-            ks = "1. " + R[i].type + "=>" + v[0].type;
+            ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
 
 			v[0].type = v[0].type  + "=>TRANS#" + rawTarReg.id + "-" + 
 						itoa(rawTarReg.start) + "-" + itoa(rawTarReg.end)   + 
@@ -808,7 +808,9 @@ void Variant::NormVu() { // Norm each variant
 			long int start = it->second[i].target.start;
             long int end   = it->second[i].target.end;
 			it->second[i].tarSeq = tarfa.fa[it->first][start - 1];
+
 			if (it->second[i].type == "INTERGAP") {
+
 				it->second[i].qrySeq = ".";
 			} else if (it->second[i].type != "N" && 
 					   it->second[i].type != "N-AGE" && 
@@ -826,24 +828,23 @@ void Variant::NormVu() { // Norm each variant
                 if (it->second[i].strand == '-')
                     it->second[i].qrySeq = ReverseAndComplementary(
 												it->second[i].qrySeq);
-			}
 
-			if (it->second[i].tarSeq.find("N") != string::npos ||
-				it->second[i].tarSeq.find("n") != string::npos) {
-			// Get N in target sequence
-				it->second[i].type = "REFGAP";
-			} else if (it->second[i].qrySeq.find("N") != string::npos || 
-					   it->second[i].qrySeq.find("n") != string::npos) {
-			// Get N in query sequence
-				it->second[i].type = "INTRAGAP";
-			}
+				if (it->second[i].tarSeq.find("N") != string::npos ||
+					it->second[i].tarSeq.find("n") != string::npos) {
+				// Get N in target sequence
+					it->second[i].type = "REFGAP";
+				} else if (it->second[i].qrySeq.find("N") != string::npos || 
+						   it->second[i].qrySeq.find("n") != string::npos) {
+				// Get N in query sequence
+					it->second[i].type = "INTRAGAP";
+				}
 
-            if (it->second[i].qrySeq != "." &&
-				toupper(it->second[i].qrySeq ==
-            	toupper(it->second[i].tarSeq))) {
-				// qrySeq is the same with tarSeq
-				it->second[i].qrySeq.assign(it->second[i].qrySeq.size(), 'N');
-            }
+				if (toupper(it->second[i].qrySeq ==
+					toupper(it->second[i].tarSeq))) {
+					// qrySeq is the same with tarSeq
+					it->second[i].qrySeq.assign(it->second[i].qrySeq.size(), 'N');
+				}
+			}
 		}
 	}
 }
@@ -851,12 +852,12 @@ void Variant::NormVu() { // Norm each variant
 void Variant::SummaryVar() {
 
 	string ks;
-    int ts, qs, vs;
-    for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
-         it != allvariant.end();
-         ++it) {
+	int ts, qs, vs;
+	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
+			it != allvariant.end();
+			++it) {
 
-        for (size_t i(0); i < it->second.size(); ++i) {
+		for (size_t i(0); i < it->second.size(); ++i) {
 			ts = it->second[i].target.end - it->second[i].target.start;
 			qs = it->second[i].query.end  - it->second[i].query.start;
             vs = (ts > qs) ? ts : qs;
@@ -1259,9 +1260,6 @@ void Variant::Output2VCF(string referenceId, string file) {
 
 			int qn = 0;
 
-if (allvariant[it->second][i].query.id == "-") {
-	allvariant[it->second][i].OutErr();
-}
 			if (allvariant[it->second][i].type != "INTERGAP") {
 				qn = qryfa.Nlength(allvariant[it->second][i].query.id,
 						allvariant[it->second][i].query.start > 100 ? 
