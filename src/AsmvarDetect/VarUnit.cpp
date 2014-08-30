@@ -357,7 +357,8 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			VarUnit var = CallVarInExcise(pre_map, alignResult_._map[i], 
 					alignResult_._strand);
 			var.isSuccessAlign = true;
-			var.isGoodReAlign  = isgoodAlign() && (var.mismap < MISMAP_VALE); // mismatch probability is low!
+			// mismatch probability should be low
+			var.isGoodReAlign  = isgoodAlign() && (var.mismap < MISMAP_VALE);
 			var.homoRun        = HomoRun(); //Just usefull in excise region
 			var.cipos.first    = (cipos().first > 0) ? cipos().first  - var.target.start : 0; // Just here
 			var.cipos.second   = (cipos().second> 0) ? cipos().second - var.target.start : 0; // Just here
@@ -411,9 +412,6 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 	if (tlen > 0 && qlen == 0) {
 	// Pure-Deletion
 		vu.type = "DEL";
-		// I should treat the type to be 'SDEL' 
-		// if they're agree with the original type.
-		if (toupper(vu_.type) == "DEL") vu.type = "SDEL";
 
 		// Reference position
 		vu.target.start= lf.first._end;
@@ -430,13 +428,10 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 	} else if (qlen > 0 && tlen == 0) {
 	// Pure-Insertion
 		vu.type = "INS";
-		// I should treat the type to be 'SINS' 
-        // if they're agree with the original type.
-		if (toupper(vu_.type) == "INS") vu.type = "SINS";
-
 		// Reference position
 		vu.target.start = lf.first._end;
 		vu.target.end   = vu.target.start;
+
         // Query position
 		// CAUTION: Here is not just the variant region, but include one
 		// position which on the boundary of variant. So that we don't have 
@@ -450,9 +445,8 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.query.start  = (strand == '+') ? lf.second._end + 1 : rt.second._start + 1;
 		vu.query.end    = vu.query.start + qlen - 1;
 	} else {
-		// Simultaneous gap or Unknown Type
-		// Actrually, "Unknown" should be impossible!!
-		vu.type = (tlen != qlen && tlen > 0) ? "Sgap" : "Unknown";
+		// Simultaneous gap => COMPLEX
+		vu.type = "COMPLEX";
 		vu.target.start = lf.first._end;
 		vu.target.end   = vu.target.start + tlen;
 		vu.query.start  = (strand == '+') ? lf.second._end : rt.second._start + 1;
@@ -489,7 +483,7 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 		if (mapInfo[i] == '|') {
 		// Homo block		
 
-			vuTmp.type   = "Homo-AGE";
+			vuTmp.type   = "REFCALL-AGE";
 			vuTmp.tarSeq = ".";
 			vuTmp.qrySeq = ".";
 
@@ -552,7 +546,7 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 			if (vuTmp.type == "SNP-AGE" && pos1end - pos1start > 0)
 				vuTmp.type = "MNP-AGE"; // Could just call by AGE process
 		} else {
-		// Who knows...
+		// Who knows ... It's an ERROR!!
 			cerr << "[ERROR] What is it?!" << mapInfo[i] 
 				 << " Must be some error in AGE aligne.\nDetail : \n";
 			cerr << m.first._sequence << "\t" << m.first._id  << ":" 

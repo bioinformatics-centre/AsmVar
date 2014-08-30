@@ -73,6 +73,7 @@ private:
 	void AGE_RealignIv(string referenceId, vector<VarUnit> &R); // Iversion
 	// Just could be call after read all the mapping file
 	vector<Region> GetNoCallReg();
+	void NormVu();
 	void MarkHete();
 	void SummaryVar(); // Just been used in Summary(string);
 

@@ -10,28 +10,26 @@
 void VcfHeader::DefualtHeader() {
 
 	Add("FORMAT", "GT", "1", "String", "Genotype");
-	Add("FORMAT", "AE", "1", "Integer", "End position of reference call block");
 	Add("FORMAT", "AGE", "1", "String", 
 		"AGE aligment information. (T/F,Strand,ave_base,ave_iden,left_base,left_iden,right_base,right_iden)");
-	Add("FORMAT", "CI", "2", "Integer", 
-		"Confidence interval around POS for imprecise variants");
-	Add("FORMAT", "CE", "2", "Integer", 
-        "Confidence interval around END for imprecise variants");
-	Add("FORMAT", "HR", "1", "Integer", "Homo-Run of reference");
+	Add("FORMAT", "HRun", "1", "Integer", 
+		"Largest Contiguous Homopolymer Run of Variant Allele In Either Direction");
 	Add("FORMAT", "MS", "1", "Float", "Mismatch probability In LAST Align");
 	Add("FORMAT", "NR", "1", "Float", 
 		"The 'N' ratio around variant region on query");
-	Add("FORMAT", "SC", "1", "Integer", "Alignment score In LAST Align");
+	Add("FORMAT", "AS", "1", "Integer", "Alignment score In LAST Align");
 	Add("FORMAT", "TR", "1", "String",  "Variant regions on reference");
 	Add("FORMAT", "QR", "1", "String",  "Variant regions on query");
 	Add("FORMAT", "VS", "1", "Integer", "SV Size. But for SNP it'll be 0");
-	Add("FORMAT", "VT", "1", "String" , "SV Type");
+	Add("FORMAT", "VT", "1", "String" , 
+		"SV Type. Including: REFCALL(Mapped, and it's homozygous reference), REFGAP(Mapped but contain 'N' in REF-Region), INTERGAP(Mapped but contain 'N' in ALT-Region), INTRAGAP(Unmapped region on reference), SNP, INS, DEL, MNP, COMPLEX, INV, TRANS; For TRANS the format is : VT=>TRANS#TRANSLOCATED_TR#TRANSLOCATED_QR;For variants that the REF and ALT alleles are the same, the alt allele will be replaced by a 'N' string");
 
-	Add("INFO", "HRun", "1", "Integer", "Homo-Run of reference");
 	Add("##FILTER=<ID=INTERGAP>", 
 		"##FILTER=<ID=INTERGAP,Description=\"Unmapped reference region.\">");
-	Add("##FILTER=<ID=NCALL>", 
-		"##FILTER=<ID=NCALL,Description=\"Covered by Query, but it's 'N' on Reference or Query or both of them are 'N'\">");
+	Add("##FILTER=<ID=INTRAGAP>", 
+		"##FILTER=<ID=INTRAGAP,Description=\"Mapped, but it's N on Query\">");
+	Add("##FILTER=<ID=REFGAP>", 
+		"##FILTER=<ID=REFGAP,Description=\"Mapped, but it's N on Reference\">");
 	Add("##FILTER=<ID=REFCALL>", 
 		"##FILTER=<ID=REFCALL,Description=\"Represents a homozygous reference call\">");
 	Add("##FILTER=<ID=AGEFALSE>","##FILTER=<ID=AGEFALSE,Description=\"Filtered in AGE realignment process\">");
@@ -80,6 +78,8 @@ void VcfInfo::Add(string id, string info) {
 
 string VcfInfo::Combine() { 
 
+	if (data_.empty()) return ".";
+
 	string info;
 	for (map<string, string>::iterator it(data_.begin());
          it != data_.end();
@@ -88,7 +88,7 @@ string VcfInfo::Combine() {
 		if (it == data_.begin()) {
 			info = it->second;
 		} else {
-			info += ":" + it->second;
+			info += ";" + it->second;
 		}
 	}
 
