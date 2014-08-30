@@ -80,6 +80,7 @@ public:
 
 public:
 
+	void PrintStd();
 	void OutErr();
     void OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O);
     void OutStd(long int tarSeqLen, long int exp_tarSeqLen, 
@@ -140,7 +141,8 @@ private:
 
 private:
 
-    VarUnit   vu_;   // this would aways be a copy of a VarUnit.
+    VarUnit   vu_;   // this would aways be a copy of a VarUnit, and will extend.
+    VarUnit   rvu_;  // this would aways be a copy of a VarUnit and not change.
     AgeOption para_; // Parameters for AGE
 	AlignResult alignResult_;
     bool isInit_;

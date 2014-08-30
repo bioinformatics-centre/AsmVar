@@ -877,8 +877,8 @@ void Variant::SummaryVar() {
     for (; p != mapqry.end(); ++p) {
 		len = Covlength(p->second);
 		assert(len <= qryfa.fa[p->second[0].id].length()); 
-        ++summary["qryCovlength"].first;
-        summary["qryCovlength"].second += len;
+        ++summary["[SUM]qryCovlength"].first;
+        summary["[SUM]qryCovlength"].second += len;
 		if (len == qryfa.fa[p->second[0].id].length()) {
 			++summary["[SUM]Query-Full-Align"].first;
 			summary["[SUM]Query-Full-Align"].second += len;
@@ -886,8 +886,8 @@ void Variant::SummaryVar() {
     }
     p = maptar.begin();
     for (; p != maptar.end(); ++p) {
-        ++summary["tarCovlength"].first;
-        summary["tarCovlength"].second += Covlength(p->second);
+        ++summary["[SUM]tarCovlength"].first;
+        summary["[SUM]tarCovlength"].second += Covlength(p->second);
     }
 	return;
 }
@@ -904,8 +904,8 @@ void Variant::Summary(string file) {
 		O << pt->first << "\t" << pt->second.first << "\t" << pt->second.second << "\n";
 	
 	O << "\n";
-	O << "[SUM]QryCovlength/querylength  " << double(summary["qryCovlength"].second) / qryfa.length << "\n";
-	O << "[SUM]TarCovlength/targetlength " << double(summary["tarCovlength"].second) / tarfa.length << "\n";
+	O << "[SUM]QryCovlength/querylength  " << double(summary["[SUM]qryCovlength"].second) / qryfa.length << "\n";
+	O << "[SUM]TarCovlength/targetlength " << double(summary["[SUM]tarCovlength"].second) / tarfa.length << "\n";
 	O << "[SUM]TarCovlength/targetlength(NO 'N') "<< double(summary["tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
 	O << "[SUM]SNP/querylength           " << double(summary["2.[VCF]SNP"].second) / qryfa.length  << "\n";
 	O << "[SUM]SNP/targetlength          " << double(summary["2.[VCF]SNP"].second) / tarfa.length  << "\n";
@@ -1258,6 +1258,10 @@ void Variant::Output2VCF(string referenceId, string file) {
 			format.Add("AGE", age);
 
 			int qn = 0;
+
+if (allvariant[it->second][i].query.id == "-") {
+	allvariant[it->second][i].OutErr();
+}
 			if (allvariant[it->second][i].type != "INTERGAP") {
 				qn = qryfa.Nlength(allvariant[it->second][i].query.id,
 						allvariant[it->second][i].query.start > 100 ? 

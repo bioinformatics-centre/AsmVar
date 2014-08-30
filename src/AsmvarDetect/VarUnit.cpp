@@ -82,6 +82,19 @@ vector<VarUnit> VarUnit::ReAlignAndReCallVar(string &targetSeq,
 	return vus;
 }
 
+void VarUnit::PrintStd() {
+// Output the alignment to STDERR
+
+    if (tarSeq.empty() || qrySeq.empty()){
+        std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1);
+    }
+	cout << "# " << type   << ":" << strand       << ":" << score 
+		 << ":"  << mismap << ":" << target.id    << "-" << target.start
+		 << "-"  << target.end << ":" << query.id << "-" << query.start 
+		 << "-"  << query.end  << "\n";
+    return;
+}
+
 void VarUnit::OutErr() {
 // Output the alignment to STDERR
 
@@ -218,6 +231,7 @@ vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int distDelta = 1) 
 void AgeAlignment::Init(VarUnit &v, AgeOption opt) {
 
 	vu_     = v;
+	rvu_    = v; // No change
 	para_   = opt;
 	isInit_ = true;
 }
@@ -284,12 +298,16 @@ gettimeofday(&ali_s, NULL);
 			isalign_ = false;
 		} else if (aligner1.score() >= aligner2.score()) {
 			aligner1.SetAlignResult(); 
-//aligner1.printAlignment();
 			alignResult_ = aligner1.align_result();
+
+			rvu_.PrintStd();
+			aligner1.printAlignment();
         } else {
-//aligner2.printAlignment();
 			aligner2.SetAlignResult();
 			alignResult_ = aligner2.align_result();
+
+			rvu_.PrintStd();
+			aligner2.printAlignment();
         } 
         delete qryClone;
 
@@ -297,9 +315,11 @@ gettimeofday(&ali_s, NULL);
 
         AGEaligner aligner(*tar, *qry);
         if (aligner.align(scr, flag)){
-//aligner.printAlignment();
 			aligner.SetAlignResult();
 			alignResult_ = aligner.align_result();
+
+			rvu_.PrintStd();
+			aligner.printAlignment();
         } else {
             cerr << "No alignment made.\n";
 			isalign_ = false; 
