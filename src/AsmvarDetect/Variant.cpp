@@ -129,8 +129,8 @@ void Variant::CallSNP () {
 			tmpsnp.ConvQryCoordinate( qryfa.fa[query.id].length() ); // coordinates uniform to the positive strand!
 			snp.push_back(tmpsnp);
 
-			++summary["[VCF]SNP"].first;
-			++summary["[VCF]SNP"].second;
+			++summary["2.[VCF]SNP"].first;
+			++summary["2.[VCF]SNP"].second;
 		}
 	}
 }
@@ -146,8 +146,8 @@ void Variant::CallInsertion () {
 		gap[i].ConvQryCoordinate(qryfa.fa[query.id].length()); // coordinates uniform to the positive strand!
 		insertion.push_back(gap[i]);
 
-		++summary["0. INS"].first;
-		summary["0. INS"].second += gap[i].query.end - gap[i].query.start + 1;
+		++summary["0.[SVD]INS"].first;
+		summary["0.[SVD]INS"].second += gap[i].query.end - gap[i].query.start + 1;
 	}
 }
 
@@ -163,8 +163,8 @@ void Variant::CallDeletion() {
 		gap[i].ConvQryCoordinate(qryfa.fa[query.id].length()); // coordinates uniform to the positive strand!
 		deletion.push_back(gap[i]);
 
-		++summary["0. DEL"].first;
-        summary["0. DEL"].second += gap[i].target.end - gap[i].target.start + 1;
+		++summary["0.[SVD]DEL"].first;
+        summary["0.[SVD]DEL"].second += gap[i].target.end - gap[i].target.start + 1;
 	}
 }
 
@@ -192,8 +192,8 @@ bool Variant::CallIversion(MapReg left, MapReg middle, MapReg right) {
     reg.mismap = middle.mismap; // 2014-06-20 10:35:15
 	inversion.push_back(reg);
 
-	++summary["0. INV"].first;
-	summary["0. INV"].second += reg.query.end - reg.query.start + 1;
+	++summary["0.[SVD]INV"].first;
+	summary["0.[SVD]INV"].second += reg.query.end - reg.query.start + 1;
 	return flag;
 }
 
@@ -229,8 +229,8 @@ bool Variant::CallTranslocat(MapReg left, MapReg middle, MapReg right) {
 	}
 	translocation.push_back(reg);
 
-	++summary["0. " + reg.type].first;
-	summary["0. " + reg.type].second += reg.query.end - reg.query.start + 1;
+	++summary["0.[SVD]" + reg.type].first;
+	summary["0.[SVD]" + reg.type].second += reg.query.end - reg.query.start + 1;
 	return flag;
 }
 
@@ -343,8 +343,8 @@ void Variant::AGE_Realign(string referenceId) {
 		vu.type   = "INTERGAP";
 		allvariant[tarnocall[i].id].push_back(vu);
 
-		++summary["0. INTERGAP"].first;
-		summary["0. INTERGAP"].second += vu.target.end - vu.target.start + 1;
+		++summary["0.[SVD]INTERGAP"].first;
+		summary["0.[SVD]INTERGAP"].second += vu.target.end - vu.target.start + 1;
 	}
 
 	// Sorted and Unique All variants
@@ -385,9 +385,9 @@ void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
 		if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
 			if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
 			allvariant[v[0].target.id].push_back(v[0]);
-			ks = "1. " + R[i].type + "=>" + v[0].type;
+			ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
 		} else {
-			ks = "1. " + R[i].type + "=>NULL";
+			ks = "1.[AGE]" + R[i].type + "=>NULL";
 		}
 		++summary[ks].first;
 		summary[ks].second += (v[0].target.end - v[0].target.start >
@@ -444,7 +444,7 @@ void Variant::AGE_RealignIv(string referenceId, vector<VarUnit> &R) {
             v[0].query  = rawQryReg; // Set to raw
             allvariant[v[0].target.id].push_back(v[0]);
         } else {
-            ks = "1. " + R[i].type + "=>NULL";
+            ks = "1.[AGE]" + R[i].type + "=>NULL";
         }
         ++summary[ks].first;
         summary[ks].second += v[0].query.end  - v[0].query.start;
@@ -493,7 +493,7 @@ void Variant::AGE_RealignTr(string referenceId, vector<VarUnit> &R) {
 						"-" + itoa(rawQryReg.end);
             allvariant[v[0].target.id].push_back(v[0]);
         } else {
-            ks = "1. " + R[i].type + "=>NULL";
+            ks = "1.[AGE]" + R[i].type + "=>NULL";
         }
         ++summary[ks].first;
         summary[ks].second += v[0].query.end  - v[0].query.start;
@@ -643,8 +643,8 @@ bool Variant::CallSimultan(MapReg left, MapReg right) {
 	simulreg.push_back(simulgap);
 	success  = true;
 
-	++summary["0. " + simulgap.type].first;
-    summary["0. " + simulgap.type].second += simulgap.query.end - simulgap.query.start + 1;
+	++summary["0.[SVD]" + simulgap.type].first;
+    summary["0.[SVD]" + simulgap.type].second += simulgap.query.end - simulgap.query.start + 1;
 
 	return success;
 }
@@ -660,8 +660,8 @@ void Variant::CallReg(MapReg mapreg, string type, vector< VarUnit > &varReg) {
 	reg.type   = type;
 	varReg.push_back(reg);
 
-	++summary["0. " + reg.type].first;
-	summary["0. " + reg.type].second += reg.query.end - reg.query.start + 1;
+	++summary["0.[SVD]" + reg.type].first;
+	summary["0.[SVD]" + reg.type].second += reg.query.end - reg.query.start + 1;
 }
 
 void Variant::CallClipReg () {
@@ -689,16 +689,16 @@ void Variant::CallClipReg () {
 		if (rStart > 1) { 
 			tmp.query.start = 1; tmp.query.end = rStart - 1; 
 			clipreg.push_back(tmp); 
-			++summary["2. CLIP"].first;
-			summary["2. CLIP"].second += tmp.query.end - tmp.query.start + 1;
+			++summary["[NOVEL]CLIP"].first;
+			summary["[NOVEL]CLIP"].second += tmp.query.end - tmp.query.start + 1;
 		}
 		if (rEnd < qryfa.fa[it->first].length()) {
 			tmp.query.start = rEnd + 1;
 			tmp.query.end   = qryfa.fa[it->first].length();
 			clipreg.push_back(tmp);
 
-			++summary["2. CLIP"].first;
-            summary["2. CLIP"].second += tmp.query.end - tmp.query.start + 1;
+			++summary["[NOVEL]CLIP"].first;
+            summary["[NOVEL]CLIP"].second += tmp.query.end - tmp.query.start + 1;
 		}
 	}
 	return;
@@ -718,8 +718,8 @@ void Variant::CallNomadic() {
 		tmp.type        = "NOMADIC";
 		nomadic.push_back(tmp);
 
-		++summary["2. " + tmp.type].first;
-		summary["2. " + tmp.type].second += tmp.query.end - tmp.query.start + 1;
+		++summary["[NOVEL]" + tmp.type].first;
+		summary["[NOVEL]" + tmp.type].second += tmp.query.end - tmp.query.start + 1;
 	}
 	return;
 }
@@ -813,6 +813,7 @@ void Variant::NormVu() { // Norm each variant
 			} else if (it->second[i].type != "N" && 
 					   it->second[i].type != "N-AGE" && 
 					   it->second[i].type.find("REFCALL") == string::npos) {
+				// Variant here
 
 				it->second[i].tarSeq = tarfa.fa[it->first].substr(
                         start - 1, end - start + 1);
@@ -829,9 +830,11 @@ void Variant::NormVu() { // Norm each variant
 
 			if (it->second[i].tarSeq.find("N") != string::npos ||
 				it->second[i].tarSeq.find("n") != string::npos) {
+			// Get N in target sequence
 				it->second[i].type = "REFGAP";
 			} else if (it->second[i].qrySeq.find("N") != string::npos || 
 					   it->second[i].qrySeq.find("n") != string::npos) {
+			// Get N in query sequence
 				it->second[i].type = "INTRAGAP";
 			}
 
@@ -857,13 +860,13 @@ void Variant::SummaryVar() {
 			ts = it->second[i].target.end - it->second[i].target.start;
 			qs = it->second[i].query.end  - it->second[i].query.start;
             vs = (ts > qs) ? ts : qs;
-            if (it->second[i].type == "INTERGAP" ||
-                it->second[i].type == "REFGAP"   ||
-                it->second[i].type == "INTRAGAP" ||
+            if ((it->second[i].type.find("GAP") != string::npos &&
+				toupper(it->second[i].qrySeq[0]) == 'N') || // Make sure query is totally N
                 it->second[i].type.find("REFCALL") != string::npos) ++vs;
             if (it->second[i].type == "COMPLEX") vs = labs(ts - qs);
 
 			ks = "[VCF]" + it->second[i].type;
+			if (ks.find("TRANS") != string::npos) ks = "[VCF]TRANS";
 			++summary[ks].first;
 			summary[ks].second += vs;
 		}
@@ -877,8 +880,8 @@ void Variant::SummaryVar() {
         ++summary["qryCovlength"].first;
         summary["qryCovlength"].second += len;
 		if (len == qryfa.fa[p->second[0].id].length()) {
-			++summary["Query-Full-Align"].first;
-			summary["Query-Full-Align"].second += len;
+			++summary["[SUM]Query-Full-Align"].first;
+			summary["[SUM]Query-Full-Align"].second += len;
 		}
     }
     p = maptar.begin();
@@ -901,11 +904,11 @@ void Variant::Summary(string file) {
 		O << pt->first << "\t" << pt->second.first << "\t" << pt->second.second << "\n";
 	
 	O << "\n";
-	O << "[SUM] QryCovlength/querylength  " << double(summary["qryCovlength"].second) / qryfa.length << "\n";
-	O << "[SUM] TarCovlength/targetlength " << double(summary["tarCovlength"].second) / tarfa.length << "\n";
-	O << "[SUM] TarCovlength/targetlength(NO 'N') "<< double(summary["tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
-	O << "[SUM] SNP/querylength           " << double(summary["[VCF]SNP"].second) / qryfa.length  << "\n";
-	O << "[SUM] SNP/targetlength          " << double(summary["[VCF]SNP"].second) / tarfa.length  << "\n";
+	O << "[SUM]QryCovlength/querylength  " << double(summary["qryCovlength"].second) / qryfa.length << "\n";
+	O << "[SUM]TarCovlength/targetlength " << double(summary["tarCovlength"].second) / tarfa.length << "\n";
+	O << "[SUM]TarCovlength/targetlength(NO 'N') "<< double(summary["tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
+	O << "[SUM]SNP/querylength           " << double(summary["2.[VCF]SNP"].second) / qryfa.length  << "\n";
+	O << "[SUM]SNP/targetlength          " << double(summary["2.[VCF]SNP"].second) / tarfa.length  << "\n";
 	O << "\n";
 
 	map<string, vector<Region> >::iterator p(maptar.begin());
@@ -1036,8 +1039,8 @@ void Variant::OutputGap(string file) {
                   << tmpMR.query.id  + ":"   << tmpMR.query.start    << "-"  << tmpMR.query.end  << "#"
 				  << it->second[i].target.id + ":" << it->second[i].target.start << "-" << it->second[i].target.end << "|"
                   << it->second[i].query.id  + ":" << it->second[i].query.start  << "-" << it->second[i].query.end  << "\n";
-				++summary["0. InterScaffoldGap"].first;
-				summary["0. InterScaffoldGap"].second += length;
+				++summary["0.[SVD]InterScaffoldGap"].first;
+				summary["0.[SVD]InterScaffoldGap"].second += length;
 			}
 			if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
 		}
@@ -1219,6 +1222,8 @@ void Variant::Output2VCF(string referenceId, string file) {
 
 			VcfFormat format;
 			format.Set("GT", gt);
+			format.Add("AS", itoa(allvariant[it->second][i].score));
+			format.Add("MS", ftoa(allvariant[it->second][i].mismap)); // Mismap
 			format.Add("HRun", itoa(allvariant[it->second][i].homoRun));
 			format.Add("TR", allvariant[it->second][i].target.id + "-" +
 						   itoa(allvariant[it->second][i].target.start)+ "-" +
@@ -1228,7 +1233,6 @@ void Variant::Output2VCF(string referenceId, string file) {
 						   itoa(allvariant[it->second][i].query.end));
 			if (allvariant[it->second][i].type == "INTERGAP") 
 				format.Set("QR", ".");
-			// Align End position
 			format.Add("VT", allvariant[it->second][i].type);
 			int qvs = allvariant[it->second][i].query.end - 
 					  allvariant[it->second][i].query.start; // Do not +1!!
@@ -1236,14 +1240,11 @@ void Variant::Output2VCF(string referenceId, string file) {
 					  allvariant[it->second][i].target.start; // Do not +1!!
 			int vs = (qvs > 0) ? qvs : tvs; // Should be tvs if is DEL!
 			if (vcfline.filters_ == "REFCALL" || 
-				vcfline.filters_ == "REFGAP"  ||
-				vcfline.filters_ == "INTRAGAP"||
-				vcfline.filters_ == "INTERGAP") ++vs; //Not Variant, should +1!
+				(toupper(allvariant[it->second][i].qrySeq[0]) == 'N' &&
+				vcfline.filters_.find("GAP") != string::npos)) ++vs; //Not Variant, should +1!
 			format.Add("VS", itoa(vs));
-			format.Add("AS", itoa(allvariant[it->second][i].score));
-			format.Add("MS", ftoa(allvariant[it->second][i].mismap)); // Mismap
 
-			string age (".");
+			string age(".");
 			if (allvariant[it->second][i].isSuccessAlign) {
 				age  = (allvariant[it->second][i].isGoodReAlign) ? "T," : "F,"; 
 				age += char2str(allvariant[it->second][i].strand)      + "," +
