@@ -506,7 +506,7 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 		if (mapInfo[i] == '|') {
 		// Homo block		
 
-			vuTmp.type   = "REFCALL-AGE";
+			vuTmp.type   = "REFCALL";
 			vuTmp.tarSeq = ".";
 			vuTmp.qrySeq = ".";
 

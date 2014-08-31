@@ -864,7 +864,7 @@ void Variant::SummaryVar() {
                            (it->second[i].type  == "INTRAGAP" && toupper(it->second[i].qrySeq[0]) == 'N'));
             if (it->second[i].type == "INTERGAP"||
                 isncall || // Make sure query is totally N
-                it->second[i].type.find("REFCALL") != string::npos) ++vs;
+                it->second[i].type == "REFCALL") ++vs;
             if (it->second[i].type == "COMPLEX") vs = labs(ts - qs);
 
 			ks = "2.[VCF]" + it->second[i].type;
