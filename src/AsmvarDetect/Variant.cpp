@@ -437,7 +437,7 @@ void Variant::AGE_RealignIv(string referenceId, vector<VarUnit> &R) {
         if (v.empty()) continue;
         if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
             if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
-            ks = "1. " + R[i].type + "=>" + v[0].type;
+            ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
 
 			v[0].type   = R[i].type;
 			v[0].target = rawTarReg; // Set to raw
@@ -908,7 +908,7 @@ void Variant::Summary(string file) {
 	O << "\n";
 	O << "[SUM]QryCovlength/querylength  " << double(summary["[SUM]qryCovlength"].second) / qryfa.length << "\n";
 	O << "[SUM]TarCovlength/targetlength " << double(summary["[SUM]tarCovlength"].second) / tarfa.length << "\n";
-	O << "[SUM]TarCovlength/targetlength(NO 'N') "<< double(summary["tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
+	O << "[SUM]TarCovlength/targetlength(NO 'N') "<< double(summary["[SUM]tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
 	O << "[SUM]SNP/querylength           " << double(summary["2.[VCF]SNP"].second) / qryfa.length  << "\n";
 	O << "[SUM]SNP/targetlength          " << double(summary["2.[VCF]SNP"].second) / tarfa.length  << "\n";
 	O << "\n";
