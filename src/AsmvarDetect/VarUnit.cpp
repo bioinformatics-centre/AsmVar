@@ -378,7 +378,7 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 		for (size_t i(1); i < alignResult_._map.size(); ++i) {
 			// Variant in excise region	
 			VarUnit var = CallVarInExcise(pre_map, alignResult_._map[i], 
-					alignResult_._strand);
+										  alignResult_._strand);
 			var.isSuccessAlign = true;
 			// mismatch probability should be low
 			var.isGoodReAlign  = isgoodAlign() && (var.mismap < MISMAP_VALE);
@@ -387,13 +387,13 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 			var.cipos.second   = (cipos().second> 0) ? cipos().second - var.target.start : 0; // Just here
 			var.ciend.first    = (ciend().first > 0) ? ciend().first  - var.target.end : 0;   // Just here
 			var.ciend.second   = (ciend().second> 0) ? ciend().second - var.target.end : 0;   // Just here
-
 			var.identity       = alignResult_._identity;
 
 			vus.push_back(var);
 			pre_map = alignResult_._map[i];
 		}
 
+		/* I'm not sure whether we should call variant in Flank region or not!!
 		// Call the variant in the flank sequence of variant
 		for (size_t i(0); i < alignResult_._map.size(); ++i) {
 			vector<VarUnit> var = CallVarInFlank(alignResult_._map[i], 
@@ -406,6 +406,7 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 				vus.push_back(var[i]); 
 			}
 		}
+		// */
 	}	
 
 	return vus;	
@@ -506,7 +507,7 @@ vector<VarUnit> AgeAlignment::CallVarInFlank(pair<MapData, MapData> &m,
 		if (mapInfo[i] == '|') {
 		// Homo block		
 
-			vuTmp.type   = "REFCALL";
+			vuTmp.type   = "REFCALL-AGE";
 			vuTmp.tarSeq = ".";
 			vuTmp.qrySeq = ".";
 

@@ -47,7 +47,7 @@ int main ( int argc, char* argv[] ) {
 		cerr << "[WARNING]!!! You're going to use all of the chromosome "
 			 << "instead of using '-r' to pick a specific one when in the "
 			 << "AGE_Realigne process. That will cause a long time!!! For "
-			 << "human genome, it may cause you 7-10 days!\n";
+			 << "human genome, it may cause you 7-10 days!\n\n";
 	}
 
 	if (!filelist.empty()) ReadFileList(filelist.c_str(), infile);
@@ -79,7 +79,7 @@ int main ( int argc, char* argv[] ) {
 
 		*/
 			I >> tmp;
-			if (I.eof()){
+			if (I.eof()) {
                 break;
             } else if (I.fail()) {
                 cerr << "File read ERROR [I/O]!!\n" << tmp << endl;
@@ -111,11 +111,11 @@ int main ( int argc, char* argv[] ) {
 			variant.CheckMAF();
 			variant.qryfa.CheckFaId(variant.query.id);
 			variant.tarfa.CheckFaId(variant.target.id);
-			variant.CallHomoRef();
-			variant.CallnSeq();
-			variant.CallSNP ();
-			variant.CallInsertion(); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.
-			variant.CallDeletion (); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.
+			variant.CallHomoRef(referenceId);
+			variant.CallnSeq(referenceId);
+			variant.CallSNP (referenceId);
+			variant.CallInsertion(referenceId); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.
+			variant.CallDeletion (referenceId); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.
 			variant.GetMapReg    (); // The coordinate coversion events will be happen in this memerber function!
 		}
 		I.close();
@@ -123,7 +123,7 @@ int main ( int argc, char* argv[] ) {
 	variant.CallSV(); // It's SV not Indel, which cannot be called by a single alignment. The most important part of these program!!
 	variant.CallClipReg();
 	variant.CallNomadic();
-	variant.Filter();      // Filter the indels' regions which in nosolution regions. Maybe we don;t need it! Maybe I should just call this function in AGE_Realign()
+	variant.Filter();      // Filter the indels' regions which in nosolution regions. Maybe we don't need it! Maybe I should just call this function in AGE_Realign()
 	cerr << "[INFO] Doing re-aligne process ...\n";
 	variant.AGE_Realign(referenceId);
 

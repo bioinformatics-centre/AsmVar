@@ -11,9 +11,10 @@
 
 using namespace std;
 
-void Variant::CallnSeq() {
+void Variant::CallnSeq(string referenceId) {
 
-	assert(tarSeq.length() == qrySeq.length());
+	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+
 	VarUnit tmpnseq; 
     tmpnseq.target.id = target.id;
     tmpnseq.query.id  = query.id;
@@ -58,9 +59,10 @@ void Variant::CallnSeq() {
 	return;
 }
 
-void Variant::CallHomoRef() {
+void Variant::CallHomoRef(string referenceId) {
     
-    assert(tarSeq.length() == qrySeq.length());                                       
+	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+            
     VarUnit tmphseq; 
     tmphseq.target.id = target.id; 
     tmphseq.query.id  = query.id;
@@ -99,9 +101,9 @@ void Variant::CallHomoRef() {
     return;
 }
 
-void Variant::CallSNP () {
+void Variant::CallSNP (string referenceId) {
 
-	assert ( tarSeq.length() == qrySeq.length() );
+	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
 
 	VarUnit tmpsnp;
     tmpsnp.target.id = target.id;
@@ -133,11 +135,14 @@ void Variant::CallSNP () {
 			++summary["2.[VCF]SNP"].second;
 		}
 	}
+	return;
 }
 
-void Variant::CallInsertion () { 
+void Variant::CallInsertion(string referenceId) { 
 // Actually, we just have to call  the target gap regions.	
 // All the coordinate of query should be uniform to the positive strand!
+	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+
 	vector<VarUnit> gap = CallGap(target, tarSeq, query, qrySeq, strand, score, mismap, "INS");
 	for (size_t i(0); i < gap.size(); ++i) { 
 
@@ -151,9 +156,11 @@ void Variant::CallInsertion () {
 	}
 }
 
-void Variant::CallDeletion() { 
+void Variant::CallDeletion(string referenceId) { 
 // Actually, we just have to call  the query gap regions.
 // All the coordinate of query should be uniform to the positive strand!
+	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+
 	vector<VarUnit> gap = CallGap(query, qrySeq, target, tarSeq, strand, score, mismap, "DEL");
 	for (size_t i(0); i < gap.size(); ++i) { 
 
@@ -166,6 +173,8 @@ void Variant::CallDeletion() {
 		++summary["0.[SVD]DEL"].first;
         summary["0.[SVD]DEL"].second += gap[i].target.end - gap[i].target.start + 1;
 	}
+
+	return;
 }
 
 bool Variant::CallIversion(MapReg left, MapReg middle, MapReg right) {
@@ -355,8 +364,8 @@ void Variant::AGE_Realign(string referenceId) {
 		sort(it->second.begin(), it->second.end(), MySortByTarV);
 	}
 
-	NormVu(); // Get seq and modify same type names
 	MarkHete();
+	NormVu(); // Get seq and modify same type names in 'allvariant'
 
 	return;
 }
@@ -372,6 +381,7 @@ void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
 
 		if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id) 
 			continue;
+
 		if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
 
 		// R[i] should be replace by 'v' after ReAlign!
@@ -381,25 +391,25 @@ void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
 													 qryfa.fa[R[i].query.id], 
 													 opt);
 		// Not going to deal with the flankin region
-		if (v.empty()) continue;
-		if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
+		if ( !v.empty() && v[0].type.find("-AGE") == string::npos) { 
+			// has variant in exci-reg
 			if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
 			allvariant[v[0].target.id].push_back(v[0]);
 			ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
 		} else {
 			ks = "1.[AGE]" + R[i].type + "=>NULL";
+			R[i].type = R[i].type + "=>NULL"; // Not a variant. Maybe REF-homo or SNP
 		}
 		++summary[ks].first;
-		summary[ks].second += (v[0].target.end - v[0].target.start >
-							   v[0].query.end  - v[0].query.start) ? 
-							   v[0].target.end - v[0].target.start : 
-							   v[0].query.end  - v[0].query.start;
+		summary[ks].second += (R[i].target.end - R[i].target.start >
+							   R[i].query.end  - R[i].query.start) ? 
+							   R[i].target.end - R[i].target.start : 
+							   R[i].query.end  - R[i].query.start;
 		//for (size_t j(0); j < v.size(); ++j) vus.push_back(v[j]);
 /*		
 cerr << "\n***********************************\n";
 R[i].OutErr();
 cerr << "\n********** AGE Process ************\n";
-//for (size_t j(0); j < v.size(); ++j) v[j].OutErr();
 v[0].OutErr();
 cerr << "## allvariant ## " << itoa(allvariant[v[0].target.id].back().cipos.first) << "\t" << ftoa(allvariant[v[0].target.id].back().mismap) << "\n";
 allvariant[v[0].target.id].back().OutErr();
@@ -420,24 +430,24 @@ void Variant::AGE_RealignIv(string referenceId, vector<VarUnit> &R) {
     string ks;
     for (size_t i(0); i < R.size(); ++i) {
 
-        if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id)
-            continue;
-        if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
+		if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id)
+			continue;
+		if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
 
-        // R[i] should be replace by 'v' after ReAlign!
+		// R[i] should be replace by 'v' after ReAlign!
 		rawTarReg      = R[i].target;
-        rawQryReg      = R[i].query;
-        tarfa.CheckFaId(R[i].target.id);
-        qryfa.CheckFaId(R[i].query.id);
-        vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id],
-                                                     qryfa.fa[R[i].query.id],
-                                                     opt);
+		rawQryReg      = R[i].query;
+		tarfa.CheckFaId(R[i].target.id);
+		qryfa.CheckFaId(R[i].query.id);
+		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id],
+									 				 qryfa.fa[R[i].query.id],
+													 opt);
 
-        // Don't have to deal with the flankin region for Inversion
-        if (v.empty()) continue;
-        if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
-            if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
-            ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
+		// Don't have to deal with the flankin region for Inversion
+		if (v.empty()) continue;
+		if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
+			if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
+			ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
 
 			v[0].type   = R[i].type;
 			v[0].target = rawTarReg; // Set to raw
@@ -954,14 +964,14 @@ void Variant::Output(vector<VarUnit> &R, ofstream &O) {
 		if (R[i].Empty()) continue;
 
 		R[i].tarSeq = (R[i].target.id == "-") ? "-" : tarfa.fa[R[i].target.id].substr(R[i].target.start - 1, R[i].target.end - R[i].target.start + 1);
-		R[i].qrySeq = qryfa.fa[ R[i].query.id].substr( R[i].query.start - 1, R[i].query.end - R[i].query.start + 1 );
-		if (R[i].strand == '-') R[i].qrySeq = ReverseAndComplementary( R[i].qrySeq );
+		R[i].qrySeq = qryfa.fa[ R[i].query.id].substr(R[i].query.start - 1, R[i].query.end - R[i].query.start + 1);
+		if (R[i].strand == '-') R[i].qrySeq = ReverseAndComplementary(R[i].qrySeq);
 
 		if (R[i].exp_target.isEmpty()) {
-			R[i].OutStd(  tarfa.fa[R[i].target.id].length(), qryfa.fa[ R[i].query.id].length(), O );
+			R[i].OutStd(tarfa.fa[R[i].target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
 		} else {
 			if (R[i].exp_target.id.empty() || R[i].exp_target.id == "-") err ("exp_target.id.empty() || R[i].exp_target.id == '-' ");
-			R[i].exp_tarSeq = tarfa.fa[ R[i].exp_target.id ].substr( R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
+			R[i].exp_tarSeq = tarfa.fa[R[i].exp_target.id].substr(R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
 			R[i].OutStd(tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
 		}
 	}
@@ -1097,9 +1107,9 @@ vector< VarUnit > Variant::CallGap(Region & tar,    // chrM 16308 16389  or Cont
 	vector< VarUnit > gap;
 	size_t i(0), j(0), tgaplen(0), qgaplen(0);
 	while ((i = tarSeq.find_first_of('-',j)) != string::npos) {
-	// I do have a program to debug this part at : /ifs1/ST_EPI/USER/huangshujia/bin/cpp_bin/learn_cpp/test_string.cpp
-	// e.g. : tarSeq = "-ab-c-t--", 
-	//        qrySeq = "aa-ccdcdt",
+		// I do have a program to debug this part at : /ifs1/ST_EPI/USER/huangshujia/bin/cpp_bin/learn_cpp/test_string.cpp
+		// e.g. : tarSeq = "-ab-c-t--", 
+		//        qrySeq = "aa-ccdcdt",
 		for (size_t k(j); k < i; ++k) { if(qrySeq[k] == '-') ++qgaplen; }
 		tmpgap.query.start = qry.start + i - qgaplen; // Get the query start position which in the tar-gap region.
 
@@ -1119,7 +1129,7 @@ vector< VarUnit > Variant::CallGap(Region & tar,    // chrM 16308 16389  or Cont
 VarUnit Variant::CallGap(MapReg left, MapReg right) { 
 // Call the simultaneous gap between 'left' mapped region and the 'right' one
 // 'left' and 'right' should be the same target id, the same query id and the same strand!
-	assert (left.target.id == right.target.id && left.query.id == right.query.id && left.strand == right.strand );
+	assert(left.target.id == right.target.id && left.query.id == right.query.id && left.strand == right.strand);
 
 	VarUnit gap;
 	gap.target.id = left.target.id;

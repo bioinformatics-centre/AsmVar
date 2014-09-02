@@ -36,36 +36,36 @@ public:
 
 private: 
 	string sample;              // The name of sample
-	vector< VarUnit > homoRef;  // The homozygous reference region, we should
+	vector<VarUnit> homoRef;  // The homozygous reference region, we should
 						    	// filter the SV regions before output
 
-	vector< VarUnit > nSeq;  // The reference or query is 'n' base or region
+	vector<VarUnit> nSeq;  // The reference or query is 'n' base or region
 							 // it's juse the n base not in indel or any
 							 // other SV region.
 
-	vector< VarUnit > snp;           // Stored the SNP
-	vector< VarUnit > intragap;      // Call the intra-scaffold-gap, just for the gaps which in alignment. Abort, 2014-02-27 19:28:42
-	vector< VarUnit > insertion;     //
-	vector< VarUnit > deletion;      //
-	vector< VarUnit > inversion;     //
-	vector< VarUnit > translocation; //
-	vector< VarUnit > simulreg;// simultaneous gap regions
-	vector< VarUnit > clipreg; // clip regions 
-	vector< VarUnit > nomadic; // The query which totally can not map to target
-	vector< VarUnit > nosolution;
+	vector<VarUnit> snp;           // Stored the SNP
+	vector<VarUnit> intragap;      // Call the intra-scaffold-gap, just for the gaps which in alignment. Abort, 2014-02-27 19:28:42
+	vector<VarUnit> insertion;     //
+	vector<VarUnit> deletion;      //
+	vector<VarUnit> inversion;     //
+	vector<VarUnit> translocation; //
+	vector<VarUnit> simulreg;// simultaneous gap regions
+	vector<VarUnit> clipreg; // clip regions 
+	vector<VarUnit> nomadic; // The query which totally can not map to target
+	vector<VarUnit> nosolution;
 	// Put all the VarUnit in this variant after 'AGE_Realign'
 	map<string, vector<VarUnit> > allvariant; // refererce ID -> Variant
 
 	// Make 'CallIversion' function to be private, because this function can 
 	// only be call when all the alignments have been loaded in memerber value 
 	// 'mapreg'.
-	void CallReg        ( MapReg mapreg, string type, vector< VarUnit > & varReg );
-	bool CallTranslocat ( MapReg left, MapReg middle, MapReg right );
-	bool CallIversion   ( MapReg left, MapReg middle, MapReg right );
-	bool CallSimultan   ( MapReg left, MapReg right );
-	bool IsSameStrand   ( vector<MapReg> & mapreg );
-	void FilterReg      ( map< string,vector<Region> >, map<string, size_t>, vector<VarUnit> & region );//just used in Filter ()
-	void Output         ( vector< VarUnit > &, ofstream& O );
+	void CallReg        (MapReg mapreg, string type, vector<VarUnit> &varReg);
+	bool CallTranslocat (MapReg left, MapReg middle, MapReg right);
+	bool CallIversion   (MapReg left, MapReg middle, MapReg right);
+	bool CallSimultan   (MapReg left, MapReg right );
+	bool IsSameStrand   (vector<MapReg> & mapreg );
+	void FilterReg      (map<string,vector<Region> >, map<string, size_t>, vector<VarUnit> & region);//just used in Filter ()
+	void Output         (vector< VarUnit > &, ofstream& O);
 	void Assign2allvariant(vector<VarUnit> &v);
 	void Unique(vector<VarUnit> &v); // Unique the variant in 'allvariant'
 	void AGE_Realign(string refId, vector<VarUnit> &var);       // AGE-Process
@@ -86,11 +86,11 @@ public :
 
 public : // Can be called per-axt alignment. And will be called in main function
 	void AssignSample  (string id) { sample = id; }
-	void CallHomoRef   (); // call the homo region( the same as reference)
-	void CallnSeq      (); // call the n region of target or query.
-	void CallSNP       ();
-	void CallInsertion ();
-	void CallDeletion  ();
+	void CallHomoRef   (string referenceId); // call the homo region( the same as reference)
+	void CallnSeq      (string referenceId); // call the n region of target or query.
+	void CallSNP       (string referenceId);
+	void CallInsertion (string referenceId);
+	void CallDeletion  (string referenceId);
 	void GetMapReg     ();
 	void AGE_Realign   (string refId); // AGE-Process
 
@@ -100,18 +100,18 @@ public : // Just can be call when all the axt alignments have been read!
 	void CallClipReg   ();
 	void CallNomadic   ();
 	void Filter        ();  // Filter the variant regions which in nosolution
-	void Output   ( string file ); // Output to the stdout
-	void OutputSNP( string file ); // Output SNP
-	void Summary  ( string file ); // Output Summary information
-	void OutputGap( string file ); // Output the inter-gaps between different scaffold of the same target chromosome.
+	void Output   (string file); // Output to the stdout
+	void OutputSNP(string file); // Output SNP
+	void Summary  (string file); // Output Summary information
+	void OutputGap(string file); // Output the inter-gaps between different scaffold of the same target chromosome.
 
 	void Output2VCF(string refId, string file ); // Output into a VCF format
 
 	// Use for get the gap region, which actually would be the indel regions. can call deletion or insertion
 	// Friend ship functions, but I fail to use friend function here, and I don't have enough time to figure out.
 	vector< VarUnit > CallGap (Region &tar, string &tarSeq, Region &qry, string &qrySeq, char strand, long scroe, double mismap, string type);
-	VarUnit CallGap ( MapReg left, MapReg right ); // call simultaneous gaps.
-	long int Covlength ( vector<Region> mapreg );
+	VarUnit CallGap(MapReg left, MapReg right); // call simultaneous gaps.
+	long int Covlength (vector<Region> mapreg);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
