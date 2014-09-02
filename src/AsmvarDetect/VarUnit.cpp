@@ -396,6 +396,7 @@ vector<VarUnit> AgeAlignment::VarReCall() {
 		/* I'm not sure whether we should call variant in Flank region or not!!
 		// Call the variant in the flank sequence of variant
 		for (size_t i(0); i < alignResult_._map.size(); ++i) {
+
 			vector<VarUnit> var = CallVarInFlank(alignResult_._map[i], 
 												 alignResult_._map_info[i],
 												 alignResult_._strand);
