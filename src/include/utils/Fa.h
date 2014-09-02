@@ -73,7 +73,7 @@ public :
 		}
 	}
 
-	int Nlength( string id, uint start, uint end ) {
+	int Nlength(string id, uint start, uint end) {
 		if ( end < start )    { cerr << "[ERROR] start > end" << start << ", " << end << " in Nlength( string id, uint start, uint end ) in class 'Fa'\n"; exit(1); }
 		if ( !fa.count( id ) ){ cerr << "[ERROR] There is no " << id << " in the fasta reference.\n" ; exit(1); }
 		if ( end > fa[id].length() ) end = fa[id].length();
