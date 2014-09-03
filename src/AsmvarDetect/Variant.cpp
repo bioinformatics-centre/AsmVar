@@ -870,8 +870,11 @@ void Variant::SummaryVar() {
 			qs = it->second[i].query.end  - it->second[i].query.start;
             vs = (ts > qs) ? ts : qs;
 
-			bool isncall = ((it->second[i].type == "REFGAP" && toupper(it->second[i].tarSeq[0]) == 'N') ||
-                           (it->second[i].type  == "INTRAGAP" && toupper(it->second[i].qrySeq[0]) == 'N'));
+			bool isncall = (it->second[i].type == "REFGAP" && 
+							toupper(it->second[i].tarSeq[0]) == 'N') 
+							||
+                           (it->second[i].type  == "INTRAGAP" && 
+							toupper(it->second[i].qrySeq[0]) == 'N');
             if (it->second[i].type == "INTERGAP"||
                 isncall || // Make sure query is totally N
                 it->second[i].type == "REFCALL") ++vs;
@@ -1251,8 +1254,11 @@ void Variant::Output2VCF(string referenceId, string file) {
 			int tvs = allvariant[it->second][i].target.end - 
 					  allvariant[it->second][i].target.start; // Do not +1!!
 			int vs = (qvs > 0) ? qvs : tvs; // Should be tvs if is DEL!
-			bool isncall = (vcfline.filters_ == "REFGAP" && toupper(allvariant[it->second][i].tarSeq[0]) == 'N') ||
-                		   (vcfline.filters_ == "INTRAGAP" && toupper(allvariant[it->second][i].qrySeq[0]) == 'N');
+			bool isncall = (vcfline.filters_ == "REFGAP" && 
+							toupper(allvariant[it->second][i].tarSeq[0]) == 'N') 
+							||
+                		   (vcfline.filters_ == "INTRAGAP" && 
+							toupper(allvariant[it->second][i].qrySeq[0]) == 'N');
 			if (vcfline.filters_ == "REFCALL" || 
 				vcfline.filters_ == "INTERGAP"||
 				isncall) ++vs; //Not Variant, should +1!
