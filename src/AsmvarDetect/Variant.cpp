@@ -367,6 +367,7 @@ void Variant::AGE_Realign(string referenceId) {
 	NormVu(); // Get seq and modify same type names in 'allvariant'
 	// It's better to call MarkHete() after NormVu(), But still not a big deal
 	// if call MarkHete() earlier than NormVu().
+
 	MarkHete();
 
 	return;
@@ -857,6 +858,7 @@ void Variant::NormVu() { // Norm each variant
 			}
 		}
 	}
+
 }
 
 void Variant::SummaryVar() {
