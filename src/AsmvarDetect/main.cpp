@@ -129,9 +129,13 @@ int main ( int argc, char* argv[] ) {
 
 	cerr << "[INFO] Outputting information into files.\n";
 	variant.Output   (outFilePrefix + ".svd"    );
+	cerr << "      -- " << outFilePrefix + ".svd\n";
 	variant.OutputGap(outFilePrefix + ".gap.bed");
+	cerr << "      -- " << outFilePrefix + ".gap.bed\n";
 	variant.Output2VCF(referenceId, outFilePrefix + ".vcf");
+	cerr << "      -- " << outFilePrefix + ".vcf\n";
 	variant.Summary  (outFilePrefix + ".summary"); 
+	cerr << "      -- " << outFilePrefix + ".summary\n";
 
 	cerr << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> All Done <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
 
