@@ -17,7 +17,7 @@ while (<I>) {
 	$tmp[3] =~ tr/WSKMYRVDBHwskmyrvdbh/ACTACAAATAactacaaata/;
 	$tmp[4] =~ tr/WSKMYRVDBHwskmyrvdbh/ACTACAAATAactacaaata/;
 	++$m;
-	next if $tmp[3] eq $tmp[4];
+	next if uc($tmp[3]) eq uc($tmp[4]);
 	++$n;
 	print join "\t", @tmp; print "\n";
 }
