@@ -11,7 +11,7 @@ my ($n, $m) = (0, 0);
 open I, ($vcfInfile =~ /\.gz$/ ? "gzip -dc $vcfInfile |": $vcfInfile) or die "$!";
 while (<I>) {
 
-#	if (/^#/) { print; next; }
+	if (/^#/) { print; next; }
 	chomp;
 	my @tmp = split;
 	$tmp[3] =~ tr/WSKMYRVDBHwskmyrvdbh/ACTACAAATAactacaaata/;
