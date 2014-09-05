@@ -14,6 +14,7 @@
 #include <map>
 #include <set>
 #include <utility>
+#include <algorithm>
 
 #include "utility.h"
 #include "maf.h"
@@ -152,9 +153,10 @@ inline bool SortRegion( Region i, Region j){
 	}
 }
 
-long int RegionMin( vector<Region> & region );
-long int RegionMax( vector<Region> & region );
-string ReverseAndComplementary( string & seq );
+long int RegionMin(vector<Region> &region);
+long int RegionMax(vector<Region> &region);
+string ReverseAndComplementary(string &seq);
+void Tr(char &i); // Translation 
 
 #endif
 

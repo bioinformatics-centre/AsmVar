@@ -367,7 +367,6 @@ void Variant::AGE_Realign(string referenceId) {
 	NormVu(); // Get seq and modify same type names in 'allvariant'
 	// It's better to call MarkHete() after NormVu(), But still not a big deal
 	// if call MarkHete() earlier than NormVu().
-
 	MarkHete();
 
 	return;
@@ -836,9 +835,15 @@ void Variant::NormVu() { // Norm each variant
                 it->second[i].qrySeq = qryfa.fa[it->second[i].query.id].substr(
                         start - 1, end - start + 1);
 
+				// Translating the WSKMYRVDBH=>ACGACAAACA
+				for_each (it->second[i].tarSeq.begin(), 
+						  it->second[i].tarSeq.end(), Tr);
+				for_each (it->second[i].qrySeq.begin(), 
+						  it->second[i].qrySeq.end(), Tr);
+
                 if (it->second[i].strand == '-')
-                    it->second[i].qrySeq = ReverseAndComplementary(
-												it->second[i].qrySeq);
+					it->second[i].qrySeq = ReverseAndComplementary(
+							it->second[i].qrySeq);
 
 				if (it->second[i].tarSeq.find("N") != string::npos ||
 					it->second[i].tarSeq.find("n") != string::npos) {
@@ -858,7 +863,6 @@ void Variant::NormVu() { // Norm each variant
 			}
 		}
 	}
-
 }
 
 void Variant::SummaryVar() {
@@ -1224,7 +1228,7 @@ void Variant::Output2VCF(string referenceId, string file) {
 			string gt;
 			vcfline.filters_ = "."; // Defualt set to '.', it means nothing filter
 			if (allvariant[it->second][i].type.find("GAP") != string::npos) {
-			// Not be Inter-, Intra- or REFGAP 
+			// It's Inter-, Intra- or REFGAP 
 				vcfline.filters_ = allvariant[it->second][i].type;
 				gt = "./.";
 			} else if (allvariant[it->second][i].type.find("REFCALL") != string::npos) {
@@ -1233,7 +1237,7 @@ void Variant::Output2VCF(string referenceId, string file) {
 			} else {
 			// Variants
 				if (allvariant[it->second][i].isSuccessAlign && 
-					!allvariant[it->second][i].isGoodReAlign) 
+					!allvariant[it->second][i].isGoodReAlign) // Notice '!' 
 						vcfline.filters_ = "AGEFALSE";
 
 				gt = (allvariant[it->second][i].isHete) ? "0/1" : "1/1";
@@ -1317,7 +1321,7 @@ long int RegionMax(vector<Region> &region) {
 	return pos;
 }
 
-string ReverseAndComplementary ( string &seq ) {
+string ReverseAndComplementary(string &seq) {
 
 	string tmpstr;
 	for ( int i(seq.size() - 1); i >= 0; --i ) {
@@ -1340,4 +1344,37 @@ string ReverseAndComplementary ( string &seq ) {
 
 	return tmpstr;
 }
+
+void Tr(char &i) {
+
+	// tr/WSKMYRVDBHwskmyrvdbh/ACGACAAACAacgacaaaca/
+    switch (i) {
+
+        case 'W' : i = 'A'; break;
+        case 'S' : i = 'C'; break;
+        case 'K' : i = 'G'; break;
+        case 'M' : i = 'A'; break;
+        case 'Y' : i = 'C'; break;
+        case 'R' : i = 'A'; break;
+        case 'V' : i = 'A'; break;
+        case 'D' : i = 'A'; break;
+        case 'B' : i = 'C'; break;
+        case 'H' : i = 'A'; break;
+
+        case 'w' : i = 'a'; break;
+        case 's' : i = 'c'; break;
+        case 'k' : i = 'g'; break;
+        case 'm' : i = 'a'; break;
+        case 'y' : i = 'c'; break;
+        case 'r' : i = 'a'; break;
+        case 'v' : i = 'a'; break;
+        case 'd' : i = 'a'; break;
+        case 'b' : i = 'c'; break;
+        case 'h' : i = 'a'; break;
+        default  : break;
+    }
+
+	return;
+}
+
 
