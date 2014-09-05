@@ -22,14 +22,14 @@ void VcfHeader::DefualtHeader() {
 	Add("FORMAT", "QR", "1", "String",  "Variant regions on query");
 	Add("FORMAT", "VS", "1", "Integer", "SV Size. But for SNP it'll be 0");
 	Add("FORMAT", "VT", "1", "String" , 
-		"SV Type. Including: REFCALL(Mapped, and it's homozygous reference), REFGAP(Mapped but contain 'N' in REF-Region), INTERGAP(Mapped but contain 'N' in ALT-Region), INTRAGAP(Unmapped region on reference), SNP, INS, DEL, MNP, COMPLEX, INV, TRANS; For TRANS the format is : VT=>TRANS#TRANSLOCATED_TR#TRANSLOCATED_QR;For variants that the REF and ALT alleles are the same, the alt allele will be replaced by a 'N' string");
+		"SV Type. Including: REFCALL(Mapped, and it's homozygous reference), REFGAP(Mapped, but contained 'N' in REF-Region), INTRAGAP(Mapped, but contained 'N' in ALT-Region), INTERGAP(Unmapped region on reference), SNP, INS, DEL, MNP, COMPLEX, INV, TRANS; For TRANS the format is : VT=>TRANS#TRANSLOCATED_TR#TRANSLOCATED_QR. For the variants that the REF and ALT alleles are the same, the ALT alleles will be replaced by 'N' string");
 
 	Add("##FILTER=<ID=INTERGAP>", 
 		"##FILTER=<ID=INTERGAP,Description=\"Unmapped reference region.\">");
 	Add("##FILTER=<ID=INTRAGAP>", 
-		"##FILTER=<ID=INTRAGAP,Description=\"Mapped, but it's N on Query\">");
+		"##FILTER=<ID=INTRAGAP,Description=\"Mapped, but contained N on Query\">");
 	Add("##FILTER=<ID=REFGAP>", 
-		"##FILTER=<ID=REFGAP,Description=\"Mapped, but it's N on Reference\">");
+		"##FILTER=<ID=REFGAP,Description=\"Mapped, but contained N on Reference\">");
 	Add("##FILTER=<ID=REFCALL>", 
 		"##FILTER=<ID=REFCALL,Description=\"Represents a homozygous reference call\">");
 	Add("##FILTER=<ID=AGEFALSE>","##FILTER=<ID=AGEFALSE,Description=\"Filtered in AGE realignment process\">");
