@@ -16,21 +16,21 @@ void VcfHeader::DefualtHeader() {
 		"Largest Contiguous Homopolymer Run of Variant Allele In Either Direction");
 	Add("FORMAT", "MS", "1", "Float", "Mismatch probability In LAST Align");
 	Add("FORMAT", "NR", "1", "Float", 
-		"The 'N' ratio around variant region on query");
+		"The 'N' ratio around variant region in query");
 	Add("FORMAT", "AS", "1", "Integer", "Alignment score In LAST Aligner");
 	Add("FORMAT", "END", "1", "Integer", "Stop position of the interval");
-	Add("FORMAT", "TR", "1", "String",  "Variant regions on reference");
-	Add("FORMAT", "QR", "1", "String",  "Variant regions on query");
+	Add("FORMAT", "TR", "1", "String",  "Variant regions in reference");
+	Add("FORMAT", "QR", "1", "String",  "Variant regions in query");
 	Add("FORMAT", "VS", "1", "Integer", "SV Size. But for SNP it'll be 0");
 	Add("FORMAT", "VT", "1", "String" , 
-		"SV Type. Including: REFCALL(Mapped, and it's homozygous reference), REFGAP(Mapped, but contained 'N' in REF-Region), INTRAGAP(Mapped, but contained 'N' in ALT-Region), INTERGAP(Unmapped region on reference), SNP, INS, DEL, MNP, COMPLEX, INV, TRANS; For TRANS the format is : VT=>TRANS#TRANSLOCATED_TR#TRANSLOCATED_QR. For the variants that the REF and ALT alleles are the same, the ALT alleles will be replaced by 'N' string");
+		"SV Type. Including: REFCALL(Mapped, and it's homozygous reference), REFGAP(Mapped, but contained 'N' in REF-Region), INTRAGAP(Mapped, but contained 'N' in ALT-Region), INTERGAP(Unmapped region in reference), SNP, INS, DEL, MNP, COMPLEX, INV, TRANS; For TRANS the format is : VT=>TRANS#TRANSLOCATED_TR#TRANSLOCATED_QR. For the variants that the REF and ALT alleles are the same, the ALT alleles will be replaced by 'N' string");
 
 	Add("##FILTER=<ID=INTERGAP>", 
 		"##FILTER=<ID=INTERGAP,Description=\"Unmapped reference region.\">");
 	Add("##FILTER=<ID=INTRAGAP>", 
-		"##FILTER=<ID=INTRAGAP,Description=\"Mapped, but contained N on Query\">");
+		"##FILTER=<ID=INTRAGAP,Description=\"Mapped, but contained N in Query\">");
 	Add("##FILTER=<ID=REFGAP>", 
-		"##FILTER=<ID=REFGAP,Description=\"Mapped, but contained N on Reference\">");
+		"##FILTER=<ID=REFGAP,Description=\"Mapped, but contained N in Reference\">");
 	Add("##FILTER=<ID=REFCALL>", 
 		"##FILTER=<ID=REFCALL,Description=\"Represents a homozygous reference call\">");
 	Add("##FILTER=<ID=AGEFALSE>","##FILTER=<ID=AGEFALSE,Description=\"Filtered in AGE realignment process\">");
