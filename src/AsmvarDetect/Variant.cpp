@@ -1192,8 +1192,6 @@ VarUnit Variant::CallGap(MapReg left, MapReg right) {
 
 void Variant::Output2VCF(string referenceId, string file) {
 
-
-
 	VcfHeader header;
 	header.DefualtHeader();
 	string h = "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + sample;
@@ -1247,7 +1245,8 @@ void Variant::Output2VCF(string referenceId, string file) {
 			format.Set("GT", gt);
 			format.Add("AS", itoa(allvariant[it->second][i].score));
 			format.Add("MS", ftoa(allvariant[it->second][i].mismap)); // Mismap
-			format.Add("HRun", itoa(allvariant[it->second][i].homoRun));
+			format.Add("HR", itoa(allvariant[it->second][i].homoRun));// HRun
+			format.Add("END",itoa(allvariant[it->second][i].target.end));
 			format.Add("TR", allvariant[it->second][i].target.id + "-" +
 						   itoa(allvariant[it->second][i].target.start)+ "-" +
 						   itoa(allvariant[it->second][i].target.end));

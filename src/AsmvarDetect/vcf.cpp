@@ -12,12 +12,13 @@ void VcfHeader::DefualtHeader() {
 	Add("FORMAT", "GT", "1", "String", "Genotype");
 	Add("FORMAT", "AGE", "1", "String", 
 		"AGE aligment information. (T/F,Strand,ave_base,ave_iden,left_base,left_iden,right_base,right_iden)");
-	Add("FORMAT", "HRun", "1", "Integer", 
+	Add("FORMAT", "HR", "1", "Integer", 
 		"Largest Contiguous Homopolymer Run of Variant Allele In Either Direction");
 	Add("FORMAT", "MS", "1", "Float", "Mismatch probability In LAST Align");
 	Add("FORMAT", "NR", "1", "Float", 
 		"The 'N' ratio around variant region on query");
-	Add("FORMAT", "AS", "1", "Integer", "Alignment score In LAST Align");
+	Add("FORMAT", "AS", "1", "Integer", "Alignment score In LAST Aligner");
+	Add("FORMAT", "END", "1", "Integer", "Stop position of the interval");
 	Add("FORMAT", "TR", "1", "String",  "Variant regions on reference");
 	Add("FORMAT", "QR", "1", "String",  "Variant regions on query");
 	Add("FORMAT", "VS", "1", "Integer", "SV Size. But for SNP it'll be 0");
@@ -167,7 +168,7 @@ string VCF::Combine() {
 	return data;
 }
 
-ostream &operator << (ostream &o, VCF vcf) {
+ostream & operator << (ostream &o, VCF vcf) {
 
 	o << vcf.Combine();
     return o;
