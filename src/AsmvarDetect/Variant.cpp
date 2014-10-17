@@ -364,7 +364,8 @@ void Variant::AGE_Realign(string referenceId) {
 		sort(it->second.begin(), it->second.end(), MySortByTarV);
 	}
 
-	NormVu(); // Get seq and modify same type names in 'allvariant'
+	// Get seq and modify same type names in 'allvariant'
+	NormVu();
 	// It's better to call MarkHete() after NormVu(), But still not a big deal
 	// if call MarkHete() earlier than NormVu().
 	MarkHete();
