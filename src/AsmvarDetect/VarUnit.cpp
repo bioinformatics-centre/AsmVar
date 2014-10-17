@@ -82,17 +82,24 @@ vector<VarUnit> VarUnit::ReAlignAndReCallVar(string &targetSeq,
 	return vus;
 }
 
-void VarUnit::PrintStd() {
-// Output the alignment to STDERR
+void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) { 
+// Output
 
-    if (tarSeq.empty() || qrySeq.empty()){
-        std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1);
-    }
-	cout << "# " << type   << ":" << strand       << ":" << score 
-		 << ":"  << mismap << ":" << target.id    << "-" << target.start
-		 << "-"  << target.end << ":" << query.id << "-" << query.start 
-		 << "-"  << query.end  << "\n";
-    return;
+	if (tarSeq.empty() || qrySeq.empty()){ 
+		std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); 
+	}
+
+	long int qnl = NLength (qrySeq);
+	long int tnl = NLength (tarSeq);
+	string reAlignStat = (isSuccessAlign) ? "CanAGE" : "Can'tAGE";
+	O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
+	  << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
+	  << "\t" << tarSeqLen                 << "\t"
+	  << query.id  << "\t" << query.start  << "\t" << query.end << "\t" 
+	  << query.end  - query.start  + 1     << "\t" << double(qnl)/qrySeq.length()
+	  << "\t" << qrySeqLen <<"\t"<< strand << "\t" << score << "\t" << mismap    
+	  << "\t" << type      <<"\t"<< reAlignStat    << endl;
+	return;
 }
 
 void VarUnit::OutErr() {
@@ -117,26 +124,6 @@ void VarUnit::OutErr() {
     return;
 }
 
-void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) { 
-// Output the alignment to STDERR
-
-	if (tarSeq.empty() || qrySeq.empty()){ 
-		std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); 
-	}
-
-	long int qnl = NLength (qrySeq);
-	long int tnl = NLength (tarSeq);
-	string reAlignStat = (isSuccessAlign) ? "CanAGE" : "Can'tAGE";
-	O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
-	  << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
-	  << "\t" << tarSeqLen                 << "\t"
-	  << query.id  << "\t" << query.start  << "\t" << query.end << "\t" 
-	  << query.end  - query.start  + 1     << "\t" << double(qnl)/qrySeq.length()
-	  << "\t" << qrySeqLen <<"\t"<< strand << "\t" << score << "\t" << mismap    
-	  << "\t" << type      <<"\t"<< reAlignStat    << endl;
-	return;
-}
-
 void VarUnit::OutStd(long int tarSeqLen, long int exp_tarSeqLen, 
 					 long int qrySeqLen, ofstream &O) {
 
@@ -155,6 +142,19 @@ void VarUnit::OutStd(long int tarSeqLen, long int exp_tarSeqLen,
 	  << "\t" << qrySeqLen  << "\t" << strand << "\t" << score << "\t" << mismap 
 	  << "\t" << type + "-E"<< endl;
 	return;
+}
+
+void VarUnit::PrintStd() {
+// Output the alignment to STDERR
+
+    if (tarSeq.empty() || qrySeq.empty()){
+        std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1);
+    }
+	cout << "# " << type   << ":" << strand       << ":" << score 
+		 << ":"  << mismap << ":" << target.id    << "-" << target.start
+		 << "-"  << target.end << ":" << query.id << "-" << query.start 
+		 << "-"  << query.end  << "\n";
+    return;
 }
 
 vector<VarUnit> MergeVarUnit(vector<VarUnit> &VarUnitVector, int distDelta = 1) {
@@ -621,5 +621,5 @@ void AgeAlignment::ExtendVU(long int tarFaSize,
 
 bool AgeAlignment::IsHugeMemory(long int n, long int m) { 
 
-	return (5 * n * m / 1000000000 > 10); // 10G
+	return ((((long double)(5 * n * m)) / 1000000000.0 + 0.5) > 10.0); // 10G
 }

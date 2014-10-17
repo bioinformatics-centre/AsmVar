@@ -400,8 +400,8 @@ void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
 			allvariant[v[0].target.id].push_back(v[0]);
 			ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
 		} else {
-			ks = "1.[AGE]" + R[i].type + "=>NULL";
-			R[i].type = R[i].type + "=>NULL"; // Not a variant. Maybe REF-homo or SNP
+			ks = "1.[AGE]" + R[i].type + "=>RefHomo_Or_SNP";
+			R[i].type = R[i].type + "=>RefHomo_Or_SNP"; // Not a variant. Maybe REF-homo or SNP
 		}
 		++summary[ks].first;
 		summary[ks].second += (R[i].target.end - R[i].target.start >
@@ -457,7 +457,7 @@ void Variant::AGE_RealignIv(string referenceId, vector<VarUnit> &R) {
             v[0].query  = rawQryReg; // Set to raw
             allvariant[v[0].target.id].push_back(v[0]);
         } else {
-            ks = "1.[AGE]" + R[i].type + "=>NULL";
+            ks = "1.[AGE]" + R[i].type + "=>RefHomo_Or_SNP";
         }
         ++summary[ks].first;
         summary[ks].second += v[0].query.end  - v[0].query.start;
@@ -506,7 +506,8 @@ void Variant::AGE_RealignTr(string referenceId, vector<VarUnit> &R) {
 						"-" + itoa(rawQryReg.end);
             allvariant[v[0].target.id].push_back(v[0]);
         } else {
-            ks = "1.[AGE]" + R[i].type + "=>NULL";
+		// No variant in exci-reg
+            ks = "1.[AGE]" + R[i].type + "=>RefHomo_Or_SNP";
         }
         ++summary[ks].first;
         summary[ks].second += v[0].query.end  - v[0].query.start;
