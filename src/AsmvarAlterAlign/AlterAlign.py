@@ -48,7 +48,6 @@ def SumMismatchQuality(readSeq, readQual, tarSeq):
 
     zr, rn = 0, 0
     for i in range(min(len(readSeq), len(tarSeq))):
-
         if tarSeq[i].lower() != readSeq[i].lower():
             rn += 1
             zr += (ord(readQual[i]) - 33)
