@@ -137,9 +137,9 @@ if __name__ == '__main__' :
     if len(opt.sample   ) == 0: optp.error("Required [-s sample ID]\n")
 
     opt.mapq = string.atoi(opt.mapq)
-    print >> sys.stderr, '# [INFO] Paraeters: python' , sys.argv[0], '\n\t-v', opt.vcfInfile,
-          '\n\t-b', opt.bamInfile, '\n\t-r', opt.refInfile, '\n\t-s', opt.sample, '\n\t-o', opt.outPrefix,
-          '\n\t-q', opt.mapq     , '\n\t-c', opt.refChrId 
+    print >> sys.stderr, '#[INFO] Paraeters: python', sys.argv[0], '\n\t-v', opt.vcfInfile, \
+          '\n\t-b', opt.bamInfile, '\n\t-r', opt.refInfile, '\n\t-s', opt.sample, '\n\t-o', opt.outPrefix, \
+          '\n\t-q', opt.mapq     , '\n\t-c', opt.refChrId
 
     if len(opt.exc) > 0: 
         print >> sys.stderr, '\t-e', opt.exc, '\n'

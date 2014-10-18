@@ -31,11 +31,9 @@ def LoadFaSeq(file):
             if line[0] == '>':
                 id = line.split()[0][1:]
                 if id in fa:
-                    print >> sys.stderr, '# [ERROR] Catch Duplcation name'
-                                         'in file %s at id %s' % (file, id)
+                    print >> sys.stderr, '# [ERROR] Catch Duplcation name in file %s at id %s' % (file, id)
                     sys.exit(1)
                 fa[id] = []
-                #print >> sys.stderr, '# [INFO] Loading ', line, id
             else :
                 fa[id].append(line)
 
@@ -45,7 +43,9 @@ def LoadFaSeq(file):
 
 def SumMismatchQuality(readSeq, readQual, tarSeq):
 
+    # [Debug]
     #print >> sys.stderr, '%%%%%',readSeq,'\n%%%%%',tarSeq,'\n'
+
     zr, rn = 0, 0
     for i in range(min(len(readSeq), len(tarSeq))):
 
@@ -70,7 +70,8 @@ def Ref2QryPos(rstart, rpos, cigar):
 def Align(samInHandle, samOutHandle, fa, id, position, varId, refseq, altseq, mapq = 20):
     """ 
     position is the left break point of the variants
-    And the position should be 0-base for convenience. Because I use something like fa[id][position] to get basees from string
+    And the position should be 0-base for convenience. 
+    Because I use something like fa[id][position] to get bases from fa string
     """
     if id not in fa: 
         print >> sys.stderr, '#[ERROR] The reference did not contain %s' % id 
@@ -94,8 +95,8 @@ def Align(samInHandle, samOutHandle, fa, id, position, varId, refseq, altseq, ma
             refSeq = fa[id][position:refPos+read.alignment.rlen] 
             qrySeq = altseq + fa[id][position+len(refseq)-1:position+len(refseq)+read.alignment.rlen-q]
 
+            # [Debug]
             #print >> sys.stderr, '[POS]', id, pos, read.alignment.pos+1, '\n[QRY]', fa[id][refPos:position], qrySeq, read.alignment.qstart, q,'\n[TAR]',fa[id][refPos:position],refSeq,'\n[SEQ]', read.alignment.seq, read.alignment.cigar, read.alignment.cigarstring, read.alignment.is_secondary, '\n'
-# Do more Test here!!
 
             zr,rn = SumMismatchQuality(read.alignment.seq[q:], read.alignment.qual[q:], refSeq) # Reference
             za,an = SumMismatchQuality(read.alignment.seq[q:], read.alignment.qual[q:], qrySeq) # Alternate
@@ -106,7 +107,7 @@ def Align(samInHandle, samOutHandle, fa, id, position, varId, refseq, altseq, ma
                 rr  += 1 # Reference perfect
             elif zr  > 0 and za == 0: 
                 aa  += 1 # Alternate perfect
-            else : 
+            else: 
                 diff += 1 # All im-perfect
 
             read.alignment.tags += [('ZJ', varId)] + [('ZR', zr)] + [('ZA', za)]
