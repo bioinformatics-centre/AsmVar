@@ -32,24 +32,24 @@ optp.add_option("-f", "--fig", dest="figure", metavar="FIG", help="The prefix of
 opt, infile = optp.parse_args()
 
 figPrefix = 'test'
-if len( infile     ) == 0 : optp.error( "Required at least one [vcfInfile]\n" )
-if len( opt.family ) == 0 : optp.error( "Required  [Family information]   \n" )
-if len( opt.figure ) > 0  : figPrefix = opt.figure
-if any( opt.chroms )  : opt.chroms = opt.chroms.split(',')
+if len(infile)     == 0: optp.error( "Required at least one [vcfInfile]\n" )
+if len(opt.family) == 0: optp.error( "Required  [Family information]   \n" )
+if len(opt.figure) > 0: figPrefix = opt.figure
+if any(opt.chroms): opt.chroms = opt.chroms.split(',')
 
-FORMAT        = {'GT': 1, 'ER': 1, 'RC': 1, 'RP': 1, 'RR': 1, 'VT': 1, 'VS': 1 }
+#FORMAT        = {'GT': 1, 'ER': 1, 'RC': 1, 'RP': 1, 'RR': 1, 'VT': 1, 'VS': 1 }
 COMPONENT_NUM = 3        # The tyoe number of genotype
 PRECISION     = 0.9999999999
 
-def GetPPrate ( fmat, formatInfo ) :
+def GetPPrate (fmat, formatInfo):
 
     trainIndx, ppr, pp = [], [], []
     theta   = 1.2
 
-    for t in formatInfo :
+    for t in formatInfo:
         # 0/1:52,3:6,13,0,0,0,1,0:6,14:20-121512-121512:13:INS
         fi    = t.split(':')
-        rr,aa = string.atof( fi[fmat['AA']].split(',')[0] ), string.atof( fi[fmat['AA']].split(',')[1] )
+        rr,aa = string.atof(fi[fmat['AA']].split(',')[0]), string.atof(fi[fmat['AA']].split(',')[1])
         r     = 1.2
         if rr + aa > 0 : r = rr/(rr + aa)
         ppr.append( [r] )
@@ -59,7 +59,7 @@ def GetPPrate ( fmat, formatInfo ) :
 
 ###################
 
-def UpdateInfoFromGMM ( gmm, ppr, grey, red, green, blue, data, sam2col, family ) : 
+def UpdateInfoFromGMM (gmm, ppr, grey, red, green, blue, data, sam2col, family): 
 # gmm : It's the GMM model
 # data: It's the vcf line
 
@@ -380,7 +380,7 @@ for f in infile :
 
             line = line.strip('\n') # Cut the reture char at the end.
             col  = line.split()
-            if re.search( r'^##FORMAT=<ID=GT', line ) :
+            if re.search(r'^##FORMAT=<ID=GT', line):
                 print line
                 print '##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality. -10 * log10(1-p), \
 p=w*N/(sigma(W*N)) N is gaussian density (p: The posterior probability of Genotype call is correct)">'
@@ -388,16 +388,16 @@ p=w*N/(sigma(W*N)) N is gaussian density (p: The posterior probability of Genoty
 to the closest integer as defined in the VCF specification (The lower the better). The value calculate -10*log10(p) p \
 is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VAR">'
                 continue
-            elif re.search( r'^##INFO=<ID=AC', line ) :
+            elif re.search(r'^##INFO=<ID=AC', line):
                 print line
                 print '##FILTER=<ID=FALSE_GENOTYPE,Description="False in genotype process">'
                 print '##INFO=<ID=K,Number=1,Type=String,Description="Number of genotype stats">'
                 print '##INFO=<ID=W,Number=1,Type=String,Description="The wieghts for each genotype stats. And the order is: HOM_REF,HETE_VAR,HOM_VAR">'
                 print '##INFO=<ID=F,Number=1,Type=Float,Description="1.0 - hetCount/Expected_hetCount">'
-            elif re.search( r'^##' , line ) :
+            elif re.search(r'^##', line) :
                 print line
                 continue
-            elif re.search( r'^#' , line ) :
+            elif re.search(r'^#', line) :
                 print line
                 sam2col = { sam:i for i,sam in enumerate(col[9:]) }
                 continue
@@ -410,26 +410,35 @@ is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VA
                     print >> sys.stderr, '# [ERROR] The format of VCF file is not right which you input, it did not contian %s field' % type
                     sys.exit(1)
 
-            trainIndx, ppr, pp = GetPPrate(fmat, col[9:] )
-            if len(trainIndx) < 3 : 
+            trainIndx, ppr, pp = GetPPrate(fmat, col[9:])
+            if len(trainIndx) < 3: 
+
                 gqSummary['No'] += 1.0
                 col[6]  = 'FALSE_GENOTYPE'
-                if 'GQ' not in fmat : col[8] += ':GQ'
-                if 'PL' not in fmat : col[8] += ':PL'
-                for i in range( len(col[9:]) ) : 
-                    fi       = col[9+i].split( ':' )
-                    fi[0]    = './.'
-                    if 'GQ' not in fmat : fi.append('0')
-                    else : fi[fmat['GQ']] = '0'
-                    if 'PL' not in fmat : fi.append('65535,65535,65535')
-                    else : fi[fmat['PL']] = '65535,65535,65535'
+                if 'GQ' not in fmat: col[8] += ':GQ'
+                if 'PL' not in fmat: col[8] += ':PL'
+
+                for i in range(len(col[9:])): 
+
+                    fi    = col[9+i].split(':')
+                    fi[0] = './.'
+
+                    if 'GQ' not in fmat: 
+                        fi.append('0')
+                    else: 
+                        fi[fmat['GQ']] = '0'
+
+                    if 'PL' not in fmat: 
+                        fi.append('65535,65535,65535')
+                    else: 
+                        fi[fmat['PL']] = '65535,65535,65535'
                     col[9+i] = ':'.join(fi)
                 print '\t'.join( col )
                 continue
 
             nc  = 3
             clf = mixture.GMM(n_components=nc, n_iter=50, n_init=8, covariance_type='full', thresh=0.001, params='wmc')
-            clf.fit( ppr[trainIndx], sam2col, family )
+            clf.fit(ppr[trainIndx], sam2col, family)
             if not clf.converged_ :
                 print >> sys.stderr, '#+++ Position:', col[0], col[1], "couldn't converge with 3 components in GMM. Now trying 2 components ... "
                 nc  = 2
@@ -443,14 +452,14 @@ is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VA
             print >> sys.stderr, '#--> Position:', col[0], col[1], 'with', clf.n_components,'components. Converge information :', clf.converged_
             print >> sys.stderr, '# Means: \n', clf.means_, '\nCovars: \n', clf.covars_,'\nWeight', clf.weights_, '\n*************'
 
-            sm,sn,genotypeQuality,gnt,ac,iac,ef = UpdateInfoFromGMM ( clf, ppr, grey, red, green, blue, col, sam2col, family )
-            inbCoff.append( ef )
+            sm,sn,genotypeQuality,gnt,ac,iac,ef = UpdateInfoFromGMM (clf, ppr, grey, red, green, blue, col, sam2col, family)
+            inbCoff.append(ef)
             mdr += sm
             mde += sn
-            if ef > -0.7 and clf.converged_ : 
+            if ef > -0.7 and clf.converged_: 
                 alleleCount.append(ac)
                 ialleleCount.append(iac)
-            else : 
+            else: 
                 col[6] = 'FALSE_GENOTYPE'
                 clf.converged_ = False
 
@@ -470,34 +479,34 @@ is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VA
                 ###
             """
 
-            if clf.converged_ : 
-                sm, sn, snum, _ = clf.Mendel( gnt, sam2col, family )
+            if clf.converged_: 
+                sm, sn, snum, _ = clf.Mendel(gnt, sam2col, family)
                 mdr_t += sm 
                 mde_t += sn
                 mde_n += snum
 
-            print '\t'.join( col )
-            #DrawModel ( figPrefix, clf, ppr, pp )
+            print '\t'.join(col)
+            #DrawModel (figPrefix, clf, ppr, pp)
 
-            if clf.converged_ : 
+            if clf.converged_: 
                 gqSummary['Yes'] += 1.0
-                gqSummary['sum'] += len( ppr )
-                gqSummary[10]    += len( genotypeQuality[genotypeQuality>=10] )
-                gqSummary[20]    += len( genotypeQuality[genotypeQuality>=20] )
-                gqSummary[30]    += len( genotypeQuality[genotypeQuality>=30] )
+                gqSummary['sum'] += len(ppr)
+                gqSummary[10]    += len(genotypeQuality[genotypeQuality>=10])
+                gqSummary[20]    += len(genotypeQuality[genotypeQuality>=20])
+                gqSummary[30]    += len(genotypeQuality[genotypeQuality>=30])
                 gqSummary[clf.n_components] += 1.0
             else : 
                 gqSummary['No']  += 1.0
     I.close()
 
-    if gqSummary['sum']                   == 0 : gqSummary['sum'] = 1.0
-    if gqSummary['Yes'] + gqSummary['No'] == 0 : 
+    if gqSummary['sum']                   == 0: gqSummary['sum'] = 1.0
+    if gqSummary['Yes'] + gqSummary['No'] == 0: 
         gqSummary['Yes'] = 1.0
         gqSummary['No']  = 1e9
-    if gqSummary['Yes']                   == 0 : gqSummary['Yes'] = 1.0
+    if gqSummary['Yes']                   == 0: gqSummary['Yes'] = 1.0
     mderr, mderr_t = 1.0, 1.0
-    if mdr   + mde   > 0.0 : mderr   = mde  /(mdr+mde)
-    if mdr_t + mde_t > 0.0 : mderr_t = mde_t/(mdr_t+mde_t)
+    if mdr   + mde   > 0.0: mderr   = mde  /(mdr+mde)
+    if mdr_t + mde_t > 0.0: mderr_t = mde_t/(mdr_t+mde_t)
 
     print >> sys.stderr, '\n******** Output Summary information ************************************\n'
     print >> sys.stderr, '# ** The count of positions which can be genotype:',int(gqSummary['Yes']),',',gqSummary['Yes']/(gqSummary['Yes']+gqSummary['No'])
@@ -512,7 +521,7 @@ is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VA
     print >> sys.stderr, '# ** (Just for the genotype positions)Genotype Quality >= 20 : ', gqSummary[20] / gqSummary['sum']
     print >> sys.stderr, '# ** (Just for the genotype positions)Genotype Quality >= 30 : ', gqSummary[30] / gqSummary['sum']
 
-    DrawFig ( figPrefix, np.array(alleleCount), np.array(red), np.array(green), np.array(blue) )
+    DrawFig (figPrefix, np.array(alleleCount), np.array(red), np.array(green), np.array(blue))
     """
     DrawAC( figPrefix, 'Mendelian violation = ' + str( mderr ), np.array(red), np.array(green), np.array(blue), 
             np.array([ [k, float(v[0])/(v[0]+v[1])] for k,v in sorted(power.items(), key = lambda d:d[0]) ]  ), 

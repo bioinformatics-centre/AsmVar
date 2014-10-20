@@ -145,7 +145,7 @@ class GMM ( BaseEstimator ) :
                 'GMM estimation with %s components, but got only %s samples' %
                 (self.n_components, X.shape[0]))
 
-        lowest_bias         = np.infty
+        lowest_bias = np.infty
 
         c1,c2,c3    = '1/1', '0/1', '0/0'
         m1,m2,m3    = 0.001 , 0.5 , 1.0
@@ -192,7 +192,7 @@ class GMM ( BaseEstimator ) :
         return self
 
     ####
-    def training( self, X, sam2col, family) :
+    def training(self, X, sam2col, family) :
 
         max_log_prob        = -np.infty
         lowest_bias         = np.infty
@@ -250,7 +250,7 @@ class GMM ( BaseEstimator ) :
                                  'converged':self.converged_, 
                                  'category':self.category }
                 if self.converged_ :
-                    lowest_bias         = curr_bias
+                    lowest_bias = curr_bias
 
             if self.converged_ and lowest_bias > curr_bias :
                 max_log_prob        = log_likelihood[-1]
@@ -328,7 +328,7 @@ class GMM ( BaseEstimator ) :
 
         return label2genotype
 
-    def Mendel( self, genotype, sample2col, family ) :
+    def Mendel(self, genotype, sample2col, family):
 
         ngIndx = []
 
