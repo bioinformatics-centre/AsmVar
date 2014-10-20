@@ -814,100 +814,104 @@ void Variant::FilterReg(map< string,vector<Region> > tarregion, map<string, size
 
 void Variant::NormVu() { // Norm each variant
 
-	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
-		it != allvariant.end(); ++it) {
+    for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
+            it != allvariant.end(); ++it) {
 
-		for (size_t i(0); i < it->second.size(); ++i) {
-			if (it->second[i].Empty()) continue;
-			long int start = it->second[i].target.start;
+        for (size_t i(0); i < it->second.size(); ++i) {
+
+            if (it->second[i].Empty()) continue;
+            long int start = it->second[i].target.start;
             long int end   = it->second[i].target.end;
-			it->second[i].tarSeq = tarfa.fa[it->first][start - 1];
+            it->second[i].tarSeq = tarfa.fa[it->first][start - 1];
+            // Translating the WSKMYRVDBH=>ACGACAAACA
+            for_each (it->second[i].tarSeq.begin(),
+                      it->second[i].tarSeq.end(), Tr);
 
-			if (it->second[i].type == "INTERGAP") {
+            if (it->second[i].type == "INTERGAP") {
 
-				it->second[i].qrySeq = ".";
-			} else if (it->second[i].type.find("REFCALL") == string::npos) {
-				// Exclude homozygous
+                it->second[i].qrySeq = ".";
+            } else if (it->second[i].type.find("REFCALL") == string::npos) {
 
-				it->second[i].tarSeq = tarfa.fa[it->first].substr(
+                // Exclude homozygous reference
+                it->second[i].tarSeq = tarfa.fa[it->first].substr(
                         start - 1, end - start + 1);
+                // Translating the WSKMYRVDBH=>ACGACAAACA
+                for_each (it->second[i].tarSeq.begin(),
+                          it->second[i].tarSeq.end(), Tr);
 
                 start = it->second[i].query.start;
                 end   = it->second[i].query.end;
                 it->second[i].qrySeq = qryfa.fa[it->second[i].query.id].substr(
                         start - 1, end - start + 1);
-
-				// Translating the WSKMYRVDBH=>ACGACAAACA
-				for_each (it->second[i].tarSeq.begin(), 
-						  it->second[i].tarSeq.end(), Tr);
-				for_each (it->second[i].qrySeq.begin(), 
-						  it->second[i].qrySeq.end(), Tr);
+                // Translating the WSKMYRVDBH=>ACGACAAACA
+                for_each (it->second[i].qrySeq.begin(), 
+                        it->second[i].qrySeq.end(), Tr);
 
                 if (it->second[i].strand == '-')
-					it->second[i].qrySeq = ReverseAndComplementary(
-							it->second[i].qrySeq);
+                    it->second[i].qrySeq = ReverseAndComplementary(
+                            it->second[i].qrySeq);
 
-				if (it->second[i].tarSeq.find("N") != string::npos ||
-					it->second[i].tarSeq.find("n") != string::npos) {
-				// Get N in target sequence
-					it->second[i].type = "REFGAP";
-				} else if (it->second[i].qrySeq.find("N") != string::npos || 
-						   it->second[i].qrySeq.find("n") != string::npos) {
-				// Get N in query sequence
-					it->second[i].type = "INTRAGAP";
-				}
+                if (it->second[i].tarSeq.find("N") != string::npos ||
+                        it->second[i].tarSeq.find("n") != string::npos) {
+                    // Get N in target sequence
+                    it->second[i].type = "REFGAP";
+                } else if (it->second[i].qrySeq.find("N") != string::npos || 
+                        it->second[i].qrySeq.find("n") != string::npos) {
+                    // Get N in query sequence
+                    it->second[i].type = "INTRAGAP";
+                }
 
-				if (toupper(it->second[i].qrySeq ==
-					toupper(it->second[i].tarSeq))) {
-					// qrySeq is the same with tarSeq
-					it->second[i].qrySeq.assign(it->second[i].qrySeq.size(), 'N');
-				}
-			}
-		}
-	}
+                if (toupper(it->second[i].qrySeq ==
+                            toupper(it->second[i].tarSeq))) {
+                    // qrySeq is the same with tarSeq
+                    it->second[i].qrySeq.assign(it->second[i].qrySeq.size(), 'N');
+                }
+            }
+        }
+    }
 }
 
 void Variant::SummaryVar() {
 
-	string ks;
-	int ts, qs, vs;
-	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
-			it != allvariant.end();
-			++it) {
+    string ks;
+    int ts, qs, vs;
+    for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
+            it != allvariant.end();
+            ++it) {
 
-		for (size_t i(0); i < it->second.size(); ++i) {
-			ts = it->second[i].target.end - it->second[i].target.start;
-			qs = it->second[i].query.end  - it->second[i].query.start;
+        for (size_t i(0); i < it->second.size(); ++i) {
+            ts = it->second[i].target.end - it->second[i].target.start;
+            qs = it->second[i].query.end  - it->second[i].query.start;
             vs = (ts > qs) ? ts : qs;
 
-			bool isncall = (it->second[i].type == "REFGAP" && 
-							toupper(it->second[i].tarSeq[0]) == 'N') 
-							||
-                           (it->second[i].type  == "INTRAGAP" && 
-							toupper(it->second[i].qrySeq[0]) == 'N');
+            bool isncall = (it->second[i].type == "REFGAP" && 
+                    toupper(it->second[i].tarSeq[0]) == 'N') 
+                ||
+                (it->second[i].type  == "INTRAGAP" && 
+                 toupper(it->second[i].qrySeq[0]) == 'N');
             if (it->second[i].type == "INTERGAP"||
-                isncall || // Make sure query is totally N
-                it->second[i].type == "REFCALL") ++vs;
+                    isncall || // Make sure query is totally N
+                    it->second[i].type == "REFCALL") ++vs;
             if (it->second[i].type == "COMPLEX") vs = labs(ts - qs);
 
-			ks = "2.[VCF]" + it->second[i].type;
-			if (ks.find("TRANS") != string::npos) ks = "2.[VCF]TRANS";
-			++summary[ks].first;
-			summary[ks].second += vs;
-		}
-	}
+            ks = "2.[VCF]" + it->second[i].type;
+            if (ks.find("TRANS") != string::npos) ks = "2.[VCF]TRANS";
+            ++summary[ks].first;
+            summary[ks].second += vs;
+        }
+    }
 
-	map<string, vector<Region> >::iterator p(mapqry.begin());
-	long int len;
+    map<string, vector<Region> >::iterator p(mapqry.begin());
+    long int len;
     for (; p != mapqry.end(); ++p) {
-		len = Covlength(p->second);
-		assert(len <= qryfa.fa[p->second[0].id].length()); 
+        len = Covlength(p->second);
+        assert(len <= qryfa.fa[p->second[0].id].length()); 
         ++summary["[SUM]qryCovlength"].first;
         summary["[SUM]qryCovlength"].second += len;
-		if (len == qryfa.fa[p->second[0].id].length()) {
-			++summary["[SUM]Query-Full-Align"].first;
-			summary["[SUM]Query-Full-Align"].second += len;
-		}
+        if (len == qryfa.fa[p->second[0].id].length()) {
+            ++summary["[SUM]Query-Full-Align"].first;
+            summary["[SUM]Query-Full-Align"].second += len;
+        }
     }
     p = maptar.begin();
     for (; p != maptar.end(); ++p) {
