@@ -72,7 +72,7 @@ def main(opt):
                 continue
 
             if refId != 'ALL' and refId != col[0]: continue
-            if len(col[3]) == len(col[4]) and len(col[3]) == 1: continue # SNP
+            if len(col[3]) == len(col[4]) and len(col[3]) == 1: continue # SNP or Reference call
             if col[2] == '.': col[2] = 'V_' + col[0] + '_' + col[1]
 
             idx    = sam2col[sampleID]
