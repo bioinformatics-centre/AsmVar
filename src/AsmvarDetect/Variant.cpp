@@ -13,257 +13,257 @@ using namespace std;
 
 void Variant::CallnSeq(string referenceId) {
 
-	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+    if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
 
-	VarUnit tmpnseq; 
+    VarUnit tmpnseq; 
     tmpnseq.target.id = target.id;
     tmpnseq.query.id  = query.id;
     tmpnseq.strand    = strand;
-	tmpnseq.score     = score; 
-	tmpnseq.mismap    = mismap;
+    tmpnseq.score     = score; 
+    tmpnseq.mismap    = mismap;
     tmpnseq.type      = "N";
-	
-	int tarPos(target.start), qryPos(query.start);
-	int tarI(0), qryI(0);
-	vector< VarUnit > tmpVarVector;
-	for ( int i(0); i < tarSeq.length(); ++i ) {
-	// e.g. : tarSeq = "-ab-c-t--",
-	//        qrySeq = "aa-ccdcdt",
-		tarPos += tarI; qryPos += qryI;
-		tarI = tarSeq[i] == '-' ? 0 : 1;
-		qryI = qrySeq[i] == '-' ? 0 : 1;
-		if (tarI == 0 || qryI  == 0) continue; // target or query is '-' 
-		if (toupper(tarSeq[i]) != 'N' && toupper(qrySeq[i]) != 'N') continue;
 
-		tmpnseq.target.start = tarPos; tmpnseq.target.end = tarPos;
-		tmpnseq.query.start  = qryPos; tmpnseq.query.end  = qryPos;
-		if (toupper(tarSeq[i]) == 'N' && toupper(qrySeq[i]) != 'N') {
-			tmpnseq.tarSeq = "N"; 
-			tmpnseq.qrySeq = ".";
-		} else if (toupper(tarSeq[i]) != 'N' && toupper(qrySeq[i]) == 'N') {
-			tmpnseq.tarSeq = "."; 
-			tmpnseq.qrySeq = "N";
-		} else { // tarSeq[i] and qrySeq[i] are 'N'
-			tmpnseq.tarSeq = "N";
-			tmpnseq.qrySeq = "N";
-		}
-		tmpVarVector.push_back(tmpnseq);
-	}
-	tmpVarVector = MergeVarUnit(tmpVarVector, 1);
-	for (size_t i(0); i < tmpVarVector.size(); ++i) {
-		// coordinates uniform to the positive strand
-		tmpVarVector[i].ConvQryCoordinate(qryfa.fa[query.id].length());
-		nSeq.push_back(tmpVarVector[i]);
-	}
+    int tarPos(target.start), qryPos(query.start);
+    int tarI(0), qryI(0);
+    vector< VarUnit > tmpVarVector;
+    for ( int i(0); i < tarSeq.length(); ++i ) {
+        // e.g. : tarSeq = "-ab-c-t--",
+        //        qrySeq = "aa-ccdcdt",
+        tarPos += tarI; qryPos += qryI;
+        tarI = tarSeq[i] == '-' ? 0 : 1;
+        qryI = qrySeq[i] == '-' ? 0 : 1;
+        if (tarI == 0 || qryI  == 0) continue; // target or query is '-' 
+        if (toupper(tarSeq[i]) != 'N' && toupper(qrySeq[i]) != 'N') continue;
 
-	return;
+        tmpnseq.target.start = tarPos; tmpnseq.target.end = tarPos;
+        tmpnseq.query.start  = qryPos; tmpnseq.query.end  = qryPos;
+        if (toupper(tarSeq[i]) == 'N' && toupper(qrySeq[i]) != 'N') {
+            tmpnseq.tarSeq = "N"; 
+            tmpnseq.qrySeq = ".";
+        } else if (toupper(tarSeq[i]) != 'N' && toupper(qrySeq[i]) == 'N') {
+            tmpnseq.tarSeq = "."; 
+            tmpnseq.qrySeq = "N";
+        } else { // tarSeq[i] and qrySeq[i] are 'N'
+            tmpnseq.tarSeq = "N";
+            tmpnseq.qrySeq = "N";
+        }
+        tmpVarVector.push_back(tmpnseq);
+    }
+    tmpVarVector = MergeVarUnit(tmpVarVector, 1);
+    for (size_t i(0); i < tmpVarVector.size(); ++i) {
+        // coordinates uniform to the positive strand
+        tmpVarVector[i].ConvQryCoordinate(qryfa.fa[query.id].length());
+        nSeq.push_back(tmpVarVector[i]);
+    }
+
+    return;
 }
 
 void Variant::CallHomoRef(string referenceId) {
-    
-	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
-            
+
+    if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+
     VarUnit tmphseq; 
     tmphseq.target.id = target.id; 
     tmphseq.query.id  = query.id;
     tmphseq.strand    = strand;
     tmphseq.score     = score;
-	tmphseq.mismap    = mismap; 
+    tmphseq.mismap    = mismap; 
     tmphseq.type      = "REFCALL";
 
     int tarPos(target.start), qryPos(query.start); 
     int tarI(0), qryI(0);
     vector< VarUnit > tmpVarVector;
     for ( int i(0); i < tarSeq.length(); ++i ) {
-    // e.g. : tarSeq = "-ab-c-t--", 
-    //        qrySeq = "aa-ccdcdt",
+        // e.g. : tarSeq = "-ab-c-t--", 
+        //        qrySeq = "aa-ccdcdt",
         tarPos += tarI; qryPos += qryI;
         tarI = tarSeq[i] == '-' ? 0 : 1;
         qryI = qrySeq[i] == '-' ? 0 : 1;
         if (tarI == 0 || qryI  == 0) continue; // target or query is '-' 
-		if (toupper(tarSeq[i]) == 'N' || toupper(qrySeq[i]) == 'N') continue;
+        if (toupper(tarSeq[i]) == 'N' || toupper(qrySeq[i]) == 'N') continue;
 
-		if ( toupper(tarSeq[i]) == toupper(qrySeq[i]) ) {
-			tmphseq.target.start = tarPos; tmphseq.target.end = tarPos;
-			tmphseq.query.start  = qryPos; tmphseq.query.end  = qryPos;
-			tmphseq.tarSeq = ".";
-			tmphseq.tarSeq = ".";
-        	tmpVarVector.push_back(tmphseq);
-		}
+        if ( toupper(tarSeq[i]) == toupper(qrySeq[i]) ) {
+            tmphseq.target.start = tarPos; tmphseq.target.end = tarPos;
+            tmphseq.query.start  = qryPos; tmphseq.query.end  = qryPos;
+            tmphseq.tarSeq = ".";
+            tmphseq.tarSeq = ".";
+            tmpVarVector.push_back(tmphseq);
+        }
     }
     tmpVarVector = MergeVarUnit(tmpVarVector, 1);
     for (size_t i(0); i < tmpVarVector.size(); ++i){
-		// coordinates uniform to the positive strand!
-		tmpVarVector[i].ConvQryCoordinate(qryfa.fa[query.id].length());
+        // coordinates uniform to the positive strand!
+        tmpVarVector[i].ConvQryCoordinate(qryfa.fa[query.id].length());
         homoRef.push_back(tmpVarVector[i]);
-	}
+    }
 
     return;
 }
 
 void Variant::CallSNP (string referenceId) {
 
-	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+    if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
 
-	VarUnit tmpsnp;
+    VarUnit tmpsnp;
     tmpsnp.target.id = target.id;
     tmpsnp.query.id  = query.id;
     tmpsnp.strand    = strand;
-	tmpsnp.score     = score;   // 2014-06-20 09:58:32
-	tmpsnp.mismap    = mismap;  // 2014-06-20 09:58:39
+    tmpsnp.score     = score;   // 2014-06-20 09:58:32
+    tmpsnp.mismap    = mismap;  // 2014-06-20 09:58:39
     tmpsnp.type      = "SNP";
 
-	int tarPos(target.start), qryPos(query.start);
-	int tarI(0), qryI(0);
-	for ( int i(0); i < tarSeq.length(); ++i ) {
-	// e.g. : tarSeq = "-ab-c-t--",
-	//        qrySeq = "aa-ccdcdt",
-		tarPos += tarI;
-		qryPos += qryI;
-		tarI = tarSeq[i] == '-' ? 0 : 1;
-		qryI = qrySeq[i] == '-' ? 0 : 1;
-		if (tarI == 0 || qryI  == 0) continue; // target or query is '-'
-		if (toupper(tarSeq[i]) == 'N' || toupper(qrySeq[i]) == 'N') continue;
+    int tarPos(target.start), qryPos(query.start);
+    int tarI(0), qryI(0);
+    for ( int i(0); i < tarSeq.length(); ++i ) {
+        // e.g. : tarSeq = "-ab-c-t--",
+        //        qrySeq = "aa-ccdcdt",
+        tarPos += tarI;
+        qryPos += qryI;
+        tarI = tarSeq[i] == '-' ? 0 : 1;
+        qryI = qrySeq[i] == '-' ? 0 : 1;
+        if (tarI == 0 || qryI  == 0) continue; // target or query is '-'
+        if (toupper(tarSeq[i]) == 'N' || toupper(qrySeq[i]) == 'N') continue;
 
-		if ( toupper(tarSeq[i]) != toupper(qrySeq[i]) ) {
-			tmpsnp.target.start = tarPos; tmpsnp.target.end = tarPos;
-			tmpsnp.query.start  = qryPos; tmpsnp.query.end  = qryPos;
-			tmpsnp.ConvQryCoordinate( qryfa.fa[query.id].length() ); // coordinates uniform to the positive strand!
-			snp.push_back(tmpsnp);
+        if ( toupper(tarSeq[i]) != toupper(qrySeq[i]) ) {
+            tmpsnp.target.start = tarPos; tmpsnp.target.end = tarPos;
+            tmpsnp.query.start  = qryPos; tmpsnp.query.end  = qryPos;
+            tmpsnp.ConvQryCoordinate( qryfa.fa[query.id].length() ); // coordinates uniform to the positive strand!
+            snp.push_back(tmpsnp);
 
-			++summary["2.[VCF]SNP"].first;
-			++summary["2.[VCF]SNP"].second;
-		}
-	}
-	return;
+            ++summary["2.[VCF]SNP"].first;
+            ++summary["2.[VCF]SNP"].second;
+        }
+    }
+    return;
 }
 
 void Variant::CallInsertion(string referenceId) { 
-// Actually, we just have to call  the target gap regions.	
-// All the coordinate of query should be uniform to the positive strand!
-	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+    // Actually, we just have to call  the target gap regions.	
+    // All the coordinate of query should be uniform to the positive strand!
+    if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
 
-	vector<VarUnit> gap = CallGap(target, tarSeq, query, qrySeq, strand, score, mismap, "INS");
-	for (size_t i(0); i < gap.size(); ++i) { 
+    vector<VarUnit> gap = CallGap(target, tarSeq, query, qrySeq, strand, score, mismap, "INS");
+    for (size_t i(0); i < gap.size(); ++i) { 
 
-		if (!qryfa.fa.count(query.id)) err("Missing some query id or query id can't match!!!\nThe unmatch query(main): " + query.id);
+        if (!qryfa.fa.count(query.id)) err("Missing some query id or query id can't match!!!\nThe unmatch query(main): " + query.id);
 
-		gap[i].ConvQryCoordinate(qryfa.fa[query.id].length()); // coordinates uniform to the positive strand!
-		insertion.push_back(gap[i]);
+        gap[i].ConvQryCoordinate(qryfa.fa[query.id].length()); // coordinates uniform to the positive strand!
+        insertion.push_back(gap[i]);
 
-		++summary["0.[SVD]INS"].first;
-		summary["0.[SVD]INS"].second += gap[i].query.end - gap[i].query.start + 1;
-	}
+        ++summary["0.[SVD]INS"].first;
+        summary["0.[SVD]INS"].second += gap[i].query.end - gap[i].query.start + 1;
+    }
 }
 
 void Variant::CallDeletion(string referenceId) { 
-// Actually, we just have to call  the query gap regions.
-// All the coordinate of query should be uniform to the positive strand!
-	if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
+    // Actually, we just have to call  the query gap regions.
+    // All the coordinate of query should be uniform to the positive strand!
+    if (toupper(referenceId) != "ALL" && referenceId != target.id) return;
 
-	vector<VarUnit> gap = CallGap(query, qrySeq, target, tarSeq, strand, score, mismap, "DEL");
-	for (size_t i(0); i < gap.size(); ++i) { 
+    vector<VarUnit> gap = CallGap(query, qrySeq, target, tarSeq, strand, score, mismap, "DEL");
+    for (size_t i(0); i < gap.size(); ++i) { 
 
-		gap[i].Swap(); // Swap query and target region!
-		if (!qryfa.fa.count(query.id)) { err ("Missing some query id or query id can't match!!!\nThe unmatch query(main): "+query.id); } 
+        gap[i].Swap(); // Swap query and target region!
+        if (!qryfa.fa.count(query.id)) { err ("Missing some query id or query id can't match!!!\nThe unmatch query(main): "+query.id); } 
 
-		gap[i].ConvQryCoordinate(qryfa.fa[query.id].length()); // coordinates uniform to the positive strand!
-		deletion.push_back(gap[i]);
+        gap[i].ConvQryCoordinate(qryfa.fa[query.id].length()); // coordinates uniform to the positive strand!
+        deletion.push_back(gap[i]);
 
-		++summary["0.[SVD]DEL"].first;
+        ++summary["0.[SVD]DEL"].first;
         summary["0.[SVD]DEL"].second += gap[i].target.end - gap[i].target.start + 1;
-	}
+    }
 
-	return;
+    return;
 }
 
 bool Variant::CallIversion(MapReg left, MapReg middle, MapReg right) {
 
-	assert (left.query.id == right.query.id && left.query.id == middle.query.id);
+    assert (left.query.id == right.query.id && left.query.id == middle.query.id);
 
-	bool flag(false);
-	if (left.target.id != right.target.id || left.target.id != middle.target.id) return flag;
+    bool flag(false);
+    if (left.target.id != right.target.id || left.target.id != middle.target.id) return flag;
 
-	long int rStart = min(left.target.start, right.target.start);
-	long int rEnd   = max(left.target.end  , left.target.end   ); 
-	if (left.strand   != right.strand ||
-		middle.strand == left.strand  ||
-		middle.target.start < rStart  ||
-		middle.target.start > rEnd) return flag; // Just make sure the middle.target.start between [rStart,rEnd]
+    long int rStart = min(left.target.start, right.target.start);
+    long int rEnd   = max(left.target.end  , left.target.end   ); 
+    if (left.strand   != right.strand ||
+            middle.strand == left.strand  ||
+            middle.target.start < rStart  ||
+            middle.target.start > rEnd) return flag; // Just make sure the middle.target.start between [rStart,rEnd]
 
-	VarUnit reg;
-	flag       = true;
+    VarUnit reg;
+    flag       = true;
     reg.type   = "INV";
     reg.target = middle.target;
-	reg.query  = middle.query ;
+    reg.query  = middle.query ;
     reg.strand = middle.strand;
-	reg.score  = middle.score;  // 2014-06-20 10:35:21
+    reg.score  = middle.score;  // 2014-06-20 10:35:21
     reg.mismap = middle.mismap; // 2014-06-20 10:35:15
-	inversion.push_back(reg);
+    inversion.push_back(reg);
 
-	++summary["0.[SVD]INV"].first;
-	summary["0.[SVD]INV"].second += reg.query.end - reg.query.start + 1;
-	return flag;
+    ++summary["0.[SVD]INV"].first;
+    summary["0.[SVD]INV"].second += reg.query.end - reg.query.start + 1;
+    return flag;
 }
 
 bool Variant::CallTranslocat(MapReg left, MapReg middle, MapReg right) {
 
-	assert(left.query.id == right.query.id && left.query.id  == middle.query.id);
-	bool flag(false);
-	// The target id should be the same of 'left' and 'right'
-	if (left.target.id != right.target.id) return flag;
+    assert(left.query.id == right.query.id && left.query.id  == middle.query.id);
+    bool flag(false);
+    // The target id should be the same of 'left' and 'right'
+    if (left.target.id != right.target.id) return flag;
 
-	long int rStart = min (left.target.start, right.target.start);
-	long int rEnd   = max (left.target.end  , left.target.end   ); 
+    long int rStart = min (left.target.start, right.target.start);
+    long int rEnd   = max (left.target.end  , left.target.end   ); 
 
-	// Do not overlap with 'left' or 'right'. And be the same strand on either side of the 'middle' region
-	if (left.strand != right.strand || (middle.target.start <= rEnd && middle.target.end >= rStart)) return flag;
+    // Do not overlap with 'left' or 'right'. And be the same strand on either side of the 'middle' region
+    if (left.strand != right.strand || (middle.target.start <= rEnd && middle.target.end >= rStart)) return flag;
 
-	flag = true;
-	VarUnit reg, gap;
+    flag = true;
+    VarUnit reg, gap;
 
-	gap = CallGap(left, right);
-	reg.exp_target = gap.target;
+    gap = CallGap(left, right);
+    reg.exp_target = gap.target;
 
-	reg.target = middle.target;
-	reg.query  = middle.query ;
-	reg.strand = middle.strand;
-	reg.score  = middle.score;  // 2014-06-20 10:35:21
-	reg.mismap = middle.mismap; // 2014-06-20 10:35:15
-	reg.type   = (middle.target.id == left.target.id) ? "TRANS-INTRA" : "TRANS-INTER";
-	if ( middle.strand == left.strand ) {
-		reg.type += "1";
-	} else {
-		reg.type += "2";
-	}
-	translocation.push_back(reg);
+    reg.target = middle.target;
+    reg.query  = middle.query ;
+    reg.strand = middle.strand;
+    reg.score  = middle.score;  // 2014-06-20 10:35:21
+    reg.mismap = middle.mismap; // 2014-06-20 10:35:15
+    reg.type   = (middle.target.id == left.target.id) ? "TRANS-INTRA" : "TRANS-INTER";
+    if ( middle.strand == left.strand ) {
+        reg.type += "1";
+    } else {
+        reg.type += "2";
+    }
+    translocation.push_back(reg);
 
-	++summary["0.[SVD]" + reg.type].first;
-	summary["0.[SVD]" + reg.type].second += reg.query.end - reg.query.start + 1;
-	return flag;
+    ++summary["0.[SVD]" + reg.type].first;
+    summary["0.[SVD]" + reg.type].second += reg.query.end - reg.query.start + 1;
+    return flag;
 }
 
 void Variant::GetMapReg() {
 
-	// Call the query coverting function here to make the '-' strand coordinates 
-	// of query be the same as '+' strand.
-	// ConvQryCoordinate(...) is a memerber function of class 'MAF'  
-	qryfa.CheckFaId(query.id);
-	ConvQryCoordinate(qryfa.fa[query.id].length());
+    // Call the query coverting function here to make the '-' strand coordinates 
+    // of query be the same as '+' strand.
+    // ConvQryCoordinate(...) is a memerber function of class 'MAF'  
+    qryfa.CheckFaId(query.id);
+    ConvQryCoordinate(qryfa.fa[query.id].length());
 
-	MapReg mpI;
-	mpI.target = target; mpI.query = query; mpI.strand = strand;
-	mpI.score  = score ; mpI.mismap= mismap; // 2014-06-20 10:39:54
-	mapreg[query.id].push_back( mpI );       // The 'key' is query.id
+    MapReg mpI;
+    mpI.target = target; mpI.query = query; mpI.strand = strand;
+    mpI.score  = score ; mpI.mismap= mismap; // 2014-06-20 10:39:54
+    mapreg[query.id].push_back( mpI );       // The 'key' is query.id
 
-	target.info = query.id;
-	query.info  = target.id;
-	maptar[target.id].push_back( target ); // stored the mapped target regions here
-	mapqry[query.id].push_back ( query  ); // stored the mapped query  regions here
+    target.info = query.id;
+    query.info  = target.id;
+    maptar[target.id].push_back( target ); // stored the mapped target regions here
+    mapqry[query.id].push_back ( query  ); // stored the mapped query  regions here
 }
 
 vector<Region> Variant::GetNoCallReg() {
-// Get NoCall region, acturlly it's the inter-scaffold gap!
+    // Get NoCall region, acturlly it's the inter-scaffold gap!
 
     map<string, vector<MapReg> > tmpmapreg;
     for (map<string, vector<MapReg> >::iterator it(mapreg.begin()); it != mapreg.end(); ++it) {
@@ -271,24 +271,24 @@ vector<Region> Variant::GetNoCallReg() {
             tmpmapreg[it->second[i].target.id].push_back(it->second[i]);
     }
 
-	vector<Region> nocallreg;
-	Region reg;
-	MapReg tmpMR;
+    vector<Region> nocallreg;
+    Region reg;
+    MapReg tmpMR;
     for (map<string, vector<MapReg> >::iterator it(tmpmapreg.begin()); it != tmpmapreg.end(); ++it) {
 
         // Get Inter scaffold gaps' regions
-		reg.id = it->first;
-		if (it->second.size() == 0) {
+        reg.id = it->first;
+        if (it->second.size() == 0) {
             reg.start = 1;
             reg.end   = tarfa.fa[it->first].size();
             nocallreg.push_back(reg);
             continue;
         }
 
-		// Sort by the coordinate of target mapped positions
+        // Sort by the coordinate of target mapped positions
         sort(it->second.begin(), it->second.end(), MySortByTarM);
 
-		if (it->second.front().target.start > 1) {
+        if (it->second.front().target.start > 1) {
             reg.start = 1;
             reg.end   = it->second.front().target.start - 1;
             nocallreg.push_back(reg);
@@ -298,15 +298,15 @@ vector<Region> Variant::GetNoCallReg() {
         for (size_t i(1); i < it->second.size(); ++i) {
 
             if (tmpMR.query.id == it->second[i].query.id) {
-			// Jump to the gap which make by different scaffold.
+                // Jump to the gap which make by different scaffold.
                 if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
                 continue;
             }
-			// Get Inter-Scaffold Gap
+            // Get Inter-Scaffold Gap
             if (tmpMR.target.end < it->second[i].target.start - 1) {
-				reg.start = tmpMR.target.end + 1;
-				reg.end   = it->second[i].target.start - 1;
-				nocallreg.push_back(reg);
+                reg.start = tmpMR.target.end + 1;
+                reg.end   = it->second[i].target.start - 1;
+                nocallreg.push_back(reg);
             }
             if (tmpMR.target.end < it->second[i].target.end) tmpMR = it->second[i];
         }
@@ -317,143 +317,143 @@ vector<Region> Variant::GetNoCallReg() {
             nocallreg.push_back(reg);
         }
     }
-	return nocallreg;
+    return nocallreg;
 }
 
 void Variant::Assign2allvariant(vector<VarUnit> &v) {
 
-	for (size_t i(0); i < v.size(); ++i) {
-		allvariant[v[i].target.id].push_back(v[i]);
-	}
-	return;
+    for (size_t i(0); i < v.size(); ++i) {
+        allvariant[v[i].target.id].push_back(v[i]);
+    }
+    return;
 }
 
 void Variant::AGE_Realign(string referenceId) {
 
-	allvariant.clear(); // make sure the value is empty
+    allvariant.clear(); // make sure the value is empty
 
-	AGE_Realign(referenceId, insertion);//New variant will store in 'allvariant' 
-	AGE_Realign(referenceId, deletion); //New variant will store in 'allvariant' 
-	AGE_Realign(referenceId, simulreg); //New variant will store in 'allvariant' 
-	AGE_Realign(referenceId, nosolution);//New variant will store in 'allvariant' 
-	AGE_RealignTr(referenceId, translocation); //New variant will store in 'allvariant'
-	AGE_RealignIv(referenceId, inversion);//New variant will store in 'allvariant'
+    AGE_Realign(referenceId, insertion);//New variant will store in 'allvariant' 
+    AGE_Realign(referenceId, deletion); //New variant will store in 'allvariant' 
+    AGE_Realign(referenceId, simulreg); //New variant will store in 'allvariant' 
+    AGE_Realign(referenceId, nosolution);//New variant will store in 'allvariant' 
+    AGE_RealignTr(referenceId, translocation); //New variant will store in 'allvariant'
+    AGE_RealignIv(referenceId, inversion);//New variant will store in 'allvariant'
 
-	Assign2allvariant(snp);     // store in 'allvariant'
-	Assign2allvariant(homoRef); // store in 'allvariant'
-	Assign2allvariant(nSeq);    // store in 'allvariant'
+    Assign2allvariant(snp);     // store in 'allvariant'
+    Assign2allvariant(homoRef); // store in 'allvariant'
+    Assign2allvariant(nSeq);    // store in 'allvariant'
 
-	// Find un-coverage reference region, in fact it's scaffold intergap
-	vector<Region> tarnocall = GetNoCallReg(); // Inter-gap is No Call region
-	VarUnit vu; 
-	for (size_t i(0); i < tarnocall.size(); ++i) {
+    // Find un-coverage reference region, in fact it's scaffold intergap
+    vector<Region> tarnocall = GetNoCallReg(); // Inter-gap is No Call region
+    VarUnit vu; 
+    for (size_t i(0); i < tarnocall.size(); ++i) {
 
-		vu.target = tarnocall[i];
-		vu.type   = "INTERGAP";
-		allvariant[tarnocall[i].id].push_back(vu);
+        vu.target = tarnocall[i];
+        vu.type   = "INTERGAP";
+        allvariant[tarnocall[i].id].push_back(vu);
 
-		++summary["0.[SVD]INTERGAP"].first;
-		summary["0.[SVD]INTERGAP"].second += vu.target.end - vu.target.start + 1;
-	}
+        ++summary["0.[SVD]INTERGAP"].first;
+        summary["0.[SVD]INTERGAP"].second += vu.target.end - vu.target.start + 1;
+    }
 
-	// Sorted and Unique All variants
-	for (map<string, vector<VarUnit> >::iterator it(allvariant.begin()); 
-		it != allvariant.end(); ++it) { 
+    // Sorted and Unique All variants
+    for (map<string, vector<VarUnit> >::iterator it(allvariant.begin()); 
+            it != allvariant.end(); ++it) { 
 
-		Unique(it->second); 
-		sort(it->second.begin(), it->second.end(), MySortByTarV);
-	}
+        Unique(it->second); 
+        sort(it->second.begin(), it->second.end(), MySortByTarV);
+    }
 
-	// Get seq and modify same type names in 'allvariant'
-	NormVu();
-	// It's better to call MarkHete() after NormVu(), But still not a big deal
-	// if call MarkHete() earlier than NormVu().
-	MarkHete();
+    // Get seq and modify same type names in 'allvariant'
+    NormVu();
+    // It's better to call MarkHete() after NormVu(), But still not a big deal
+    // if call MarkHete() earlier than NormVu().
+    MarkHete();
 
-	return;
+    return;
 }
 
 void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
 
-	// re-aligne :
-	AgeOption opt;
-	VarUnit vu;
-	vector<VarUnit> vus;
-	string ks;
-	for (size_t i(0); i < R.size(); ++i) {
-
-		if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id) 
-			continue;
-
-		if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
-
-		// R[i] should be replace by 'v' after ReAlign!
-		tarfa.CheckFaId(R[i].target.id);
-		qryfa.CheckFaId(R[i].query.id);
-		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id], 
-													 qryfa.fa[R[i].query.id], 
-													 opt);
-		// Not going to deal with the flankin region
-		if ( !v.empty() && v[0].type.find("-AGE") == string::npos) { 
-			// has variant in exci-reg
-			if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
-			allvariant[v[0].target.id].push_back(v[0]);
-			ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
-		} else {
-			ks = "1.[AGE]" + R[i].type + "=>RefHomo_Or_SNP";
-			R[i].type = R[i].type + "=>RefHomo_Or_SNP"; // Not a variant. Maybe REF-homo or SNP
-		}
-		++summary[ks].first;
-		summary[ks].second += (R[i].target.end - R[i].target.start >
-							   R[i].query.end  - R[i].query.start) ? 
-							   R[i].target.end - R[i].target.start : 
-							   R[i].query.end  - R[i].query.start;
-		//for (size_t j(0); j < v.size(); ++j) vus.push_back(v[j]);
-/*		
-cerr << "\n***********************************\n";
-R[i].OutErr();
-cerr << "\n********** AGE Process ************\n";
-v[0].OutErr();
-cerr << "## allvariant ## " << itoa(allvariant[v[0].target.id].back().cipos.first) << "\t" << ftoa(allvariant[v[0].target.id].back().mismap) << "\n";
-allvariant[v[0].target.id].back().OutErr();
-cerr << "******* GOOD ******************\n";
-*/
-	}
-	return;
-}
-
-void Variant::AGE_RealignIv(string referenceId, vector<VarUnit> &R) {
-// Specific for iversion
-
     // re-aligne :
     AgeOption opt;
     VarUnit vu;
-	Region rawTarReg, rawQryReg;
     vector<VarUnit> vus;
     string ks;
     for (size_t i(0); i < R.size(); ++i) {
 
-		if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id)
-			continue;
-		if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
+        if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id) 
+            continue;
 
-		// R[i] should be replace by 'v' after ReAlign!
-		rawTarReg      = R[i].target;
-		rawQryReg      = R[i].query;
-		tarfa.CheckFaId(R[i].target.id);
-		qryfa.CheckFaId(R[i].query.id);
-		vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id],
-									 				 qryfa.fa[R[i].query.id],
-													 opt);
+        if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
 
-		// Don't have to deal with the flankin region for Inversion
-		if (v.empty()) continue;
-		if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
-			if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
-			ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
+        // R[i] should be replace by 'v' after ReAlign!
+        tarfa.CheckFaId(R[i].target.id);
+        qryfa.CheckFaId(R[i].query.id);
+        vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id], 
+                qryfa.fa[R[i].query.id], 
+                opt);
+        // Not going to deal with the flankin region
+        if ( !v.empty() && v[0].type.find("-AGE") == string::npos) { 
+            // has variant in exci-reg
+            if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
+            allvariant[v[0].target.id].push_back(v[0]);
+            ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
+        } else {
+            ks = "1.[AGE]" + R[i].type + "=>RefHomo_Or_SNP";
+            R[i].type = R[i].type + "=>RefHomo_Or_SNP"; // Not a variant. Maybe REF-homo or SNP
+        }
+        ++summary[ks].first;
+        summary[ks].second += (R[i].target.end - R[i].target.start >
+                R[i].query.end  - R[i].query.start) ? 
+            R[i].target.end - R[i].target.start : 
+            R[i].query.end  - R[i].query.start;
+        //for (size_t j(0); j < v.size(); ++j) vus.push_back(v[j]);
+        /*		
+                cerr << "\n***********************************\n";
+                R[i].OutErr();
+                cerr << "\n********** AGE Process ************\n";
+                v[0].OutErr();
+                cerr << "## allvariant ## " << itoa(allvariant[v[0].target.id].back().cipos.first) << "\t" << ftoa(allvariant[v[0].target.id].back().mismap) << "\n";
+                allvariant[v[0].target.id].back().OutErr();
+                cerr << "******* GOOD ******************\n";
+                */
+    }
+    return;
+}
 
-			v[0].type   = R[i].type;
-			v[0].target = rawTarReg; // Set to raw
+void Variant::AGE_RealignIv(string referenceId, vector<VarUnit> &R) {
+    // Specific for iversion
+
+    // re-aligne :
+    AgeOption opt;
+    VarUnit vu;
+    Region rawTarReg, rawQryReg;
+    vector<VarUnit> vus;
+    string ks;
+    for (size_t i(0); i < R.size(); ++i) {
+
+        if (toupper(referenceId) != "ALL" && referenceId != R[i].target.id)
+            continue;
+        if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
+
+        // R[i] should be replace by 'v' after ReAlign!
+        rawTarReg      = R[i].target;
+        rawQryReg      = R[i].query;
+        tarfa.CheckFaId(R[i].target.id);
+        qryfa.CheckFaId(R[i].query.id);
+        vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id],
+                qryfa.fa[R[i].query.id],
+                opt);
+
+        // Don't have to deal with the flankin region for Inversion
+        if (v.empty()) continue;
+        if (v[0].type.find("-AGE") == string::npos) { // has variant in exci-reg
+            if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
+            ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
+
+            v[0].type   = R[i].type;
+            v[0].target = rawTarReg; // Set to raw
             v[0].query  = rawQryReg; // Set to raw
             allvariant[v[0].target.id].push_back(v[0]);
         } else {
@@ -467,12 +467,12 @@ void Variant::AGE_RealignIv(string referenceId, vector<VarUnit> &R) {
 }
 
 void Variant::AGE_RealignTr(string referenceId, vector<VarUnit> &R) {
-// specific for translocation
+    // specific for translocation
 
-	// re-aligne :
+    // re-aligne :
     AgeOption opt;
     VarUnit vu;
-	Region rawTarReg, rawQryReg;
+    Region rawTarReg, rawQryReg;
     vector<VarUnit> vus;
     string ks;
     for (size_t i(0); i < R.size(); ++i) {
@@ -482,334 +482,334 @@ void Variant::AGE_RealignTr(string referenceId, vector<VarUnit> &R) {
         if (R[i].Empty()) continue; // Do not realign if the variant in nosolution
 
         // R[i] should be replace by 'v' after ReAlign!
-		rawTarReg   = R[i].target;
-		rawQryReg   = R[i].query;
-		R[i].target = R[i].exp_target; // Expected region of translocation
+        rawTarReg   = R[i].target;
+        rawQryReg   = R[i].query;
+        R[i].target = R[i].exp_target; // Expected region of translocation
 
         tarfa.CheckFaId(R[i].target.id);
         qryfa.CheckFaId(R[i].query.id);
         vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id],
-                                                     qryfa.fa[R[i].query.id],
-                                                     opt);
-		R[i].target = rawTarReg; // Alignment is complete, now set back.
+                qryfa.fa[R[i].query.id],
+                opt);
+        R[i].target = rawTarReg; // Alignment is complete, now set back.
 
         // Don't have to deal with the flankin region for translocation
         if (v.empty()) continue;
         if (v[0].type.find("-AGE") == string::npos) { 
-		// has variant in exci-reg
+            // has variant in exci-reg
             if (R[i].Empty()) v[0].Clear(); // Can just happen after call Filter()
             ks = "1.[AGE]" + R[i].type + "=>" + v[0].type;
 
-			v[0].type = v[0].type  + "=>TRANS#" + rawTarReg.id + "-" + 
-						itoa(rawTarReg.start) + "-" + itoa(rawTarReg.end)   + 
-						"#" + rawQryReg.id    + "-" + itoa(rawQryReg.start) + 
-						"-" + itoa(rawQryReg.end);
+            v[0].type = v[0].type  + "=>TRANS#" + rawTarReg.id + "-" + 
+                itoa(rawTarReg.start) + "-" + itoa(rawTarReg.end)   + 
+                "#" + rawQryReg.id    + "-" + itoa(rawQryReg.start) + 
+                "-" + itoa(rawQryReg.end);
             allvariant[v[0].target.id].push_back(v[0]);
         } else {
-		// No variant in exci-reg
+            // No variant in exci-reg
             ks = "1.[AGE]" + R[i].type + "=>RefHomo_Or_SNP";
         }
         ++summary[ks].first;
         summary[ks].second += v[0].query.end  - v[0].query.start;
-	}
+    }
 
-	return;
+    return;
 }
 
 void Variant::MarkHete() {
 
-	map<string, size_t> index; // Target Id => index
+    map<string, size_t> index; // Target Id => index
     for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
-        it != allvariant.end(); ++it) {
+            it != allvariant.end(); ++it) {
 
         sort(it->second.begin(), it->second.end(), MySortByTarV);
         index[it->first] = 0;
 
-		for (size_t i(0); i < it->second.size(); ++i) {
+        for (size_t i(0); i < it->second.size(); ++i) {
 
-			if (it->second[i].type.find("GAP") != string::npos) continue;
-			if (it->second[i].type ==  "REFCALL") continue;
-			// Just deal with variants 
+            if (it->second[i].type.find("GAP") != string::npos) continue;
+            if (it->second[i].type ==  "REFCALL") continue;
+            // Just deal with variants 
 
-			bool flag(true);
-			for (size_t j(index[it->first]); j < it->second.size(); ++j) {
+            bool flag(true);
+            for (size_t j(index[it->first]); j < it->second.size(); ++j) {
 
-				// Just REFCALL-RefCall here
-				if (i == j || it->second[j].type.find("REFCALL") == string::npos) continue;
-				if (it->second[i].target.end < it->second[j].target.start) break;
-				if (it->second[i].target.start > it->second[j].target.end) continue;
+                // Just REFCALL-RefCall here
+                if (i == j || it->second[j].type.find("REFCALL") == string::npos) continue;
+                if (it->second[i].target.end < it->second[j].target.start) break;
+                if (it->second[i].target.start > it->second[j].target.end) continue;
 
-				if (flag) {
-					flag = false; 
-					index[it->first] = j;
-				}
-				
-				// Other query totally covered the variant.
-				if (it->second[i].query.id != it->second[j].query.id &&
-					it->second[i].target.start >= it->second[j].target.start && 
-					it->second[i].target.end   <= it->second[j].target.end) {
-					it->second[i].isHete = true;
-					break;
-				}
-			}
-		}
+                if (flag) {
+                    flag = false; 
+                    index[it->first] = j;
+                }
+
+                // Other query totally covered the variant.
+                if (it->second[i].query.id != it->second[j].query.id &&
+                        it->second[i].target.start >= it->second[j].target.start && 
+                        it->second[i].target.end   <= it->second[j].target.end) {
+                    it->second[i].isHete = true;
+                    break;
+                }
+            }
+        }
     }
 }
 
 void Variant::Unique(vector<VarUnit> &v) {
 
-	cerr << "[INFO] Masking the duplication varaints.\n";
-	set<string> hasAppear;
-	for (size_t i(0); i < v.size(); ++i) {
-		string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
-					+ itoa(v[i].target.end) + "-" + v[i].query.id   + ":"
-					+ itoa(v[i].query.start)+ ":" + itoa(v[i].query.end);
-		if (hasAppear.count(key)) v[i].Clear(); // Mask the repeat appear var!
-		hasAppear.insert(key);
-	}
+    cerr << "[INFO] Masking the duplication varaints.\n";
+    set<string> hasAppear;
+    for (size_t i(0); i < v.size(); ++i) {
+        string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
+            + itoa(v[i].target.end) + "-" + v[i].query.id   + ":"
+            + itoa(v[i].query.start)+ ":" + itoa(v[i].query.end);
+        if (hasAppear.count(key)) v[i].Clear(); // Mask the repeat appear var!
+        hasAppear.insert(key);
+    }
 }
 
 void Variant::CallSV() { 
-// Call Stuctural variants, not indels!!! 
-// Just use the memerber value 'mapreg' in this memerber function.
-// Should be debug carfully here!
-// All the coordinate of query should be uniform to the positive strand, then I can sort them!
+    // Call Stuctural variants, not indels!!! 
+    // Just use the memerber value 'mapreg' in this memerber function.
+    // Should be debug carfully here!
+    // All the coordinate of query should be uniform to the positive strand, then I can sort them!
 
-	map<size_t, vector<size_t> > mark;
-	VarUnit simulgap;
-	for (map<string, vector<MapReg> >::iterator it(mapreg.begin()); it != mapreg.end(); ++it) {
-		if (it->second.size() < 2) continue; // More than 2
+    map<size_t, vector<size_t> > mark;
+    VarUnit simulgap;
+    for (map<string, vector<MapReg> >::iterator it(mapreg.begin()); it != mapreg.end(); ++it) {
+        if (it->second.size() < 2) continue; // More than 2
 
-		map<long int, size_t> qry2tarOrder;
-		sort(it->second.begin(), it->second.end(), MySortByTarM); // Sort by the coordinate of target mapping positions
-		for (size_t i(0); i < it->second.size(); ++i) { 
-			qry2tarOrder[it->second[i].query.start] = i; 
-		}
-		sort(it->second.begin(), it->second.end(), MySortByQryM); // Sort by the coordinate of query  mapping positions
+        map<long int, size_t> qry2tarOrder;
+        sort(it->second.begin(), it->second.end(), MySortByTarM); // Sort by the coordinate of target mapping positions
+        for (size_t i(0); i < it->second.size(); ++i) { 
+            qry2tarOrder[it->second[i].query.start] = i; 
+        }
+        sort(it->second.begin(), it->second.end(), MySortByQryM); // Sort by the coordinate of query  mapping positions
 
-		vector<MapReg> tmpreg;
-		long int pos1, pos2, pos;
-		for (size_t i(0); i < it->second.size(); ++i) {
+        vector<MapReg> tmpreg;
+        long int pos1, pos2, pos;
+        for (size_t i(0); i < it->second.size(); ++i) {
 
-			pos = it->second[i].query.start;   // right (side)
-			if (tmpreg.size() == 1) {
-				pos1 = tmpreg[0].query.start;
-				if (labs(qry2tarOrder[pos] - qry2tarOrder[pos1]) == 1) {
-					// Regular simultaneous gap regions
-					if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear();
-				}
-			} else if (tmpreg.size() == 2) { // Candidate translocation or Candidate Inversion. It's not success when calling simultaneous gap
-				pos1 = tmpreg[0].query.start;  // left 
-				pos2 = tmpreg[1].query.start;  // middle
-				if (labs(qry2tarOrder[pos] - qry2tarOrder[pos1]) == 1) { // Means tmpreg[0] and tmpreg[1] are not the neighbour
-					
-					if (CallTranslocat(tmpreg[0], tmpreg[1], it->second[i])) { 
-						tmpreg.clear(); // Here 'tmpreg' just contain the two head element, in fact, I'm just clear the first and second elements.
-					} else {
-						tmpreg.erase(tmpreg.begin());
-						if (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1) { 
-							if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear(); // Call simultaneous gap
-						}
-					}
-				} else if ((labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) && (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1)) { 
+            pos = it->second[i].query.start;   // right (side)
+            if (tmpreg.size() == 1) {
+                pos1 = tmpreg[0].query.start;
+                if (labs(qry2tarOrder[pos] - qry2tarOrder[pos1]) == 1) {
+                    // Regular simultaneous gap regions
+                    if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear();
+                }
+            } else if (tmpreg.size() == 2) { // Candidate translocation or Candidate Inversion. It's not success when calling simultaneous gap
+                pos1 = tmpreg[0].query.start;  // left 
+                pos2 = tmpreg[1].query.start;  // middle
+                if (labs(qry2tarOrder[pos] - qry2tarOrder[pos1]) == 1) { // Means tmpreg[0] and tmpreg[1] are not the neighbour
 
-					if (CallIversion(tmpreg[0], tmpreg[1], it->second[i])) { 
-						tmpreg.clear(); // Here 'tmpreg' just contain the two head element , in fact, I'm just clear the first and second elements.
-					} else {
-						tmpreg.erase (tmpreg.begin());
-						if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear();
-					}
-				} else if (labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) { // No solution
-					CallReg (tmpreg[0], "Nos-JustNo", nosolution);
-					tmpreg.erase (tmpreg.begin());
-				} else {
-					CallReg (tmpreg[0], "Nos-Complex", nosolution);
-					tmpreg.erase (tmpreg.begin());
-				}
-			} else if (tmpreg.size() > 2) {
-				cerr << "\n[ERROR] Program bugs! Please contact to the author!" 
-					 << endl;
-				exit(1);
-			}
-			tmpreg.push_back(it->second[i]);
-		}
-		if (tmpreg.size() == 2) {
-			if (CallSimultan(tmpreg[0], tmpreg[1])) {
-				tmpreg.clear();
-			} else if (tmpreg[0].target.id == tmpreg[1].target.id) { 
-				CallReg(tmpreg[0], "Nos-Strand", nosolution);
+                    if (CallTranslocat(tmpreg[0], tmpreg[1], it->second[i])) { 
+                        tmpreg.clear(); // Here 'tmpreg' just contain the two head element, in fact, I'm just clear the first and second elements.
+                    } else {
+                        tmpreg.erase(tmpreg.begin());
+                        if (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1) { 
+                            if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear(); // Call simultaneous gap
+                        }
+                    }
+                } else if ((labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) && (labs(qry2tarOrder[pos] - qry2tarOrder[pos2]) == 1)) { 
+
+                    if (CallIversion(tmpreg[0], tmpreg[1], it->second[i])) { 
+                        tmpreg.clear(); // Here 'tmpreg' just contain the two head element , in fact, I'm just clear the first and second elements.
+                    } else {
+                        tmpreg.erase (tmpreg.begin());
+                        if (CallSimultan(tmpreg[0], it->second[i])) tmpreg.clear();
+                    }
+                } else if (labs(qry2tarOrder[pos2] - qry2tarOrder[pos1]) == 1) { // No solution
+                    CallReg (tmpreg[0], "Nos-JustNo", nosolution);
+                    tmpreg.erase (tmpreg.begin());
+                } else {
+                    CallReg (tmpreg[0], "Nos-Complex", nosolution);
+                    tmpreg.erase (tmpreg.begin());
+                }
+            } else if (tmpreg.size() > 2) {
+                cerr << "\n[ERROR] Program bugs! Please contact to the author!" 
+                    << endl;
+                exit(1);
+            }
+            tmpreg.push_back(it->second[i]);
+        }
+        if (tmpreg.size() == 2) {
+            if (CallSimultan(tmpreg[0], tmpreg[1])) {
+                tmpreg.clear();
+            } else if (tmpreg[0].target.id == tmpreg[1].target.id) { 
+                CallReg(tmpreg[0], "Nos-Strand", nosolution);
                 CallReg(tmpreg[1], "Nos-Strand", nosolution);
-			} else { // Not in the same target
-				CallReg(tmpreg[0], "Nos-Complex", nosolution);
-				CallReg(tmpreg[1], "Nos-Complex", nosolution);
-			}
-		}
-	}
+            } else { // Not in the same target
+                CallReg(tmpreg[0], "Nos-Complex", nosolution);
+                CallReg(tmpreg[1], "Nos-Complex", nosolution);
+            }
+        }
+    }
 }
 
 bool Variant::CallSimultan(MapReg left, MapReg right) {
 
-	bool success(false);
-	VarUnit simulgap;
-	if (left.target.id != right.target.id || left.strand != right.strand) return success;	// (2013-10-20 19:17:40)
+    bool success(false);
+    VarUnit simulgap;
+    if (left.target.id != right.target.id || left.strand != right.strand) return success;	// (2013-10-20 19:17:40)
 
-	simulgap = CallGap(left, right);
-	simulreg.push_back(simulgap);
-	success  = true;
+    simulgap = CallGap(left, right);
+    simulreg.push_back(simulgap);
+    success  = true;
 
-	++summary["0.[SVD]" + simulgap.type].first;
+    ++summary["0.[SVD]" + simulgap.type].first;
     summary["0.[SVD]" + simulgap.type].second += simulgap.query.end - simulgap.query.start + 1;
 
-	return success;
+    return success;
 }
 
 void Variant::CallReg(MapReg mapreg, string type, vector< VarUnit > &varReg) {
 
-	VarUnit reg;
-	reg.target = mapreg.target;
-	reg.query  = mapreg.query;
-	reg.strand = mapreg.strand;
-	reg.score  = mapreg.score;  // 2014-06-20 10:37:45
-	reg.mismap = mapreg.mismap; // 2014-06-20 10:37:55
-	reg.type   = type;
-	varReg.push_back(reg);
+    VarUnit reg;
+    reg.target = mapreg.target;
+    reg.query  = mapreg.query;
+    reg.strand = mapreg.strand;
+    reg.score  = mapreg.score;  // 2014-06-20 10:37:45
+    reg.mismap = mapreg.mismap; // 2014-06-20 10:37:55
+    reg.type   = type;
+    varReg.push_back(reg);
 
-	++summary["0.[SVD]" + reg.type].first;
-	summary["0.[SVD]" + reg.type].second += reg.query.end - reg.query.start + 1;
+    ++summary["0.[SVD]" + reg.type].first;
+    summary["0.[SVD]" + reg.type].second += reg.query.end - reg.query.start + 1;
 }
 
 void Variant::CallClipReg () {
 
-	if (qryfa.fa.empty()) { cerr << "[WARNING] No Clip regions. Because the query fa is empty!" << endl; return; }
-	VarUnit tmp;
-	long int rStart, rEnd;
-	for ( map< string, vector<Region> >::iterator it( mapqry.begin() ); it != mapqry.end(); ++it ) {
+    if (qryfa.fa.empty()) { cerr << "[WARNING] No Clip regions. Because the query fa is empty!" << endl; return; }
+    VarUnit tmp;
+    long int rStart, rEnd;
+    for ( map< string, vector<Region> >::iterator it( mapqry.begin() ); it != mapqry.end(); ++it ) {
 
-		rStart = RegionMin( it->second );
-		rEnd   = RegionMax( it->second );
+        rStart = RegionMin( it->second );
+        rEnd   = RegionMax( it->second );
 
-		if ( rStart == 0 || rEnd == 0 ) { 
+        if ( rStart == 0 || rEnd == 0 ) { 
 
-			std::cerr << "rStart == 0 || rEnd == 0" << "\nrStart: " << rStart << "\trEnd: " << rEnd << endl;
-			for ( size_t i(0); i < it->second.size(); ++i )	
-				std::cerr << "Size: " << it->second.size() << "\tit->second: " << it->second[i].id 
-					 << "\t" << it->second[i].start   << "\t" << it->second[i].end << endl;
-			exit(1);
-		}
+            std::cerr << "rStart == 0 || rEnd == 0" << "\nrStart: " << rStart << "\trEnd: " << rEnd << endl;
+            for ( size_t i(0); i < it->second.size(); ++i )	
+                std::cerr << "Size: " << it->second.size() << "\tit->second: " << it->second[i].id 
+                    << "\t" << it->second[i].start   << "\t" << it->second[i].end << endl;
+            exit(1);
+        }
 
-		tmp.query.id = it->first;
-		tmp.strand   = '.';
-		tmp.type     = "CLIP";
-		if (rStart > 1) { 
-			tmp.query.start = 1; tmp.query.end = rStart - 1; 
-			clipreg.push_back(tmp); 
-			++summary["[NOVEL]CLIP"].first;
-			summary["[NOVEL]CLIP"].second += tmp.query.end - tmp.query.start + 1;
-		}
-		if (rEnd < qryfa.fa[it->first].length()) {
-			tmp.query.start = rEnd + 1;
-			tmp.query.end   = qryfa.fa[it->first].length();
-			clipreg.push_back(tmp);
-
-			++summary["[NOVEL]CLIP"].first;
+        tmp.query.id = it->first;
+        tmp.strand   = '.';
+        tmp.type     = "CLIP";
+        if (rStart > 1) { 
+            tmp.query.start = 1; tmp.query.end = rStart - 1; 
+            clipreg.push_back(tmp); 
+            ++summary["[NOVEL]CLIP"].first;
             summary["[NOVEL]CLIP"].second += tmp.query.end - tmp.query.start + 1;
-		}
-	}
-	return;
+        }
+        if (rEnd < qryfa.fa[it->first].length()) {
+            tmp.query.start = rEnd + 1;
+            tmp.query.end   = qryfa.fa[it->first].length();
+            clipreg.push_back(tmp);
+
+            ++summary["[NOVEL]CLIP"].first;
+            summary["[NOVEL]CLIP"].second += tmp.query.end - tmp.query.start + 1;
+        }
+    }
+    return;
 }
 
 void Variant::CallNomadic() {
 
-	if (qryfa.fa.empty()) { std::cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
-	VarUnit tmp;
-	for (map<string, string>::iterator it(qryfa.fa.begin()); it != qryfa.fa.end(); ++it) {
+    if (qryfa.fa.empty()) { std::cerr << "[WARNING] No Nomadic regions. Because the query fa is empty!" << endl; return; }
+    VarUnit tmp;
+    for (map<string, string>::iterator it(qryfa.fa.begin()); it != qryfa.fa.end(); ++it) {
 
-		if (mapqry.count(it->first)) continue;
-		tmp.query.id    = it->first;
-		tmp.query.start = 1;
-		tmp.query.end   = it->second.length();
-		tmp.strand      = '.';
-		tmp.type        = "NOMADIC";
-		nomadic.push_back(tmp);
+        if (mapqry.count(it->first)) continue;
+        tmp.query.id    = it->first;
+        tmp.query.start = 1;
+        tmp.query.end   = it->second.length();
+        tmp.strand      = '.';
+        tmp.type        = "NOMADIC";
+        nomadic.push_back(tmp);
 
-		++summary["[NOVEL]" + tmp.type].first;
-		summary["[NOVEL]" + tmp.type].second += tmp.query.end - tmp.query.start + 1;
-	}
-	return;
+        ++summary["[NOVEL]" + tmp.type].first;
+        summary["[NOVEL]" + tmp.type].second += tmp.query.end - tmp.query.start + 1;
+    }
+    return;
 }
 
 bool Variant::IsSameStrand(vector<MapReg> &mapreg) {
 
-	bool same (true);
-	char strand = mapreg[0].strand;
-	for (size_t i(1); i < mapreg.size(); ++i) {
-		if (strand != mapreg[i].strand) { same = false; break; }
-	}
-	return same;
+    bool same (true);
+    char strand = mapreg[0].strand;
+    for (size_t i(1); i < mapreg.size(); ++i) {
+        if (strand != mapreg[i].strand) { same = false; break; }
+    }
+    return same;
 }
 
 void Variant::Filter() {
 
-	map<string,vector<Region> > filterReg;
-	map<string,size_t> index;
-	for (size_t i(0); i < nosolution.size(); ++i) 
-		filterReg[nosolution[i].query.id].push_back(nosolution[i].query);
+    map<string,vector<Region> > filterReg;
+    map<string,size_t> index;
+    for (size_t i(0); i < nosolution.size(); ++i) 
+        filterReg[nosolution[i].query.id].push_back(nosolution[i].query);
 
-	for (map< string,vector<Region> >::iterator it(filterReg.begin()); 
-		  it != filterReg.end(); ++it) {
+    for (map< string,vector<Region> >::iterator it(filterReg.begin()); 
+            it != filterReg.end(); ++it) {
 
-		sort(filterReg[it->first].begin(), filterReg[it->first].end(), SortRegion);
-		index[it->first] = 0;
-	}
+        sort(filterReg[it->first].begin(), filterReg[it->first].end(), SortRegion);
+        index[it->first] = 0;
+    }
 
-	// Filter insertion regions which in filterReg 
-	FilterReg(filterReg, index, insertion);
-	// Filter deletion regions which in filterReg
-	FilterReg(filterReg, index, deletion );
-	// Filter SNP which in filterReg
-	FilterReg(filterReg, index, snp      );
+    // Filter insertion regions which in filterReg 
+    FilterReg(filterReg, index, insertion);
+    // Filter deletion regions which in filterReg
+    FilterReg(filterReg, index, deletion );
+    // Filter SNP which in filterReg
+    FilterReg(filterReg, index, snp      );
 
-	if (snp.empty()) return;
-	map <string, vector<size_t> > tmp;
-	for (size_t i(0); i < snp.size(); ++i) {
-		string key = snp[i].target.id + ":" + snp[i].query.id + ":" + itoa(snp[i].target.start);
-		tmp[key].push_back(i);
-	}
-	for (map<string, vector<size_t> >::iterator it(tmp.begin()); it != tmp.end(); ++it) {
-		if (it->second.size() == 1) continue;
-		for (size_t i(0); i < it->second.size(); ++i) snp[it->second[i]].Clear();
-	}
+    if (snp.empty()) return;
+    map <string, vector<size_t> > tmp;
+    for (size_t i(0); i < snp.size(); ++i) {
+        string key = snp[i].target.id + ":" + snp[i].query.id + ":" + itoa(snp[i].target.start);
+        tmp[key].push_back(i);
+    }
+    for (map<string, vector<size_t> >::iterator it(tmp.begin()); it != tmp.end(); ++it) {
+        if (it->second.size() == 1) continue;
+        for (size_t i(0); i < it->second.size(); ++i) snp[it->second[i]].Clear();
+    }
 
-	return;
+    return;
 }
 
 void Variant::FilterReg(map< string,vector<Region> > tarregion, map<string, size_t> index, vector<VarUnit> &region) {
-// Just used in Filter() function
+    // Just used in Filter() function
 
-	if (region.empty() || tarregion.empty()) return;
-	sort (region.begin(), region.end(), MySortByQryV);	
+    if (region.empty() || tarregion.empty()) return;
+    sort (region.begin(), region.end(), MySortByQryV);	
 
-	string key;
-	bool flag;
-	long int prepos = region[0].query.start; 
-	for (size_t i(0); i < region.size(); ++i) {
+    string key;
+    bool flag;
+    long int prepos = region[0].query.start; 
+    for (size_t i(0); i < region.size(); ++i) {
 
-		if (!index.count(key)) continue;
+        if (!index.count(key)) continue;
 
-		assert(prepos <= region[i].query.start); // Check sorted
-		key  = region[i].query.id;
-		flag = true;
+        assert(prepos <= region[i].query.start); // Check sorted
+        key  = region[i].query.id;
+        flag = true;
 
-		for (size_t j(index[key]); j < tarregion[key].size(); ++j) {
-			if (j > 0) assert(tarregion[key][j-1].start <= tarregion[key][j].start); // Check sorted
-			if (region[i].query.start > tarregion[key][j].end) continue;
-			if (region[i].query.end   < tarregion[key][j].start) break;
+        for (size_t j(index[key]); j < tarregion[key].size(); ++j) {
+            if (j > 0) assert(tarregion[key][j-1].start <= tarregion[key][j].start); // Check sorted
+            if (region[i].query.start > tarregion[key][j].end) continue;
+            if (region[i].query.end   < tarregion[key][j].start) break;
 
-			if (flag) { flag = false; index[key] = j; }
-			region[i].Clear();
-		}
-	}
-	return;
+            if (flag) { flag = false; index[key] = j; }
+            region[i].Clear();
+        }
+    }
+    return;
 }
 
 void Variant::NormVu() { // Norm each variant
@@ -822,22 +822,24 @@ void Variant::NormVu() { // Norm each variant
             if (it->second[i].Empty()) continue;
             long int start = it->second[i].target.start;
             long int end   = it->second[i].target.end;
+
+            // Keep the tarSeq not too long in non-variant events
             it->second[i].tarSeq = tarfa.fa[it->first][start - 1];
             // Translating the WSKMYRVDBH=>ACGACAAACA
             for_each (it->second[i].tarSeq.begin(),
-                      it->second[i].tarSeq.end(), Tr);
+                    it->second[i].tarSeq.end(), Tr);
 
             if (it->second[i].type == "INTERGAP") {
 
                 it->second[i].qrySeq = ".";
             } else if (it->second[i].type.find("REFCALL") == string::npos) {
 
-                // Exclude homozygous reference
+                // Exclude homozygous reference. Now they're all variants
                 it->second[i].tarSeq = tarfa.fa[it->first].substr(
                         start - 1, end - start + 1);
                 // Translating the WSKMYRVDBH=>ACGACAAACA
                 for_each (it->second[i].tarSeq.begin(),
-                          it->second[i].tarSeq.end(), Tr);
+                        it->second[i].tarSeq.end(), Tr);
 
                 start = it->second[i].query.start;
                 end   = it->second[i].query.end;
@@ -918,86 +920,86 @@ void Variant::SummaryVar() {
         ++summary["[SUM]tarCovlength"].first;
         summary["[SUM]tarCovlength"].second += Covlength(p->second);
     }
-	return;
+    return;
 }
 
 void Variant::Summary(string file) {
 
-	SummaryVar();
+    SummaryVar();
 
-	ofstream O (file.c_str());
+    ofstream O (file.c_str());
     if (!O) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
-	O << "Summary Information for " << sample << "\n\n";
-	O << "#Type\tNumber\tLength\n";
-	for (map<string,pair<long int, long int> >::iterator pt(summary.begin()); pt != summary.end(); ++pt) 
-		O << pt->first << "\t" << pt->second.first << "\t" << pt->second.second << "\n";
-	
-	O << "\n";
-	O << "[SUM]QryCovlength/querylength  " << double(summary["[SUM]qryCovlength"].second) / qryfa.length << "\n";
-	O << "[SUM]TarCovlength/targetlength " << double(summary["[SUM]tarCovlength"].second) / tarfa.length << "\n";
-	O << "[SUM]TarCovlength/targetlength(NO 'N') "<< double(summary["[SUM]tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
-	O << "[SUM]SNP/querylength           " << double(summary["2.[VCF]SNP"].second) / qryfa.length  << "\n";
-	O << "[SUM]SNP/targetlength          " << double(summary["2.[VCF]SNP"].second) / tarfa.length  << "\n";
-	O << "\n";
+    O << "Summary Information for " << sample << "\n\n";
+    O << "#Type\tNumber\tLength\n";
+    for (map<string,pair<long int, long int> >::iterator pt(summary.begin()); pt != summary.end(); ++pt) 
+        O << pt->first << "\t" << pt->second.first << "\t" << pt->second.second << "\n";
 
-	map<string, vector<Region> >::iterator p(maptar.begin());
-	for (; p != maptar.end(); ++p) {
+    O << "\n";
+    O << "[SUM]QryCovlength/querylength  " << double(summary["[SUM]qryCovlength"].second) / qryfa.length << "\n";
+    O << "[SUM]TarCovlength/targetlength " << double(summary["[SUM]tarCovlength"].second) / tarfa.length << "\n";
+    O << "[SUM]TarCovlength/targetlength(NO 'N') "<< double(summary["[SUM]tarCovlength"].second)/(tarfa.length-tarfa.nsize) << "\n";
+    O << "[SUM]SNP/querylength           " << double(summary["2.[VCF]SNP"].second) / qryfa.length  << "\n";
+    O << "[SUM]SNP/targetlength          " << double(summary["2.[VCF]SNP"].second) / tarfa.length  << "\n";
+    O << "\n";
 
-		long int cl  = Covlength(p->second);
-		double ratio = double(cl)/tarfa.fa[p->first].length();
-		O << "# " << p->first << "\t" << cl << "/" << tarfa.fa[p->first].length() << "\t" << ratio << "\n";
-	}
-	O << endl;
-	O.close();
+    map<string, vector<Region> >::iterator p(maptar.begin());
+    for (; p != maptar.end(); ++p) {
+
+        long int cl  = Covlength(p->second);
+        double ratio = double(cl)/tarfa.fa[p->first].length();
+        O << "# " << p->first << "\t" << cl << "/" << tarfa.fa[p->first].length() << "\t" << ratio << "\n";
+    }
+    O << endl;
+    O.close();
 }
 
 void Variant::Output(string file) {
 
-	ofstream O (file.c_str());
+    ofstream O (file.c_str());
     if (!O) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
 
-	Output (insertion, O); //
-	Output (deletion,  O); //
-	Output (inversion, O);
-	Output (simulreg,  O); //
-	Output (clipreg,   O); //
-	Output (nomadic,       O); //
-	Output (nosolution,    O); 
-	Output (translocation, O);
+    Output (insertion, O); //
+    Output (deletion,  O); //
+    Output (inversion, O);
+    Output (simulreg,  O); //
+    Output (clipreg,   O); //
+    Output (nomadic,       O); //
+    Output (nosolution,    O); 
+    Output (translocation, O);
 
-	Output (snp,     O);
-	Output (homoRef, O);
-	Output (nSeq,    O);
+    Output (snp,     O);
+    Output (homoRef, O);
+    Output (nSeq,    O);
 
-	O.close();
-	return;
+    O.close();
+    return;
 }
 
 void Variant::Output(vector<VarUnit> &R, ofstream &O) {
 
-	sort (R.begin(), R.end(), MySortByTarV);
-	for (size_t i(0); i < R.size(); ++i) {
+    sort (R.begin(), R.end(), MySortByTarV);
+    for (size_t i(0); i < R.size(); ++i) {
 
-		if (R[i].Empty()) continue;
+        if (R[i].Empty()) continue;
 
-		R[i].tarSeq = (R[i].target.id == "-") ? "-" : tarfa.fa[R[i].target.id].substr(R[i].target.start - 1, R[i].target.end - R[i].target.start + 1);
-		R[i].qrySeq = qryfa.fa[ R[i].query.id].substr(R[i].query.start - 1, R[i].query.end - R[i].query.start + 1);
-		if (R[i].strand == '-') R[i].qrySeq = ReverseAndComplementary(R[i].qrySeq);
+        R[i].tarSeq = (R[i].target.id == "-") ? "-" : tarfa.fa[R[i].target.id].substr(R[i].target.start - 1, R[i].target.end - R[i].target.start + 1);
+        R[i].qrySeq = qryfa.fa[ R[i].query.id].substr(R[i].query.start - 1, R[i].query.end - R[i].query.start + 1);
+        if (R[i].strand == '-') R[i].qrySeq = ReverseAndComplementary(R[i].qrySeq);
 
-		if (R[i].exp_target.isEmpty()) {
-			R[i].OutStd(tarfa.fa[R[i].target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
-		} else {
-			if (R[i].exp_target.id.empty() || R[i].exp_target.id == "-") err ("exp_target.id.empty() || R[i].exp_target.id == '-' ");
-			R[i].exp_tarSeq = tarfa.fa[R[i].exp_target.id].substr(R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
-			R[i].OutStd(tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
-		}
-	}
+        if (R[i].exp_target.isEmpty()) {
+            R[i].OutStd(tarfa.fa[R[i].target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
+        } else {
+            if (R[i].exp_target.id.empty() || R[i].exp_target.id == "-") err ("exp_target.id.empty() || R[i].exp_target.id == '-' ");
+            R[i].exp_tarSeq = tarfa.fa[R[i].exp_target.id].substr(R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
+            R[i].OutStd(tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
+        }
+    }
 }
 
 void Variant::OutputSNP(string file) {
 
-	ofstream O (file.c_str());
-	O <<  
+    ofstream O (file.c_str());
+    O <<  
 "##fileformat=VCFv4.1                                                       \n\
 ##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">              \n\
 ##FORMAT=<ID=ST,Number=1,Type=String,Description=\"Mappind strand\">        \n\
