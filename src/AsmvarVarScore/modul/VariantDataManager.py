@@ -118,7 +118,8 @@ def LoadFaLen ( faLenLstFile ) :
     I    = open (faLenLstFile)
     for line in I.readlines() :
 
-        if len( line.strip('\n').split() ) != 2: raise ValueError('[ERROR] The format of Fa length list maybe not right. It could just be : "sample FalenghtFile", but found',line)
+        if len( line.strip('\n').split() ) != 2: 
+            raise ValueError('[ERROR] The format of Fa length list maybe not right. It could just be : "sample FalenghtFile", but found',line)
         sampleId, fileName = line.strip('\n').split()
         if sampleId not in data : data[sampleId] = {}
         data[sampleId] = SampleFaLen( fileName )
@@ -204,7 +205,8 @@ def LoadDataSet ( vcfInfile, traningSet, qFaLen ) :
                 if qSta > 100 or qEnd > 100 : raise ValueError ('[ERROR] Query size Overflow! sample : %s; scaffold : %s' % (sampleId, qId) )
 
                 leg = min(qSta, 100 - qEnd)
-                nn  = string.atof(sample.split(':')[fmat['FN']])
+                #nn  = string.atof(sample.split(':')[fmat['FN']])
+                nn  = string.atof(sample.split(':')[fmat['NR']])
                 n   = int(1000 * nn + 0.5) / 10.0 # range : [0, 100]
                 alt = string.atoi( sample.split(':')[fmat['AA']].split(',')[1] ) # Alternate perfect
                 bot = string.atoi( sample.split(':')[fmat['AA']].split(',')[3] ) # Both imperfect

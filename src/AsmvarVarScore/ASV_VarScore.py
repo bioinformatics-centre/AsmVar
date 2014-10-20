@@ -21,8 +21,8 @@ def main ( opt ) :
     traningSet     = vdm.LoadTrainingSiteFromVCF( opt.trainData ) # Just record the sites of training data
     hInfo, dataSet = vdm.LoadDataSet(opt.vcfInfile,traningSet,vdm.LoadFaLen(opt.qFalen)) #Identify the traning sites
     vr             = vror.VariantRecalibrator() # init VariantRecalibrator object
-    vr.OnTraversalDone( dataSet ) # Traning modul and calculate the VQ for all the dataSet
-    vr.VisualizationLodVStrainingSet( 'BadLodSelectInTraining' )
+    vr.OnTraversalDone(dataSet) # Traning modul and calculate the VQ for all the dataSet
+    vr.VisualizationLodVStrainingSet('BadLodSelectInTraining')
 
     # Outputting the result as VCF format
     hInfo.Add ( 'INFO', 'VQ', 1, 'Float' , 'Variant Quality' )
@@ -30,7 +30,7 @@ def main ( opt ) :
     hInfo.Add ( 'INFO', 'NEGATIVE_TRAIN_SITE', 0, 'Flag', 'This variant was used to build the negative training set of bad variants')
     hInfo.Add ( 'INFO', 'POSITIVE_TRAIN_SITE', 0, 'Flag', 'This variant was used to build the positive training set of good variants')
     # For Record the Annnotations' values
-    for d in vr.dataManager.annoTexts : hInfo.Add( 'INFO', d[0], 1, d[1], d[2] )
+    for d in vr.dataManager.annoTexts: hInfo.Add('INFO', d[0], 1, d[1], d[2])
  
     culprit, good, tot = {}, {}, 0.0
     annoTexts = [ d[0] for d in vr.dataManager.annoTexts ]
