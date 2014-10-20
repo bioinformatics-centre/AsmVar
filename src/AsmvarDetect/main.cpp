@@ -95,7 +95,11 @@ int main ( int argc, char* argv[] ) {
             I >> tmp; split("=", tmp, vect); variant.mismap = atof(vect[1].c_str());  // mismap=1e-10
             getline (I, tmp, '\n');
             I >> tmp >> variant.target.id >> variant.target.start >> variant.target.end //Here variant.target.end is just the mapping length
-              >> tmp >> tmp >> variant.tarSeq; getline ( I, tmp, '\n' );
+              >> tmp >> tmp >> variant.tarSeq; 
+            getline (I, tmp, '\n');
+// Just for urgency situation
+if (variant.target.id == "M") variant.target.id = "MT"; // Should be deleted after this time
+
             variant.target.end += variant.target.start; // Now variant.target.end is the end of mapping region
             ++variant.target.start;                     // variant.target.start is 0-base , shift to 1-base
 
