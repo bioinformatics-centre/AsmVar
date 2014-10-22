@@ -958,18 +958,18 @@ void Variant::Output(string file) {
     ofstream O (file.c_str());
     if (!O) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
 
-    Output (insertion, O); //
-    Output (deletion,  O); //
-    Output (inversion, O);
-    Output (simulreg,  O); //
-    Output (clipreg,   O); //
-    Output (nomadic,       O); //
-    Output (nosolution,    O); 
-    Output (translocation, O);
+    Output(insertion, O); //
+    Output(deletion,  O); //
+    Output(inversion, O);
+    Output(simulreg,  O); //
+    Output(clipreg,   O); //
+    Output(nomadic,       O); //
+    Output(nosolution,    O); 
+    Output(translocation, O);
 
-    Output (snp,     O);
-    Output (homoRef, O);
-    Output (nSeq,    O);
+    Output(snp,     O);
+    Output(homoRef, O);
+    Output(nSeq,    O);
 
     O.close();
     return;
@@ -977,7 +977,7 @@ void Variant::Output(string file) {
 
 void Variant::Output(vector<VarUnit> &R, ofstream &O) {
 
-    sort (R.begin(), R.end(), MySortByTarV);
+    sort(R.begin(), R.end(), MySortByTarV);
     for (size_t i(0); i < R.size(); ++i) {
 
         if (R[i].Empty()) continue;
@@ -993,44 +993,9 @@ void Variant::Output(vector<VarUnit> &R, ofstream &O) {
             R[i].exp_tarSeq = tarfa.fa[R[i].exp_target.id].substr(R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
             R[i].OutStd(tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
         }
+		R[i].tarSeq.clear(); // Save the memory
+		R[i].qrySeq.clear(); // Save the memory
     }
-}
-
-void Variant::OutputSNP(string file) {
-
-    ofstream O (file.c_str());
-    O <<  
-"##fileformat=VCFv4.1                                                       \n\
-##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">              \n\
-##FORMAT=<ID=ST,Number=1,Type=String,Description=\"Mappind strand\">        \n\
-##FORMAT=<ID=VT,Number=1,Type=String,Description=\"Variant type\">          \n\
-##FORMAT=<ID=QR,Number=1,Type=String,Description=\"Query Info\">            \n\
-##FORMAT=<ID=MS,Number=2,Type=Integer,Description=\"Mapping Score\">        \n\
-##FORMAT=<ID=MIP,Number=1,Type=Float,Description=\"Mismapped probability\"> \n\
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + sample + "\n";
-	sort (snp.begin(), snp.end(), MySortByTarV);
-    for (size_t i(0); i < snp.size(); ++i) {
-        if (snp[i].Empty()) continue;
-
-        snp[i].tarSeq = (snp[i].target.id == "-") ? "-" : tarfa.fa[snp[i].target.id].substr(snp[i].target.start - 1, snp[i].target.end - snp[i].target.start + 1);
-// WSKMYRVDBHwskmyrvdbh
-// ACTACAAATAactacaaata
-		bool isNext (false);
-		switch (toupper(snp[i].tarSeq[0])) {
-			case 'W' : ; case 'M':; case 'R':; case 'V':; case 'D':; 
-			case 'H' : ; case 'S':; case 'Y':; case 'K':; 
-			case 'B' : isNext = true; break;
-		}
-
-        snp[i].qrySeq = qryfa.fa[snp[i].query.id].substr( snp[i].query.start - 1, snp[i].query.end - snp[i].query.start + 1 );
-		if ( snp[i].strand == '-' ) snp[i].qrySeq = ReverseAndComplementary( snp[i].qrySeq );
-		if ( snp[i].tarSeq == snp[i].qrySeq ) continue;
-
-		O << snp[i].target.id << "\t" << snp[i].target.start << "\t.\t" << snp[i].tarSeq << "\t" << snp[i].qrySeq << "\t255\tPASS\t.\tGT:ST:VT:QR:MS:MIP\t"
-          << "./.:" << snp[i].strand  << ":" + snp[i].type + ":" + snp[i].query.id + "-" + itoa(snp[i].query.start) + "-" + itoa(snp[i].query.end) + ":"
-          + itoa( snp[i].score ) + ":" << snp[i].mismap << "\n";
-    }
-	O.close();
 }
 
 void Variant::OutputGap(string file) {

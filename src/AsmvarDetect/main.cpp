@@ -117,10 +117,10 @@ if (variant.target.id == "M") variant.target.id = "MT"; // Should be deleted aft
 			variant.tarfa.CheckFaId(variant.target.id);
 			variant.CallHomoRef(referenceId);
 			variant.CallnSeq(referenceId);
-			variant.CallSNP (referenceId);
+			variant.CallSNP(referenceId);
 			variant.CallInsertion(referenceId); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.
 			variant.CallDeletion (referenceId); // Don't covert the coordinate which map to the '-' strand here. I'll covert it when calling indel.
-			variant.GetMapReg    (); // The coordinate coversion events will be happen in this memerber function!
+			variant.GetMapReg(); // The coordinate coversion events will be happen in this memerber function!
 		}
 		I.close();
 	}
@@ -132,13 +132,13 @@ if (variant.target.id == "M") variant.target.id = "MT"; // Should be deleted aft
 	variant.AGE_Realign(referenceId);
 
 	cerr << "[INFO] Outputting information into files.\n";
-	variant.Output   (outFilePrefix + ".svd"    );
+	variant.Output(outFilePrefix + ".svd");
 	cerr << "      -- " << outFilePrefix + ".svd\n";
 	variant.OutputGap(outFilePrefix + ".gap.bed");
 	cerr << "      -- " << outFilePrefix + ".gap.bed\n";
 	variant.Output2VCF(referenceId, outFilePrefix + ".vcf");
 	cerr << "      -- " << outFilePrefix + ".vcf\n";
-	variant.Summary  (outFilePrefix + ".summary"); 
+	variant.Summary(outFilePrefix + ".summary"); 
 	cerr << "      -- " << outFilePrefix + ".summary\n";
 
 	cerr << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> All Done <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;

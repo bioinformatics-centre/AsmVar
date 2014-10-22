@@ -36,20 +36,20 @@ public:
 	Fa tarfa, qryfa;
 
 private: 
-	string sample;              // The name of sample
-	vector<VarUnit> homoRef;  // The homozygous reference region, we should
-						    	// filter the SV regions before output
+	string sample;           // The name of sample
+	vector<VarUnit> homoRef; // The homozygous reference region, we should
+						     // filter the SV regions before output
 
-	vector<VarUnit> nSeq;  // The reference or query is 'n' base or region
-							 // it's juse the n base not in indel or any
-							 // other SV region.
+	vector<VarUnit> nSeq;  // The reference or query are 'n' base or region
+						   // it's juse the n base not in indel or any
+						   // other SV region.
 
-	vector<VarUnit> snp;           // Stored the SNP
-	vector<VarUnit> intragap;      // Call the intra-scaffold-gap, just for the gaps which in alignment. Abort, 2014-02-27 19:28:42
-	vector<VarUnit> insertion;     //
-	vector<VarUnit> deletion;      //
-	vector<VarUnit> inversion;     //
-	vector<VarUnit> translocation; //
+	vector<VarUnit> snp;       // Stored the SNP
+	vector<VarUnit> intragap;  // Call the intra-scaffold-gap, just for the gaps which in alignment. Abort, 2014-02-27 19:28:42
+	vector<VarUnit> insertion;     
+	vector<VarUnit> deletion;      
+	vector<VarUnit> inversion;     
+	vector<VarUnit> translocation;
 	vector<VarUnit> simulreg;// simultaneous gap regions
 	vector<VarUnit> clipreg; // clip regions 
 	vector<VarUnit> nomadic; // The query which totally can not map to target
@@ -95,14 +95,12 @@ public : // Can be called per-axt alignment. And will be called in main function
 	void GetMapReg     ();
 	void AGE_Realign   (string refId); // AGE-Process
 
-
 public : // Just can be call when all the axt alignments have been read!
 	void CallSV        (); //It's SV not Indel, which cannot be called by a single alignment. simultaneous gaps,Inversion,translocation and no solution region 
 	void CallClipReg   ();
 	void CallNomadic   ();
 	void Filter        ();  // Filter the variant regions which in nosolution
 	void Output   (string file); // Output to the stdout
-	void OutputSNP(string file); // Output SNP
 	void Summary  (string file); // Output Summary information
 	void OutputGap(string file); // Output the inter-gaps between different scaffold of the same target chromosome.
 
