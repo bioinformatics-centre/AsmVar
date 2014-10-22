@@ -24,15 +24,12 @@ public:
 	map<int, string> order2id; // Record the order of fa id
 	uint length; // Recorde the total size of fa. Should not bigger than 4G!
 	uint nsize;  // Recorde the total size of 'N' in fa. Should not bigger than 4G!
-	string file; // the path of fa file.
 
 public:
     Fa() : length(0), nsize(0) { fa.clear(); }
-	Fa( string filename ) { Load(filename); }
+	Fa( string file ) { Load(file); }
 
-    void Load( string filename ) { 
-
-		file = filename; 
+    void Load( string file ) { 
 
         igzstream I( file.c_str() );
         if ( !I ){
@@ -71,7 +68,7 @@ public :
 	void CheckFaId(string id) {
 
 		if (!fa.count(id)) {
-			cerr << "Missing some fa id or fa id can't match in " << file
+			cerr << "[ERROR] Missing some fa id or fa id can't match in "
 				 << "\nThe unmatch id: " + id << "\n";
 			exit(1);
 		}
