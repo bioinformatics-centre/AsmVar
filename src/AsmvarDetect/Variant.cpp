@@ -958,15 +958,14 @@ void Variant::Output(string file) {
     ofstream O (file.c_str());
     if (!O) { std::cerr << "Cannot write to file : " << file << endl; exit(1); }
 
-    Output(insertion, O); //
-    Output(deletion,  O); //
+    Output(insertion, O);
+    Output(deletion,  O);
     Output(inversion, O);
-    Output(simulreg,  O); //
-    Output(clipreg,   O); //
-    Output(nomadic,       O); //
-    Output(nosolution,    O); 
+    Output(simulreg,  O);
+    Output(clipreg,   O);
+    Output(nomadic,    O);
+    Output(nosolution, O); 
     Output(translocation, O);
-
     Output(snp,     O);
     Output(homoRef, O);
     Output(nSeq,    O);
@@ -982,19 +981,12 @@ void Variant::Output(vector<VarUnit> &R, ofstream &O) {
 
         if (R[i].Empty()) continue;
 
-        R[i].tarSeq = (R[i].target.id == "-") ? "-" : tarfa.fa[R[i].target.id].substr(R[i].target.start - 1, R[i].target.end - R[i].target.start + 1);
-        R[i].qrySeq = qryfa.fa[ R[i].query.id].substr(R[i].query.start - 1, R[i].query.end - R[i].query.start + 1);
-        if (R[i].strand == '-') R[i].qrySeq = ReverseAndComplementary(R[i].qrySeq);
-
         if (R[i].exp_target.isEmpty()) {
-            R[i].OutStd(tarfa.fa[R[i].target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
+            R[i].OutStd(tarfa.fa[R[i].target.id].length(), qryfa.fa[R[i].query.id].length(), O);
         } else {
-            if (R[i].exp_target.id.empty() || R[i].exp_target.id == "-") err ("exp_target.id.empty() || R[i].exp_target.id == '-' ");
-            R[i].exp_tarSeq = tarfa.fa[R[i].exp_target.id].substr(R[i].exp_target.start - 1, R[i].exp_target.end - R[i].exp_target.start + 1); 
-            R[i].OutStd(tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[ R[i].query.id].length(), O);
+            if (R[i].exp_target.id.empty() || R[i].exp_target.id == "-") err("exp_target.id.empty() || R[i].exp_target.id == '-' ");
+            R[i].OutStd(tarfa.fa[R[i].target.id].length(), tarfa.fa[R[i].exp_target.id].length(), qryfa.fa[R[i].query.id].length(), O);
         }
-		R[i].tarSeq.clear(); // Save the memory
-		R[i].qrySeq.clear(); // Save the memory
     }
 }
 

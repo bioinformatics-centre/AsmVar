@@ -85,18 +85,11 @@ vector<VarUnit> VarUnit::ReAlignAndReCallVar(string &targetSeq,
 void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) { 
 // Output
 
-	if (tarSeq.empty() || qrySeq.empty()){ 
-		std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1); 
-	}
-
-	long int qnl = NLength (qrySeq);
-	long int tnl = NLength (tarSeq);
 	string reAlignStat = (isSuccessAlign) ? "CanAGE" : "Can'tAGE";
 	O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
-	  << target.end - target.start + 1     << "\t" << double(tnl)/tarSeq.length()
-	  << "\t" << tarSeqLen                 << "\t"
-	  << query.id  << "\t" << query.start  << "\t" << query.end << "\t" 
-	  << query.end  - query.start  + 1     << "\t" << double(qnl)/qrySeq.length()
+	  << target.end - target.start + 1     << "\t" << tarSeqLen  << "\t"
+	  << query.id  << "\t" << query.start  << "\t" << query.end  << "\t" 
+	  << query.end  - query.start  + 1
 	  << "\t" << qrySeqLen <<"\t"<< strand << "\t" << score << "\t" << mismap    
 	  << "\t" << type      <<"\t"<< reAlignStat    << endl;
 	return;
@@ -105,19 +98,12 @@ void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) {
 void VarUnit::OutErr() {
 // Output the alignment to STDERR
 
-    if (tarSeq.empty() || qrySeq.empty()){
-        std::cerr << "tarSeq.empty() || qrySeq.empty()" << endl; exit(1);
-    }
-
-    long int qnl = NLength ( qrySeq );
-    long int tnl = NLength ( tarSeq );
 	string reAlignStat = (isSuccessAlign) ? "CanAGE": "Can'tAGE";
     cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
-      << target.end - target.start + 1 << "\t" << double(tnl)/tarSeq.length()
-	  << "\t" << cipos.first  << ","   << cipos.second << "\t" << ciend.first 
-	  << ","  << ciend.second << "\t"  << query.id     << "\t" << query.start   
-	  << "\t" << query.end    << "\t"  << query.end  - query.start  + 1 << "\t" 
-	  << double(qnl)/qrySeq.length()
+      << target.end - target.start + 1
+	  << "\t" << cipos.first  << ","  << cipos.second << "\t" << ciend.first 
+	  << ","  << ciend.second << "\t" << query.id     << "\t" << query.start   
+	  << "\t" << query.end    << "\t" << query.end  - query.start  + 1
       << "\t" << strand << "\t" << homoRun << "\t" << isGoodReAlign 
 	  << "\t" << score  << "\t" << mismap  << "\t" << type << "\t"
 	  << reAlignStat    << endl;
@@ -127,20 +113,18 @@ void VarUnit::OutErr() {
 void VarUnit::OutStd(long int tarSeqLen, long int exp_tarSeqLen, 
 					 long int qrySeqLen, ofstream &O) {
 
-	if (exp_target.isEmpty()) cerr << "[ERROR]exp_target is empty!\n";
+	if (exp_target.isEmpty()) { 
+		cerr << "[ERROR]exp_target is empty!\n"; 
+		exit(1); 
+	}
+
 	OutStd(tarSeqLen, qrySeqLen, O);
-
-	if (exp_tarSeq.empty()){ cerr << "exp_tarSeq.empty() \n"; exit(1); }
-
-	long int qnl = NLength (qrySeq    );
-	long int tnl = NLength (exp_tarSeq);
-	O << exp_target.id << "\t" << exp_target.start     << "\t" << exp_target.end 
-	  << "\t" << exp_target.end - exp_target.start + 1 << "\t" 
-	  << double(tnl)/exp_tarSeq.length()      << "\t" << exp_tarSeqLen << "\t" 
-	  << query.id  << "\t"   << query.start   << "\t" << query.end     << "\t" 
-	  << query.end  - query.start  + 1        << "\t" << double(qnl)/qrySeq.length() 
-	  << "\t" << qrySeqLen  << "\t" << strand << "\t" << score << "\t" << mismap 
-	  << "\t" << type + "-E"<< endl;
+	O << exp_target.id << "\t" << exp_target.start << "\t" << exp_target.end 
+	  << "\t" << exp_target.end - exp_target.start + 1 
+	  << "\t" << exp_tarSeqLen << "\t" << query.id << "\t" << query.start   
+	  << "\t" << query.end     << "\t" << query.end - query.start + 1 
+	  << "\t" << qrySeqLen     << "\t" << strand << "\t" << score 
+	  << "\t" << mismap << "\t" << type + "-E"   << endl;
 	return;
 }
 

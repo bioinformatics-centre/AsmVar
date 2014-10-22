@@ -60,11 +60,11 @@ int main ( int argc, char* argv[] ) {
 
 		igzstream I(infile[i].c_str());
         if (!I) {
-            cerr << "Cannot open file : " << i + 1 << "\t" << infile[i] << endl;
+            cerr << "Cannot open file: " << i + 1 << "\t" << infile[i] << endl;
             exit(1);
         }
-        cerr << "\n***#    Reading file : " << i + 1 << "\t" << infile[i] 
-			 << "    #*** " << endl;
+        cerr << "\n[INOF] Reading file: " << i + 1 << "/" 
+             << infile.size() << " " << infile[i] << "\n";
 		long alignNum = 0;
 		string tmp;
         vector<string> vect; 
