@@ -85,20 +85,20 @@ vector<VarUnit> VarUnit::ReAlignAndReCallVar(string &targetSeq,
 void VarUnit::OutStd(long int tarSeqLen, long int qrySeqLen, ofstream &O) { 
 // Output
 
-	string reAlignStat = (isSuccessAlign) ? "CanAGE" : "Can'tAGE";
+	string reAlignStat = (isSuccessAlign) ? "CanAGE" : "CanotAGE";
 	O << target.id << "\t" << target.start << "\t" << target.end << "\t" 
 	  << target.end - target.start + 1     << "\t" << tarSeqLen  << "\t"
 	  << query.id  << "\t" << query.start  << "\t" << query.end  << "\t" 
 	  << query.end  - query.start  + 1
 	  << "\t" << qrySeqLen <<"\t"<< strand << "\t" << score << "\t" << mismap    
-	  << "\t" << type      <<"\t"<< reAlignStat    << endl;
+	  << "\t" << type      <<"\t"<< reAlignStat    << "\n";
 	return;
 }
 
 void VarUnit::OutErr() {
 // Output the alignment to STDERR
 
-	string reAlignStat = (isSuccessAlign) ? "CanAGE": "Can'tAGE";
+	string reAlignStat = (isSuccessAlign) ? "CanAGE": "CanotAGE";
     cerr << target.id << "\t" << target.start << "\t" << target.end << "\t"
       << target.end - target.start + 1
 	  << "\t" << cipos.first  << ","  << cipos.second << "\t" << ciend.first 
@@ -106,7 +106,7 @@ void VarUnit::OutErr() {
 	  << "\t" << query.end    << "\t" << query.end  - query.start  + 1
       << "\t" << strand << "\t" << homoRun << "\t" << isGoodReAlign 
 	  << "\t" << score  << "\t" << mismap  << "\t" << type << "\t"
-	  << reAlignStat    << endl;
+	  << reAlignStat    << "\n";
     return;
 }
 
