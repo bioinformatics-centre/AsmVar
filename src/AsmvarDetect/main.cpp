@@ -56,7 +56,6 @@ int main ( int argc, char* argv[] ) {
 	variant.AssignSample(sampleId); // Assigne the name of sample into 'variant'
 	for (size_t i(0); i < qryRef.size(); ++i) { variant.qryfa.Load(qryRef[i]); } // Load query sequence
 	for (size_t i(0); i < tarRef.size(); ++i) { variant.tarfa.Load(tarRef[i]); } // Load query sequence
-
 	for (size_t i (0); i < infile.size(); ++i) {
 
 		igzstream I(infile[i].c_str());
@@ -64,7 +63,9 @@ int main ( int argc, char* argv[] ) {
             cerr << "Cannot open file : " << i + 1 << "\t" << infile[i] << endl;
             exit(1);
         }
-        cerr << "***#    Reading file : " << i + 1 << "\t" << infile[i] << "    #*** " << endl;
+        cerr << "\n***#    Reading file : " << i + 1 << "\t" << infile[i] 
+			 << "    #*** " << endl;
+		long alignNum = 0;
 		string tmp;
         vector<string> vect; 
 		while (1) {
@@ -78,6 +79,10 @@ int main ( int argc, char* argv[] ) {
             p                                     2567777777777888888889999999:::::;;;;
 
 		*/
+			++alignNum;
+			if (alignNum % 1000000 == 0) 
+				cerr << "[INFO] Loading " << alignNum << " alignments\n";
+
 			I >> tmp;
 			if (I.eof()) {
                 break;
@@ -123,6 +128,7 @@ if (variant.target.id == "M") variant.target.id = "MT"; // Should be deleted aft
 			variant.GetMapReg(); // The coordinate coversion events will be happen in this memerber function!
 		}
 		I.close();
+		cerr << "[INFO] Total " << alignNum << " alignments in " << infile[i] << "\n";
 	}
 	variant.CallSV(); // It's SV not Indel, which cannot be called by a single alignment. The most important part of these program!!
 	variant.CallClipReg();
@@ -131,7 +137,7 @@ if (variant.target.id == "M") variant.target.id = "MT"; // Should be deleted aft
 	cerr << "[INFO] Doing re-aligne process ...\n";
 	variant.AGE_Realign(referenceId);
 
-	cerr << "[INFO] Outputting information into files.\n";
+	cerr << "\n[INFO] Outputting information into files.\n";
 	variant.Output(outFilePrefix + ".svd");
 	cerr << "      -- " << outFilePrefix + ".svd\n";
 	variant.OutputGap(outFilePrefix + ".gap.bed");

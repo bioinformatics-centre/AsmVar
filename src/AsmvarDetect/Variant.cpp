@@ -406,8 +406,8 @@ void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
         ++summary[ks].first;
         summary[ks].second += (R[i].target.end - R[i].target.start >
                 R[i].query.end  - R[i].query.start) ? 
-            R[i].target.end - R[i].target.start : 
-            R[i].query.end  - R[i].query.start;
+                R[i].target.end - R[i].target.start : 
+                R[i].query.end  - R[i].query.start;
         //for (size_t j(0); j < v.size(); ++j) vus.push_back(v[j]);
         /*		
                 cerr << "\n***********************************\n";
