@@ -71,14 +71,15 @@ def main ( opt ) :
            tot += 1.0 # Record For summary
            culprit[annoTexts[d.worstAnnotation]] = culprit.get(annoTexts[d.worstAnnotation], 0.0) + 1.0 #For summary
            for lod in [0, 1, 2, 3, 4] :
-               if d.lod >= lod : good[lod] = good.get( lod, 0.0 ) + 1.0
+               if d.lod >= lod : good[lod] = good.get(lod, 0.0) + 1.0
         
            if d.atTrainingSite     : vcfinfo['POSITIVE_TRAIN_SITE'] = 'POSITIVE_TRAIN_SITE'
            if d.atAntiTrainingSite : vcfinfo['NEGATIVE_TRAIN_SITE'] = 'NEGATIVE_TRAIN_SITE'
            vcfinfo['VQ'] = 'VQ=' + str(d.lod)
            vcfinfo['CU'] = 'CU=' + annoTexts[d.worstAnnotation]
-           for text in annoTexts : vcfinfo[text] = text+'='+str(d.annotations[ idx[text] ])
-           col[7] = ';'.join( sorted(vcfinfo.values()) )
+           for text in annoTexts : vcfinfo[text] = text+'='+str(d.annotations[idx[text]])
+           col[7] = ';'.join(sorted(vcfinfo.values()))
+           col[5] = d.lod
 
            print '\t'.join( col )
 
