@@ -15,6 +15,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import AlterAlign as ATA
 
+def IsSNP(alleles):
+
+    isSnp = True
+    for ale in alleles: 
+        if len(ale) > 1: isSnp = False
+
+    return isSNP
+
 def main(opt): 
 
     vcfInfile = opt.vcfInfile
@@ -72,26 +80,29 @@ def main(opt):
                 continue
 
             if refId != 'ALL' and refId != col[0]: continue
-            if len(col[3]) == len(col[4]) and len(col[3]) == 1: continue # SNP or Reference call
+            # SNP, INTERGAP, Reference call
+            if col[4] == '.' or IsSNP(col[4].split(',')):
+                continue
+
             if col[2] == '.': col[2] = 'V_' + col[0] + '_' + col[1]
 
-            idx    = sam2col[sampleID]
-            fi     = col[idx].split(':')
-            gt     = fi[0].split('/')
-            if '|' in fi[0] : gt = fi[0].split('|')
-            gtIdx  = 1 # Default is the first ALT Sequence
+            idx = sam2col[sampleID]
+            fi  = col[idx].split(':')
+            gt  = fi[0].split('/')
+            if '|' in fi[0]: gt = fi[0].split('|')
+            gtIdx = 1 # Default is the first ALT Sequence
             if len(gt) == 2 and gt[1] != '.': gtIdx = string.atoi(gt[1])
 
             col[4] = col[4].split(',')[gtIdx-1]
             altseq = col[4][1:]
-            pos    = string.atoi(col[1])
+            refpos = string.atoi(col[1])
             zr,za,zc,zi = 0,0,0,0
             if pos > 0:
                 zr,za,zc,zi = ATA.Align(samInHandle, samOutHandle, fa, col[0], 
-                                        pos, col[2], col[3], altseq, mapq)
+                                        refpos, col[2], col[3], altseq, mapq)
          
             format = {t:i for i,t in enumerate(col[8].split(':'))} # Get Format
-            fi     = col[idx].split(':')
+            fi = col[idx].split(':')
             if col[idx] != './.' and len(fi) != len(format): 
                 raise ValueError('[ERROR] The format of "FORMAT" fields'
                                  'is not match sample %s in %s' % (col[idx], format))
