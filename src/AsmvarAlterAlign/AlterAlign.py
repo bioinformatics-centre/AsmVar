@@ -31,8 +31,7 @@ def LoadFaSeq(file):
             if line[0] == '>':
                 id = line.split()[0][1:]
                 if id in fa:
-                    print >> sys.stderr, '# [ERROR] Catch Duplcation name in file %s at id %s' % (file, id)
-                    sys.exit(1)
+                    raise ValueError('# [ERROR] Catch Duplcation name in file %s at id %s' % (file, id))
                 fa[id] = []
             else :
                 fa[id].append(line)
@@ -60,21 +59,24 @@ def Ref2QryPos(rstart, rpos, cigar):
     cigarDict = {0:'M', 1:'I', 2:'D', 3:'N', 4:'S', 5:'H', 6:'P', 7:'=', 8:'X'}
     rmaplen, qpos = 0, 0
     for m in ''.join(cigarDict[type] * size for type,size in cigar): # cigar string
-        if m in 'MXNP=D' : rmaplen += 1
-        if m in 'MIS=X'  : qpos    += 1
-        if rstart + rmaplen == rpos : break
+        if m in 'MXNP=D': rmaplen += 1
+        if m in 'MIS=X' : qpos    += 1
+        if rstart + rmaplen == rpos: break
 
     return qpos # 0-base
 
-def Align(samInHandle, samOutHandle, fa, id, position, varId, refseq, altseq, mapq = 20):
+#def Align(samInHandle, samOutHandle, fa, id, position, varId, refseq, altseq, mapq = 20):
+def Align(samInHandle, fa, id, position, varId, refseq, altseq, mapq = 20):
     """ 
     position is the left break point of the variants
-    And the position should be 0-base for convenience. 
-    Because I use something like fa[id][position] to get bases from fa string
+    And the position should be 1-base for convenience. 
+    Because I use something like fa[id][position-1] to get bases from fa string
     """
+    if position < 1:
+        raise ValueError('[ERROR] The reference position is not 1-base: %r' % position)
+
     if id not in fa: 
-        print >> sys.stderr, '#[ERROR] The reference did not contain %s' % id 
-        sys.exit(1)
+        raise ValueError('#[ERROR] The reference did not contain %s' % id)
 
     rr,aa,com,diff = 0,0,0,0
     for pileup in samInHandle.pileup(id, position-1, position): 
@@ -87,8 +89,8 @@ def Align(samInHandle, samOutHandle, fa, id, position, varId, refseq, altseq, ma
             refPos = read.alignment.pos - read.alignment.qstart  # 0-base 
             q      = Ref2QryPos(read.alignment.pos, position, read.alignment.cigar)
             if q > read.alignment.rlen:
-                print >> sys.stderr, '#[BUG] The query position(%d) is > read length(%d)' % (q, read.alignment.rlen)
-                sys.exit(1)
+                raise ValueError('#[BUG] The query position(%r) is > read length(%r)' 
+                                 % (q, read.alignment.rlen))
             if q == read.alignment.rlen: continue
 
             refSeq = fa[id][position:refPos+read.alignment.rlen] 
@@ -109,8 +111,8 @@ def Align(samInHandle, samOutHandle, fa, id, position, varId, refseq, altseq, ma
             else: 
                 diff += 1 # All im-perfect
 
-            read.alignment.tags += [('ZJ', varId)] + [('ZR', zr)] + [('ZA', za)]
-            samOutHandle.write(read.alignment)
+            #read.alignment.tags += [('ZJ', varId)] + [('ZR', zr)] + [('ZA', za)] # Not output to save the store
+            #samOutHandle.write(read.alignment) # Not output to save the store
 
     return rr,aa,com,diff
 

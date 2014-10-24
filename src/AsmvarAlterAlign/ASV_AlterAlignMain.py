@@ -15,11 +15,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import AlterAlign as ATA
 
-def IsSNP(alleles):
+def IsSNP(refbase, alleles):
 
     isSnp = True
     for ale in alleles: 
-        if len(ale) > 1: isSnp = False
+        if len(ale) > 1 or len(refbase) > 1: isSnp = False
 
     return isSnp
 
@@ -41,7 +41,7 @@ def main(opt):
     else :
         samInHandle = pysam.Samfile(bamInfile, 'r')
 
-    samOutHandle = pysam.Samfile(outPrefix + '.bam', 'wb', template=samInHandle)
+    #samOutHandle = pysam.Samfile(outPrefix + '.bam', 'wb', template=samInHandle)
     vcfOutHandle = open(outPrefix + '.vcf', 'w')
 
     print >> sys.stderr, '# [INFO] Now Scaning the VCF and doing alternate align ... ...'
@@ -80,32 +80,36 @@ def main(opt):
                 continue
 
             if refId != 'ALL' and refId != col[0]: continue
-            # SNP, INTERGAP, Reference call
-            if col[4] == '.' or IsSNP(col[4].split(',')):
-                continue
-
-            if col[2] == '.': col[2] = 'V_' + col[0] + '_' + col[1]
 
             idx = sam2col[sampleID]
             fi  = col[idx].split(':')
+
             gt  = fi[0].split('/')
             if '|' in fi[0]: gt = fi[0].split('|')
             gtIdx = 1 # Default is the first ALT Sequence
-            if len(gt) == 2 and gt[1] != '.': gtIdx = string.atoi(gt[1])
+            if len(gt) == 2 and gt[1] != '.': 
+                gtIdx = string.atoi(gt[1])
 
-            col[4] = col[4].split(',')[gtIdx-1]
-            altseq = col[4][1:]
-            refpos = string.atoi(col[1])
-            zr,za,zc,zi = 0,0,0,0
-            if refpos > 0:
-                zr,za,zc,zi = ATA.Align(samInHandle, samOutHandle, fa, col[0], 
-                                        refpos, col[2], col[3], altseq, mapq)
+            col[4] = col[4].split(',')[gtIdx-1] # Match to the identity sample
+            zr,za,zc,zi = '.','.','.','.'
+            if col[4] != '.' and not IsSNP(col[3], [col[4]]):
+                # Not SNP, INTERGAP or Reference call
+            	if col[2]  == '.': col[2] = 'V_' + col[0] + '_' + col[1]
+                zr,za,zc,zi = ATA.Align(samInHandle, 
+                                        #samOutHandle, Don't output bam file
+                                        fa, 
+                                        col[0], 
+                                        string.atoi(col[1]), 
+                                        col[2], 
+                                        col[3], 
+                                        col[4][1:], #col[4][0] is reference
+                                        mapq)
          
             format = {t:i for i,t in enumerate(col[8].split(':'))} # Get Format
-            fi = col[idx].split(':')
             if col[idx] != './.' and len(fi) != len(format): 
-                raise ValueError('[ERROR] The format of "FORMAT" fields'
-                                 'is not match sample %s in %s' % (col[idx], format))
+                raise ValueError('[ERROR] The format of "FORMAT"' + 
+                                 'fields is not match sample '    + 
+                                 '%r in %r' % (col[idx], format))
             gt = fi[format['GT']] 
             format.pop('GT', None)
             for k, i in format.items(): 
@@ -113,18 +117,24 @@ def main(opt):
                     format[k] = fi[i]
                 else: 
                     format[k] = '.'
-            format['AA'] = ','.join(str(a) for a in [zr,za,zc,zi])
-            col[8]       = 'GT:' + ':'.join(sorted(format.keys()))
-            col[idx]     = gt + ':' + ':'.join([format[k] for k in sorted(format.keys())])
+
+            if zr == '.':
+                format['AA'] = '.'
+            else:
+                format['AA'] = ','.join(str(a) for a in [zr,za,zc,zi])
+
+            col[8]   = 'GT:' + ':'.join(sorted(format.keys()))
+            col[idx] = gt + ':' + ':'.join([format[k] for k in sorted(format.keys())])
 
             vcfOutHandle.write('%s\t%s\n' % ('\t'.join(col[:9]), col[idx]))
 
     I.close()
 
     samInHandle.close()
-    samOutHandle.close()
     vcfOutHandle.close()
-    print >> sys.stderr, '# [INFO] Closing the two Ouput files :\n(1) %s\n(2) %s' % (outPrefix + '.bam', outPrefix + '.vcf') 
+    #samOutHandle.close()
+    #print >> sys.stderr, '# [INFO] Closing the two Ouput files :\n(1) %s\n(2) %s' % (outPrefix + '.bam', outPrefix + '.vcf') 
+    print >> sys.stderr, '# [INFO] Closing the two Ouput files :\n  -- %s' % (outPrefix + '.vcf') 
 
 ########################################################################
 ########################################################################
