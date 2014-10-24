@@ -4,6 +4,7 @@ bin
 data
 git.sh
 rsync.sh
+*.pyc
 *.o
 .*.swp
 .DS_Store
