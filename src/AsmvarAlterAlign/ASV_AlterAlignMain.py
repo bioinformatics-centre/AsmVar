@@ -33,7 +33,7 @@ def main(opt):
     outPrefix = opt.outPrefix
     mapq      = opt.mapq
     newID     = opt.exc
-    fa = ATA.LoadFaSeq(faInfile)
+    fa = ATA.LoadFaSeq(faInfile, refId)
 
     print >> sys.stderr, '# [INFO] Fa Loading finish ***'
     if bamInfile[-4:] == '.bam':
@@ -46,7 +46,10 @@ def main(opt):
 
     print >> sys.stderr, '# [INFO] Now Scaning the VCF and doing alternate align ... ...'
     if vcfInfile[-3:] == '.gz':
-        I = os.popen('gzip -dc %s' % vcfInfile)
+        if refId == "ALL":
+            I = os.popen('gzip -dc %s' % vcfInfile)
+        else:
+            I = os.popen('/home/siyang/Bin/software_pip/tabix-0.2.6/tabix -h %s %s' % (vcfInfile, refId))
     else :
         I = open(vcfInfile)
 
