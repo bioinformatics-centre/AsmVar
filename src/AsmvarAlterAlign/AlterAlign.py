@@ -11,30 +11,41 @@ import sys
 import string
 import pysam 
 
-def LoadFaSeq(file):
+def LoadFaSeq(file, refId = 'ALL'):
 
     if file[-3:] == '.gz':
         I = os.popen('gzip -dc %s' % file)
     else :
         I = open(file)
 
-    fa,id = {}, ''
+    fa, id = {}, ''
+    isContinue, isBreak = True, False
     while 1:
 
         lines = I.readlines(100000)
-        if not lines: break
+        if not lines or isBreak: break
 
         for line in lines:
 
             line = line.strip('\n')
             if len(line) == 0: continue
+
             if line[0] == '>':
+
                 id = line.split()[0][1:]
                 if id in fa:
                     raise ValueError('# [ERROR] Catch Duplcation name in file %s at id %s' % (file, id))
-                fa[id] = []
-            else :
-                fa[id].append(line)
+
+                # Should set to break after getting fa[id] if refId != 'ALL'
+                if refId != 'ALL' and not isContinue: isBreak = True
+                if refId != 'ALL' and id != refId: 
+                    isContinue = True
+                else:
+                    isContinue = False
+                    fa[id] = []
+
+            else:
+                if not isContinue: fa[id].append(line)
 
     for k, v in fa.items(): fa[k] = ''.join(v)
 
