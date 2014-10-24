@@ -85,9 +85,12 @@ def Align(samInHandle, fa, id, position, varId, refseq, altseq, mapq = 20):
         if pos != position: continue
 
         for read in [al for al in pileup.pileups if al.alignment.mapq >= mapq]: 
-
+            
             refPos = read.alignment.pos - read.alignment.qstart  # 0-base 
-            q      = Ref2QryPos(read.alignment.pos, position, read.alignment.cigar)
+            # Next if the position is 2bp near the end of the reads
+            if position > refPos + read.alignment.rlen - 2: continue
+
+            q = Ref2QryPos(read.alignment.pos, position, read.alignment.cigar)
             if q > read.alignment.rlen:
                 raise ValueError('#[BUG] The query position(%r) is > read length(%r)' 
                                  % (q, read.alignment.rlen))
