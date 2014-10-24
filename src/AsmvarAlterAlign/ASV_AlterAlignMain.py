@@ -91,9 +91,11 @@ def main(opt):
                 gtIdx = string.atoi(gt[1])
 
             col[4] = col[4].split(',')[gtIdx-1] # Match to the identity sample
-            zr,za,zc,zi = '.','.','.','.'
+            notAltAlign = True
+            zr,za,zc,zi = 0,0,0,0
             if col[4] != '.' and not IsSNP(col[3], [col[4]]):
                 # Not SNP, INTERGAP or Reference call
+                notAltAlign = False
             	if col[2]  == '.': col[2] = 'V_' + col[0] + '_' + col[1]
                 zr,za,zc,zi = ATA.Align(samInHandle, 
                                         #samOutHandle, Don't output bam file
@@ -104,7 +106,9 @@ def main(opt):
                                         col[3], 
                                         col[4][1:], #col[4][0] is reference
                                         mapq)
-         
+            # Ignore the position which is meanless
+            if notAltAlign and col[idx] == './.': continue
+
             format = {t:i for i,t in enumerate(col[8].split(':'))} # Get Format
             if col[idx] != './.' and len(fi) != len(format): 
                 raise ValueError('[ERROR] The format of "FORMAT"' + 
@@ -118,7 +122,7 @@ def main(opt):
                 else: 
                     format[k] = '.'
 
-            if zr == '.':
+            if notAltAlign:
                 format['AA'] = '.'
             else:
                 format['AA'] = ','.join(str(a) for a in [zr,za,zc,zi])
