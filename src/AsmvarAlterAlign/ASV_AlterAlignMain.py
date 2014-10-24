@@ -21,7 +21,7 @@ def IsSNP(alleles):
     for ale in alleles: 
         if len(ale) > 1: isSnp = False
 
-    return isSNP
+    return isSnp
 
 def main(opt): 
 
@@ -97,7 +97,7 @@ def main(opt):
             altseq = col[4][1:]
             refpos = string.atoi(col[1])
             zr,za,zc,zi = 0,0,0,0
-            if pos > 0:
+            if refpos > 0:
                 zr,za,zc,zi = ATA.Align(samInHandle, samOutHandle, fa, col[0], 
                                         refpos, col[2], col[3], altseq, mapq)
          
