@@ -1,0 +1,1 @@
+/faststorage/home/siyang/BACKUP/USER/raojh/20131230_AncestralAlleleAnnotation/bin/20140728_as.pip.sh

@@ -112,11 +112,16 @@ def main(opt):
             # Ignore the position which is meanless
             if notAltAlign and col[idx] == './.': continue
 
-            format = {t:i for i,t in enumerate(col[8].split(':'))} # Get Format
+            format = {t:i for i, t in enumerate(col[8].split(':'))} # Get Format
             if col[idx] != './.' and len(fi) != len(format): 
                 raise ValueError('[ERROR] The format of "FORMAT"' + 
                                  'fields is not match sample '    + 
                                  '%r in %r' % (col[idx], format))
+            for type in ['VS', 'VT']:
+                if type not in format:
+                    raise ValueError('[ERROR] The format of VCF file is ' + 
+                                     'not right which you input, it did ' + 
+                                     'not contian %s field in FORMAT')
             gt = fi[format['GT']] 
             format.pop('GT', None)
             for k, i in format.items(): 
@@ -124,6 +129,13 @@ def main(opt):
                     format[k] = fi[i]
                 else: 
                     format[k] = '.'
+
+            # Use first sample which is not './.' to set VT and VS if col[idx] == './.'
+            # This is the same idea with what we do above for 'gtIdx = 1'
+            if col[idx] == './.':
+                isam = [sam for sam in col[9:] if sam != './.'][0].split(':')
+                format['VT'] = isam[format['VT']]
+                format['VS'] = isam[format['VS']]
 
             if notAltAlign:
                 format['AA'] = '.'
