@@ -129,9 +129,19 @@ def main(opt):
             # Use first sample which is not './.' to set VT and VS if col[idx] == './.'
             # This is the same idea with what we do above for 'gtIdx = 1'
             if col[idx] == './.':
-                isam = [sam for sam in col[9:] if sam != './.'][0].split(':')
-                format['VT'] = isam[fm['VT']]
-                format['VS'] = isam[fm['VS']]
+                if notAltAlign: # 
+                    format['VT'] = '.'
+                    format['VS'] = '.'
+                else:
+                    isam = [sam for sam in col[9:] if sam != './.' and not re.search(r'^0/0:', sam)]
+                    if len(isam) == 0: 
+                    # This may happen if appear duplication position and pick the 
+                    # REFCALL instand of Variant call when CombineVar with GATK
+                        isam = [sam for sam in col[9:] if sam != './.'][0].split(':')
+                    else:
+                        isam = isam[0].split(':')
+                    format['VT'] = isam[fm['VT']]
+                    format['VS'] = isam[fm['VS']]
 
             if notAltAlign:
                 format['AA'] = '.'
