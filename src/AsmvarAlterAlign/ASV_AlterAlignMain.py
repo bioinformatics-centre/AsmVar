@@ -112,39 +112,35 @@ def main(opt):
             # Ignore the position which is meanless
             if notAltAlign and col[idx] == './.': continue
 
-            format = {t:i for i, t in enumerate(col[8].split(':'))} # Get Format
-            if col[idx] != './.' and len(fi) != len(format): 
+            fm = {t:i for i, t in enumerate(col[8].split(':'))} # Get Format
+            if col[idx] != './.' and len(fi) != len(fm): 
                 raise ValueError('[ERROR] The format of "FORMAT"' + 
                                  'fields is not match sample '    + 
-                                 '%r in %r' % (col[idx], format))
+                                 '%r in %r' % (col[idx], fm))
             for type in ['VS', 'VT']:
-                if type not in format:
+                if type not in fm:
                     raise ValueError('[ERROR] The format of VCF file is ' + 
                                      'not right which you input, it did ' + 
                                      'not contian %s field in FORMAT')
-            gt = fi[format['GT']] 
-            format.pop('GT', None)
-            for k, i in format.items(): 
-                if col[idx] != './.': 
-                    format[k] = fi[i]
-                else: 
-                    format[k] = '.'
+            format = {}
+            for k, i in fm.items(): 
+                if k != 'GT' and col[idx] != './.': format[k] = fi[i]
 
             # Use first sample which is not './.' to set VT and VS if col[idx] == './.'
             # This is the same idea with what we do above for 'gtIdx = 1'
             if col[idx] == './.':
                 isam = [sam for sam in col[9:] if sam != './.'][0].split(':')
-                format['VT'] = isam[format['VT']]
-                format['VS'] = isam[format['VS']]
+                format['VT'] = isam[fm['VT']]
+                format['VS'] = isam[fm['VS']]
 
             if notAltAlign:
                 format['AA'] = '.'
             else:
                 format['AA'] = ','.join(str(a) for a in [zr,za,zc,zi])
 
-            col[8]   = 'GT:' + ':'.join(sorted(format.keys()))
-            col[idx] = gt + ':' + ':'.join([format[k] for k in sorted(format.keys())])
-
+            col[8] = 'GT:' + ':'.join(sorted(format.keys()))
+            # Still keep the origin genotype 
+            col[idx] = fi[fm['GT']] + ':' + ':'.join([format[k] for k in sorted(format.keys())])
             vcfOutHandle.write('%s\t%s\n' % ('\t'.join(col[:9]), col[idx]))
 
     I.close()
