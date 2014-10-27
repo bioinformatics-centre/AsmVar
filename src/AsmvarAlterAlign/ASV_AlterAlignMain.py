@@ -138,6 +138,15 @@ def main(opt):
             else:
                 format['AA'] = ','.join(str(a) for a in [zr,za,zc,zi])
 
+            gt = fi[fm['GT']].split('/')
+            if '|' in fi[fm['GT']]: gt = fi[fm['GT']].split('|')
+            for i, g in enumerate(gt):
+                if g != '.' and string.atoi(g) > 1: gt[i] = '1'
+            if '|' in fi[fm['GT']]:
+                fi[fm['GT']] = '|'.join(gt)
+            else:
+                fi[fm['GT']] = '/'.join(gt)
+
             col[8] = 'GT:' + ':'.join(sorted(format.keys()))
             # Still keep the origin genotype 
             col[idx] = fi[fm['GT']] + ':' + ':'.join([format[k] for k in sorted(format.keys())])
