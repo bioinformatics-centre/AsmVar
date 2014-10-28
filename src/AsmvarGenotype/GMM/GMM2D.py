@@ -118,7 +118,7 @@ class GMM ( BaseEstimator ) :
         logprob, responsibilities = self.score_samples(X)
         return responsibilities
 
-    def fit(self, X, sam2col, family):
+    def fit(self, X):
         """
         Copy form scikit-learn: gmm.py
         Estimate model parameters with the expectation-maximization
@@ -168,7 +168,7 @@ class GMM ( BaseEstimator ) :
             self.init_means  = np.array(m)
             self.init_covars = np.array(v)
             self.category    = np.array(c)
-            best_params,bias = self.training(X, sam2col, family)
+            best_params,bias = self.training(X)
 
             if lowest_bias > bias :
                 lowest_bias         = bias
@@ -192,13 +192,13 @@ class GMM ( BaseEstimator ) :
         return self
 
     ####
-    def training(self, X, sam2col, family) :
+    def training(self, X):
 
-        max_log_prob        = -np.infty
-        lowest_bias         = np.infty
+        max_log_prob = -np.infty
+        lowest_bias  = np.infty
 
         wmin, wmax = 0.8, 1.2  # Factor intervel [wmin, wmax]
-        for w in np.linspace(wmin, wmax, self.n_init) :
+        for w in np.linspace(wmin, wmax, self.n_init):
             if 'm' in self.init_params or not hasattr(self, 'means_'):
                 #self.means_ = cluster.KMeans(n_clusters=self.n_components, random_state=self.random_state).fit(X).cluster_centers_
                 self.means_  = w * self.init_means
@@ -225,41 +225,41 @@ class GMM ( BaseEstimator ) :
                 log_likelihood.append(curr_log_likelihood.sum())
 
                 # Check for convergence.
-                if i > 0 and abs(log_likelihood[-1] - log_likelihood[-2]) < self.thresh :
+                if i > 0 and abs(log_likelihood[-1] - log_likelihood[-2]) < self.thresh:
                     self.converged_ = True
                     break
                 #Maximization step
                 self._do_mstep(X, responsibilities, self.params, self.min_covar)
 
-            if   self.n_components == 3 :
+            if   self.n_components == 3:
                 curr_bias =(self.means_[0][0]-self.init_means[0][0])+np.abs(self.means_[1][0]-self.init_means[1][0])+(self.init_means[2][0]-self.means_[2][0])
-            elif self.n_components == 2 :
+            elif self.n_components == 2:
                 curr_bias =np.abs(self.means_[0][0] - self.init_means[0][0]) + np.abs(self.init_means[1][0] - self.means_[1][0])
-            elif self.n_components == 1 :
+            elif self.n_components == 1:
                 curr_bias =np.abs (self.means_[0][0] - self.init_means[0][0])
             else :
                  print >> sys.stderr, '[ERROR] The companent could only between [1,3]. But yours is ', self.n_components
                  sys.exit(1)
             
             self.Label2Genotype()
-            if w == wmin :
+            if w == wmin:
                 max_log_prob = log_likelihood[-1]
-                best_params  = { 'weights':self.weights_, 
-                                 'means':self.means_, 
-                                 'covars':self.covars_, 
-                                 'converged':self.converged_, 
-                                 'category':self.category }
-                if self.converged_ :
+                best_params  = {'weights':self.weights_, 
+                                'means':self.means_, 
+                                'covars':self.covars_, 
+                                'converged':self.converged_, 
+                                'category':self.category}
+                if self.converged_:
                     lowest_bias = curr_bias
 
-            if self.converged_ and lowest_bias > curr_bias :
-                max_log_prob        = log_likelihood[-1]
-                lowest_bias         = curr_bias
-                best_params         = { 'weights': self.weights_, 
-                                        'means': self.means_, 
-                                        'covars': self.covars_,
-                                        'converged': self.converged_, 
-                                        'category':self.category }
+            if self.converged_ and lowest_bias > curr_bias:
+                max_log_prob = log_likelihood[-1]
+                lowest_bias  = curr_bias
+                best_params  = {'weights': self.weights_, 
+                                'means': self.means_, 
+                                'covars': self.covars_,
+                                'converged': self.converged_, 
+                                'category':self.category}
 
         # check the existence of an init param that was not subject to
         # likelihood computation issue.
@@ -300,28 +300,28 @@ class GMM ( BaseEstimator ) :
     Here is just for genotyping process
     """
     # Decide the different guassion mu(mean) to seperate the genotype
-    def Label2Genotype ( self ) :
+    def Label2Genotype(self):
 
         label2genotype = {}
-        if self.converged_ :
+        if self.converged_:
 
-            if len( self.means_ ) > 3 :
-                print >> sys.stderr, 'Do not allow more than 3 components. But you set', len( self.means_ )
+            if len(self.means_) > 3 :
+                print >> sys.stderr, 'Do not allow more than 3 components. But you set', len(self.means_)
                 sys.exit(1)
 
-            for label,mu in enumerate( self.means_[:,0] ) :
+            for label,mu in enumerate(self.means_[:,0]):
 
                 best_distance, bestIndx = np.infty, 0
-                for i,m in enumerate(self.init_means[:,0]) :
-                    distance = np.abs( mu - m )
-                    if distance < best_distance :
+                for i,m in enumerate(self.init_means[:,0]):
+                    distance = np.abs(mu - m)
+                    if distance < best_distance:
                         bestIndx      = i
                         best_distance = distance
 
                 label2genotype[label] = self.category[bestIndx]    
 
             # Put False if there are more than one 'label' points to the same 'genotype'
-            g2c = { v:k for k,v in label2genotype.items() }
+            g2c = {v:k for k,v in label2genotype.items()}
             if len(label2genotype) != len(g2c) : self.converged_ = False 
         else :
             label2genotype = { label: './.' for label in range( self.n_components ) }
@@ -333,10 +333,10 @@ class GMM ( BaseEstimator ) :
         ngIndx = []
 
         m,n,num = 0.0,0.0,0   # m is match; n is not match
-        for k,v in family.items() :
+        for k,v in family.items():
 
             #if v[0] not in sample2col or v[1] not in sample2col : continue
-            if k not in sample2col or v[0] not in sample2col or v[1] not in sample2col : continue
+            if k not in sample2col or v[0] not in sample2col or v[1] not in sample2col: continue
             if k not in sample2col :
                 print >> sys.stderr, 'The sample name is not in vcf file! ', k
                 sys.exit(1)
@@ -399,7 +399,7 @@ class GMM ( BaseEstimator ) :
 
         return m,n,num,set(ngIndx)
 ###
-def log_multivariate_normal_density (X, means, covars, covariance_type='full'):
+def log_multivariate_normal_density(X, means, covars, covariance_type='full'):
     """
     Log probability for full covariance matrices.
     """
@@ -465,7 +465,7 @@ def distribute_covar_matrix_to_match_covariance_type( tied_cv, covariance_type, 
                          "'spherical', 'tied', 'diag', 'full'")
     return cv
 
-def _covar_mstep_full(gmm, X, responsibilities, weighted_X_sum, norm, min_covar ):
+def _covar_mstep_full(gmm, X, responsibilities, weighted_X_sum, norm, min_covar):
     """Performing the covariance M step for full cases"""
     # Eq. 12 from K. Murphy, "Fitting a Conditional Linear Gaussian
     # Distribution"
