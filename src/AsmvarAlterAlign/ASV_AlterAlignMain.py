@@ -83,6 +83,9 @@ def main(opt):
                 continue
 
             if refId != 'ALL' and refId != col[0]: continue
+            # This is same in 'if col[4] != '.' and not IsSNP(col[3], [col[4]]):'
+            if re.search(r'REFCALL', col[6]) or re.search(r'GAP', col[6]):
+                continue
 
             idx = sam2col[sampleID]
             fi  = col[idx].split(':')
@@ -97,9 +100,9 @@ def main(opt):
             isAltAlign = False
             zr,za,zc,zi = 0,0,0,0
             if col[4] != '.' and not IsSNP(col[3], [col[4]]):
-                # Not SNP, INTERGAP or Reference call
+                # Not SNP, INTERGAP
                 isAltAlign = True
-            	if col[2]  == '.': col[2] = 'V_' + col[0] + '_' + col[1]
+            	#if col[2]  == '.': col[2] = 'V_' + col[0] + '_' + col[1]
                 zr,za,zc,zi = ATA.Align(samInHandle, 
                                         #samOutHandle, Don't output bam file
                                         fa, 
