@@ -322,7 +322,7 @@ class GMM ( BaseEstimator ) :
 
             # Put False if there are more than one 'label' points to the same 'genotype'
             g2c = {v:k for k,v in label2genotype.items()}
-            if len(label2genotype) != len(g2c) : self.converged_ = False 
+            if len(label2genotype) != len(g2c): self.converged_ = False 
         else :
             label2genotype = { label: './.' for label in range( self.n_components ) }
 

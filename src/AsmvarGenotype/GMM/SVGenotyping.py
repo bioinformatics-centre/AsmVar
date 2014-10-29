@@ -9,39 +9,44 @@ Date   : 2013-12-14 10:48:02
 Modify : 2013-12-16 13:58:57 Debuging
 
 """
-import sys
-
 import optparse
 import os
 import re
 import string
-import random as rd
+import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from matplotlib.colors import LogNorm
+import random as rd
+
 import GMM2D as mixture
 #from sklearn import mixture
 
-def GetPPrate (fmat, formatInfo):
+def GetPPrate(fmat, formatInfo):
 
     trainIndx, ppr, pp = [], [], []
-    theta   = 1.2
+    theta = 1.0
 
-    for t in formatInfo:
+    for i, t in enumerate(formatInfo):
         # 0/1:52,3:6,13,0,0,0,1,0:6,14:20-121512-121512:13:INS
-        fi    = t.split(':')
-        rr,aa = string.atof(fi[fmat['AA']].split(',')[0]), string.atof(fi[fmat['AA']].split(',')[1])
-        r     = 1.2
-        if rr + aa > 0 : r = rr/(rr + aa)
-        ppr.append( [r] )
-        pp.append( [rr, aa] )
+        fi = t.split(':')
+        rr = string.atof(fi[fmat['AA']].split(',')[0]) 
+        aa = string.atof(fi[fmat['AA']].split(',')[1])
+        r  = theta
+        if rr + aa >  0: r = rr/(rr + aa)
+        if rr + aa > 10: trainIndx.append(i)
 
-    return range(len(ppr)), np.array(ppr), np.array(pp) # All for training!
+        ppr.append([r])
+        pp.append([rr, aa])
+
+    #return range(len(ppr)), np.array(ppr), np.array(pp) # All for training!
+    return trainIndx, np.array(ppr), np.array(pp)
 
 ###################
 
-def UpdateInfoFromGMM (gmm, ppr, grey, red, green, blue, data, sam2col, family): 
+def UpdateInfoFromGMM(gmm, ppr, grey, red, green, blue, data, sam2col, family): 
 # gmm : It's the GMM model
 # data: It's the vcf line
 
@@ -55,7 +60,7 @@ def UpdateInfoFromGMM (gmm, ppr, grey, red, green, blue, data, sam2col, family):
     c2g = gmm.Label2Genotype()
     g2c = {v:k for k,v in c2g.items()}
     if not gmm.converged_: 
-        if data[6] == '.':
+        if data[6] == '.' or data[6] == 'PASS':
             data[6] = 'FALSE_GENOTYPE'
         else:
             data[6] = 'FALSE_GENOTYPE;' + data[6]
@@ -63,6 +68,8 @@ def UpdateInfoFromGMM (gmm, ppr, grey, red, green, blue, data, sam2col, family):
     predict      = gmm.predict(ppr)
     predictProba = gmm.predict_proba(ppr)
     weights      = gmm.weights_
+
+    #print >> sys.stderr, '### Predict:', predict, '### PPR:\n', ppr
 
     genotypeQuality = []
     for p,i in enumerate(predict):
@@ -72,8 +79,8 @@ def UpdateInfoFromGMM (gmm, ppr, grey, red, green, blue, data, sam2col, family):
 
     logprob,posteriors = gmm.score_samples( ppr )
     for i in range( len(posteriors) ) : posteriors[i][ posteriors[i] == 0.0 ] = 1.0 - PRECISION
-    loglhd  = logprob[:, np.newaxis] + np.log( posteriors ) - np.log(weights) # The Log(e) genotype likelihoods 
-    lhd     = np.exp(loglhd)
+    loglhd = logprob[:, np.newaxis] + np.log( posteriors ) - np.log(weights) # The Log(e) genotype likelihoods 
+    lhd    = np.exp(loglhd)
     for i in range(len(lhd)): lhd[i][lhd[i] == 0.0] = 1.0 - PRECISION
     loglhd = np.log10(lhd) # change the radices
 
@@ -103,7 +110,7 @@ def UpdateInfoFromGMM (gmm, ppr, grey, red, green, blue, data, sam2col, family):
             if tt[1] > 0: tt[1] = gt
             fi[0] = str(tt[0]) + '/' + str(tt[1])
         else: 
-            fi[0] = c2g[ predict[i] ]
+            fi[0] = c2g[predict[i]]
         pl = [int(p+0.5) for p in -10 * loglhd[i]]
         gnt.append(fi[0])
 
@@ -176,16 +183,16 @@ def UpdateInfoFromGMM (gmm, ppr, grey, red, green, blue, data, sam2col, family):
         data[7] += ';F=' + str(f)
 
     if homCount == N + 1 or refCount == N + 1: # The all sample are totally 1/1 or 0/0! 
-        if data[6] == '.':
+        if data[6] == '.' or data[6] == 'PASS':
             data[6] = 'FALSE_GENOTYPE'
-        else:
+        elif 'FALSE_GENOTYPE' not in data[6]:
             data[6] = 'FALSE_GENOTYPE;' + data[6]
         gmm.converged_ = False
 
-    sm,sn,ng = 0.0,0.0,set([])
-    if gmm.n_components > 1 and gmm.converged_ : sm,sn,num,ng = gmm.Mendel(gnt, sam2col, family)
+    ng = set([])
+    if gmm.n_components > 1 and gmm.converged_: 
+        _, _, _, ng = gmm.Mendel(gnt, sam2col, family)
 
-    #if gmm.converged_ and re.search(r'^PASS', data[6]):
     if gmm.converged_:
 
         for i,g in enumerate([c2g[c] for c in predict]): # For figure
@@ -208,7 +215,7 @@ def UpdateInfoFromGMM (gmm, ppr, grey, red, green, blue, data, sam2col, family):
                 else: 
                     blue.append([ppr[i]])
 
-    return sm, sn, np.array(genotypeQuality), np.array(gnt), ac, iac, f 
+    return np.array(genotypeQuality), np.array(gnt), ac, iac, f 
 
 def DrawModel2 ( gmm, ppr ) :
 
@@ -230,9 +237,9 @@ def DrawModel2 ( gmm, ppr ) :
     plt.axis('tight')
     plt.show()
 
-def DrawModel ( figureFile, gmm, ppr, pp ) :
+def DrawModel(figureFile, gmm, ppr, pp):
 
-    predict = gmm.predict( ppr )
+    predict = gmm.predict(ppr)
     mu      = gmm.means_
     sigma   = gmm.covars_
     fig = plt.figure()
@@ -244,9 +251,9 @@ def DrawModel ( figureFile, gmm, ppr, pp ) :
 
         x = []
         for j in range(len(predict)) :
-           if predict[j] == i : x.append( pp[j] )
+           if predict[j] == i : x.append(pp[j])
         x = np.array(x)
-        plt.plot( x[:,0], x[:,1], color1[i], label = labels[i] )
+        plt.plot(x[:,0], x[:,1], color1[i], label = labels[i])
 
     plt.legend()
     plt.xlabel('Reference depth', fontsize=14)
@@ -424,13 +431,15 @@ def main(opt):
                 fmat = {t:i for i,t in enumerate(col[8].split(':'))}
                 if 'AA' not in fmat: continue
 
+                if col[6] == 'PASS': col[6] == '.'
+
                 trainIndx, ppr, pp = GetPPrate(fmat, col[9:])
-                if len(trainIndx) < 3: 
+                if len(trainIndx) < 10: 
 
                     gqSummary['No'] += 1.0
-                    if col[6] == '.':
+                    if col[6] == '.' or col[6] == 'PASS':
                         col[6] = 'FALSE_GENOTYPE'
-                    else:
+                    elif 'FALSE_GENOTYPE' not in col[6]:
                         col[6] = 'FALSE_GENOTYPE;' + col[6]
                     
                     if 'GQ' not in fmat: col[8] += ':GQ'
@@ -470,19 +479,30 @@ def main(opt):
                 print >> sys.stderr, '#--> Position:', col[0], col[1], 'with', clf.n_components,'components. Converge information :', clf.converged_
                 print >> sys.stderr, '# Means: \n', clf.means_, '\nCovars: \n', clf.covars_,'\nWeight', clf.weights_, '\n*************'
 
-                sm,sn,genotypeQuality,gnt,ac,iac,ef = UpdateInfoFromGMM(clf, ppr, grey, red, green, blue, col, sam2col, family)
+                genotypeQuality,gnt,ac,iac,ef = UpdateInfoFromGMM(clf, ppr, grey, red, green, blue, col, sam2col, family)
                 inbCoff.append(ef)
-                mdr += sm
-                mde += sn
                 if ef > -0.7 and clf.converged_: 
                     alleleCount.append(ac)
                     ialleleCount.append(iac)
                 else: 
-                    if col[6] == '.' or col[6] == 'FALSE_GENOTYPE':
+                    if col[6] == '.' or col[6] == 'PASS':
                         col[6] = 'FALSE_GENOTYPE'
-                    else:
+                    elif 'FALSE_GENOTYPE' not in col[6]:
                         col[6] = 'FALSE_GENOTYPE;' + col[6]
                     clf.converged_ = False
+
+                fmat = {t:i for i,t in enumerate(col[8].split(':'))}
+                for i in range(len(col[9:])):
+                    fi = col[9+i].split(':')
+                    rr = string.atof(fi[fmat['AA']].split(',')[0])
+                    aa = string.atof(fi[fmat['AA']].split(',')[1])
+                    if rr + aa == 0 or 'FALSE_GENOTYPE' in col[6]:
+                        fi[fmat['GQ']] = '0'
+                        fi[fmat['GT']] = './.'
+                        col[9+i] = ':'.join(fi)
+                        gnt[i]   = './.'
+                        genotypeQuality[i] = 0
+                        
 
                 """
                 size = re.search ( r';SVSIZE=([^;]+)', col[7] )
@@ -525,13 +545,12 @@ def main(opt):
             gqSummary['Yes'] = 1.0
             gqSummary['No']  = 1e9
         if gqSummary['Yes'] == 0: gqSummary['Yes'] = 1.0
-        mderr, mderr_t = '-', '-'
-        if mdr   + mde   > 0.0: mderr   = mde  /(mdr+mde)
+        mderr_t = '-'
         if mdr_t + mde_t > 0.0: mderr_t = mde_t/(mdr_t+mde_t)
 
         print >> sys.stderr, '\n******** Output Summary information ************************************\n'
         print >> sys.stderr, '# ** The count of positions which can be genotype:',int(gqSummary['Yes']),',',gqSummary['Yes']/(gqSummary['Yes']+gqSummary['No'])
-        print >> sys.stderr, '# ** (Just for the genotype positions)The mendelian violation of', f, 'is : ',mderr,'\t', mderr_t, '\t', mde_n 
+        print >> sys.stderr, '# ** (Just for the genotype positions)The mendelian violation of', f, 'is : ',mderr_t, '\t', mde_n 
         print >> sys.stderr, '# ** (Just for the genotype positions)Proportion of 1 component : ', gqSummary[1] / gqSummary['Yes']
         print >> sys.stderr, '# ** (Just for the genotype positions)Proportion of 2 component : ', gqSummary[2] / gqSummary['Yes']
         print >> sys.stderr, '# ** (Just for the genotype positions)Proportion of 3 component : ', gqSummary[3] / gqSummary['Yes']
