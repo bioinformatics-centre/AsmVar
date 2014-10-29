@@ -378,11 +378,15 @@ def LoadFamily(file):
 ############################# Main Process #############################
 def main(opt):
 
-    family    = LoadFamily(opt.family)
     gqSummary = {1: 0.0, 2: 0.0, 3: 0.0, 10: 0.0, 20: 0.0, 30: 0.0, 'sum': 0.0, 'Yes': 0.0, 'No': 0.0}
+    family    = LoadFamily(opt.family)
+    outPrefix = opt.outPrefix
 
     for f in infile: 
     
+        outHandle = open(outPrefix + '.vcf', 'w')
+        outFailGtyHandle = open(outPrefix + '.false_genotype.vcf', 'w')
+
         print >> sys.stderr, '# *** Reading File: ', f, ' ***\n'
 
         if f[-3:] == '.gz': 
@@ -408,21 +412,31 @@ def main(opt):
                 line = line.strip('\n') # Cut the reture char at the end.
                 col  = line.split()
                 if re.search(r'^##FORMAT=<ID=GT', line):
-                    print line
-                    print '##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality. -10*log10(1-p), p=w*N/(sigma(W*N)) N is gaussian density (p: The posterior probability of Genotype call is correct)">'
-                    print '##FORMAT=<ID=PL,Number=1,Type=String,Description="Phred-scaled genotype likelihood. Rounded to the closest integer as defined in the VCF specification (The lower the better). The value calculate -10*log10(p), p is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VAR">'
+                    outHandle.write(line + '\n')
+                    outFailGtyHandle.write(line + '\n')
+                    outHandle.write('##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality. -10*log10(1-p), p=w*N/(sigma(W*N)) N is gaussian density (p: The posterior probability of Genotype call is correct)">\n')
+                    outFailGtyHandle.write('##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality. -10*log10(1-p), p=w*N/(sigma(W*N)) N is gaussian density (p: The posterior probability of Genotype call is correct)">\n')
+                    outHandle.write('##FORMAT=<ID=PL,Number=1,Type=String,Description="Phred-scaled genotype likelihood. Rounded to the closest integer as defined in the VCF specification (The lower the better). The value calculate -10*log10(p), p is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VAR">\n')
+                    outFailGtyHandle.write('##FORMAT=<ID=PL,Number=1,Type=String,Description="Phred-scaled genotype likelihood. Rounded to the closest integer as defined in the VCF specification (The lower the better). The value calculate -10*log10(p), p is the predict posterior probability. And the order is : HOM_REF,HETE_VAR,HOM_VAR">\n')
                     continue
                 elif re.search(r'^##INFO=<ID=AC', line):
-                    print line
-                    print '##FILTER=<ID=FALSE_GENOTYPE,Description="False in genotype process">'
-                    print '##INFO=<ID=K,Number=1,Type=String,Description="Number of genotype stats">'
-                    print '##INFO=<ID=W,Number=1,Type=String,Description="The wieghts for each genotype stats. And the order is: HOM_REF,HETE_VAR,HOM_VAR">'
-                    print '##INFO=<ID=F,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">'
+                    outHandle.write(line + '\n')
+                    outFailGtyHandle.write(line + '\n')
+                    outHandle.write('##FILTER=<ID=FALSE_GENOTYPE,Description="False in genotype process">\n')
+                    outFailGtyHandle.write('##FILTER=<ID=FALSE_GENOTYPE,Description="False in genotype process">\n')
+                    outHandle.write('##INFO=<ID=K,Number=1,Type=String,Description="Number of genotype stats">\n')
+                    outFailGtyHandle.write('##INFO=<ID=K,Number=1,Type=String,Description="Number of genotype stats">\n')
+                    outHandle.write('##INFO=<ID=W,Number=1,Type=String,Description="The wieghts for each genotype stats. And the order is: HOM_REF,HETE_VAR,HOM_VAR">\n')
+                    outFailGtyHandle.write('##INFO=<ID=W,Number=1,Type=String,Description="The wieghts for each genotype stats. And the order is: HOM_REF,HETE_VAR,HOM_VAR">\n')
+                    outHandle.write('##INFO=<ID=F,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">\n')
+                    outFailGtyHandle.write('##INFO=<ID=F,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">\n')
                 elif re.search(r'^##', line):
-                    print line
+                    outHandle.write(line + '\n')
+                    outFailGtyHandle.write(line + '\n')
                     continue
                 elif re.search(r'^#', line):
-                    print line
+                    outHandle.write(line + '\n')
+                    outFailGtyHandle.write(line + '\n')
                     sam2col = {sam:i for i,sam in enumerate(col[9:])}
                     continue
 
@@ -460,7 +474,7 @@ def main(opt):
                         else: 
                             fi[fmat['PL']] = '65535,65535,65535'
                         col[9+i] = ':'.join(fi)
-                    print '\t'.join(col)
+                    outFailGtyHandle.write('\t'.join(col) + '\n')
                     continue
 
                 nc  = 3
@@ -526,7 +540,10 @@ def main(opt):
                     mde_t += sn
                     mde_n += snum
 
-                print '\t'.join(col)
+                if 'FALSE_GENOTYPE' in col[6]:
+                    outFailGtyHandle.write('\t'.join(col) + '\n')
+                else:
+                    outHandle.write('\t'.join(col) + '\n')
                 #DrawModel(figPrefix, clf, ppr, pp)
 
                 if clf.converged_: 
@@ -539,6 +556,8 @@ def main(opt):
                 else: 
                     gqSummary['No']  += 1.0
         I.close()
+        outHandle.close()
+        outFailGtyHandle.close()
 
         if gqSummary['sum'] == 0: gqSummary['sum'] = 1.0
         if gqSummary['Yes'] + gqSummary['No'] == 0: 
@@ -580,6 +599,7 @@ if __name__ == '__main__':
     optp.add_option("-c", "--chr", dest="chroms", metavar="CHR", help="process only specified chromosomes, separated by ','. [default: all]\nexample: --chroms=chr1,chr2", default=[])
     optp.add_option("-p", "--ped", dest="family", metavar="PED", help="Family information. ", default=[])
     optp.add_option("-f", "--fig", dest="figure", metavar="FIG", help="The prefix of figure about the GMM.", default=[])
+    optp.add_option("-o", "--out", dest="outPrefix", metavar="OUT", help="The prefix of output. [out]", default = 'out')
 
     opt, infile = optp.parse_args()
 
