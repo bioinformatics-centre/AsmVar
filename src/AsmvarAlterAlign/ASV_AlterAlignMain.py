@@ -94,11 +94,11 @@ def main(opt):
                 gtIdx = string.atoi(gt[1])
 
             col[4] = col[4].split(',')[gtIdx-1] # Match to the identity sample
-            notAltAlign = True
+            isAltAlign = False
             zr,za,zc,zi = 0,0,0,0
             if col[4] != '.' and not IsSNP(col[3], [col[4]]):
                 # Not SNP, INTERGAP or Reference call
-                notAltAlign = False
+                isAltAlign = True
             	if col[2]  == '.': col[2] = 'V_' + col[0] + '_' + col[1]
                 zr,za,zc,zi = ATA.Align(samInHandle, 
                                         #samOutHandle, Don't output bam file
@@ -110,7 +110,7 @@ def main(opt):
                                         col[4][1:], #col[4][0] is reference
                                         mapq)
             # Ignore the position which is meanless
-            if notAltAlign and col[idx] == './.': continue
+            if not isAltAlign and col[idx] == './.': continue
 
             fm = {t:i for i, t in enumerate(col[8].split(':'))} # Get Format
             if col[idx] != './.' and len(fi) != len(fm): 
@@ -129,10 +129,7 @@ def main(opt):
             # Use first sample which is not './.' to set VT and VS if col[idx] == './.'
             # This is the same idea with what we do above for 'gtIdx = 1'
             if col[idx] == './.':
-                if notAltAlign: # 
-                    format['VT'] = '.'
-                    format['VS'] = '.'
-                else:
+                if isAltAlign:
                     isam = [sam for sam in col[9:] if sam != './.' and not re.search(r'^0/0:', sam)]
                     if len(isam) == 0: 
                     # This may happen if appear duplication position and pick the 
@@ -143,9 +140,7 @@ def main(opt):
                     format['VT'] = isam[fm['VT']]
                     format['VS'] = isam[fm['VS']]
 
-            if notAltAlign:
-                format['AA'] = '.'
-            else:
+            if isAltAlign:
                 format['AA'] = ','.join(str(a) for a in [zr,za,zc,zi])
 
             gt = fi[fm['GT']].split('/')
