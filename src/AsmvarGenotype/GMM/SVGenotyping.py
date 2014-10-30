@@ -31,9 +31,13 @@ def GetPPrate(fmat, formatInfo):
 
     for i, t in enumerate(formatInfo):
         # 0/1:52,3:6,13,0,0,0,1,0:6,14:20-121512-121512:13:INS
+
         fi = t.split(':')
-        rr = string.atof(fi[fmat['AA']].split(',')[0]) 
-        aa = string.atof(fi[fmat['AA']].split(',')[1])
+        if t != './.':
+            rr = string.atof(fi[fmat['AA']].split(',')[0]) 
+            aa = string.atof(fi[fmat['AA']].split(',')[1])
+        else:
+            rr, aa = 0, 0
         r  = theta
         if rr + aa >  0: r = rr/(rr + aa)
         if rr + aa > 10: trainIndx.append(i)
@@ -77,8 +81,10 @@ def UpdateInfoFromGMM(gmm, ppr, grey, red, green, blue, data, sam2col, family):
         if pd > PRECISION: pd = PRECISION
         genotypeQuality.append(int(-10 * np.log10(1.0 - pd) + 0.5))
 
-    logprob,posteriors = gmm.score_samples( ppr )
-    for i in range( len(posteriors) ) : posteriors[i][ posteriors[i] == 0.0 ] = 1.0 - PRECISION
+    logprob, posteriors = gmm.score_samples( ppr )
+    for i in range(len(posteriors)): 
+        posteriors[i][posteriors[i] == 0.0] = 1.0 - PRECISION
+
     loglhd = logprob[:, np.newaxis] + np.log( posteriors ) - np.log(weights) # The Log(e) genotype likelihoods 
     lhd    = np.exp(loglhd)
     for i in range(len(lhd)): lhd[i][lhd[i] == 0.0] = 1.0 - PRECISION
@@ -93,6 +99,12 @@ def UpdateInfoFromGMM(gmm, ppr, grey, red, green, blue, data, sam2col, family):
     refCount, hetCount, homCount = 1, 1, 1 # Assign 1 to prevent 0 in denominator 
     for i in range(len(data[9:])):
 
+        if data[9+i] == './.':
+            for j in range(len(fmat) - 1): data[9+i] += ':.'
+            data[9+i] += ':0:65535,65535,65535'
+            gnt.append('./.')
+            continue
+        
         fi = data[9+i].split(':')
         # Change raw genotype
         gt = 0
@@ -508,8 +520,12 @@ def main(opt):
                 fmat = {t:i for i,t in enumerate(col[8].split(':'))}
                 for i in range(len(col[9:])):
                     fi = col[9+i].split(':')
-                    rr = string.atof(fi[fmat['AA']].split(',')[0])
-                    aa = string.atof(fi[fmat['AA']].split(',')[1])
+                    if fi[0] != './.': 
+                        rr = string.atof(fi[fmat['AA']].split(',')[0])
+                        aa = string.atof(fi[fmat['AA']].split(',')[1])
+                    else:
+                        rr, aa = 0, 0
+
                     if rr + aa == 0 or 'FALSE_GENOTYPE' in col[6]:
                         fi[fmat['GQ']] = '0'
                         fi[fmat['GT']] = './.'
@@ -612,5 +628,9 @@ if __name__ == '__main__':
     PRECISION     = 0.9999999999
 
     main(opt)
-    print >> sys.stderr, '\n******************************* ALL DONE *******************************'
+    print >> sys.stderr, '\n# [INFO] Closing the two Ouput files:\n  -- (1/4) %s' % (opt.outPrefix + '.vcf')
+    print >> sys.stderr, '  -- (2/4) %s' % (opt.outPrefix + '.false_genotype.vcf')
+    print >> sys.stderr, '  -- (3/4) %s' % (opt.figure + '.pdf')
+    print >> sys.stderr, '  -- (4/4) %s' % (opt.figure + '.png')
+    print >> sys.stderr, '******************************* ALL DONE *******************************'
 
