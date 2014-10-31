@@ -54,7 +54,7 @@ def main(opt):
 
            col  = line.strip('\n').split()
            fmat = {k:i for i,k in enumerate(col[8].split(':'))} # Get Format
-           if 'QR' not in fmat: continue # Cause by INTERGAP !
+           if 'QR' not in fmat: continue # Cause by INTERGAP. But We'd better delete this statment, because the error is cause by the USER
 
            order = col[0] + ':' + col[1]
            d     = dataSet[j]
