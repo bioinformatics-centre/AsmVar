@@ -172,10 +172,8 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 continue
 
             fmat = {k:i for i,k in enumerate(col[8].split(':'))} # Get Format
-            if 'QR' not in fmat: continue
-
             for tag in ['AA', 'QR', 'NR']:
-                if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian %s in VCF %s' %(tag, vcfInfile))
+                if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian %s in VCF %s\nat %s\n' %(tag, vcfInfile, line))
 
             annotations = []
             atleastOne  = False
@@ -214,13 +212,14 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 annotations.append([leg, n , alt, bot])
 
             if not atleastOne: raise ValueError('[ERROR] All the samples don\'t contain this variant.', col)
-            datum                = vd.VariantDatum()
-            datum.annotations    = np.median(annotations, axis = 0)
-            pos                  = col[0] + ':' + col[1]
-            datum.variantOrder   = pos
+            datum              = vd.VariantDatum()
+            datum.annotations  = np.median(annotations, axis = 0)
+            pos                = col[0] + ':' + col[1]
+            datum.variantOrder = pos
             if pos in traningSet: datum.atTrainingSite = True
             data.append(datum)
 
     I.close()
+
     return hInfo, np.array(data)
 

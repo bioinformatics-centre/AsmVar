@@ -15,6 +15,7 @@ import VariantRecalibratorArgumentCollection as VRAC
 class VariantRecalibratorEngine:
 
     def __init__(self, vrac=None):
+
         self.VRAC = VRAC.VariantRecalibratorArgumentCollection()
         if vrac: self.VRAC = vrac
         self.MIN_PROB_CONVERGENCE     = 2e-3
@@ -34,6 +35,7 @@ class VariantRecalibratorEngine:
         return trainSetIdx, cvSetIdx, testSetIdx
         
     def GenerateModel(self, data, maxGaussians):
+
         if len(data)    == 0: raise ValueError ('[ERROR] No data found. The size is %d' %len(data))
         if not isinstance(data[0], vd.VariantDatum): 
             raise ValueError ('[ERROR] The data type should be "VariantDatum" in GenerateModel() of class VariantRecalibratorEngine(), but found %s'% str(type(data[0])))

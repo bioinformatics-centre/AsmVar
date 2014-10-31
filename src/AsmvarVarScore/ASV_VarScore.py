@@ -55,7 +55,7 @@ def main(opt):
            col   = line.strip('\n').split()
            order = col[0] + ':' + col[1]
            d     = dataSet[j]
-           j += 1 # Increase the index of dataSet for the next cycle
+           j    += 1 # Increase the index of dataSet for the next cycle
            if d.variantOrder != order: 
                raise ValueError('[BUG] The order(%s) must be the same as dataSet(%s)' %(order, d.variantOrder))
 
