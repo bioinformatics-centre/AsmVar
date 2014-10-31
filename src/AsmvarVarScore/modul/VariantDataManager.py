@@ -173,7 +173,7 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
 
             fmat = {k:i for i,k in enumerate(col[8].split(':'))} # Get Format
             for tag in ['AA', 'QR', 'NR']:
-                if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian %s in VCF %s\nat %s\n' %(tag, vcfInfile, line))
+                if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian "%s" in VCF: %s\nAT: %s\n' %(tag, vcfInfile, line))
 
             annotations = []
             atleastOne  = False
