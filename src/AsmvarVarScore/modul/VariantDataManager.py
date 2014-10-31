@@ -184,7 +184,7 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 sampleId  = col2sam[9+i]
                 if sample == './.': continue
                 if len(sample.split(':')[fmat['AA']].split(',')) != 4:
-                    print >> sys.stderr,'[WARNING] %s\n%s' %(line, sample.split(':')[fmat['AA']])
+                    #print >> sys.stderr,'[WARNING] %s\n%s' %(line, sample.split(':')[fmat['AA']])
                     continue
 
                 field = sample.split(':')
