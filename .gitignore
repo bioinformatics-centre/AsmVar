@@ -5,6 +5,7 @@ data
 git.sh
 rsync.sh
 *.pyc
+*/*.pyc
 *.o
 .*.swp
 .DS_Store
