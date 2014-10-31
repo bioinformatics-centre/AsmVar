@@ -170,7 +170,7 @@ def main (argv):
                 sampleId = col2sam[9+i]
 
                 field = sample.split(':')
-                if sample == './.' or len(field) < fmat['QR'] + 1 or field[fmat['QR']].split(',')[-1] == '.' or field[fmat['MS']] == '.': 
+                if sample == './.' or len(field) < fmat['QR'] + 1 or field[fmat['QR']].split(',')[-1] == '.' or field[fmat['AS']] == '.': 
                     annotations[i].append([0, 0, 0, 0, 0, 0, 0, 0, 0])
                     continue
                 qr      = field[fmat['QR']].split(',')[-1]
@@ -188,16 +188,14 @@ def main (argv):
 
                 leg = qSta
                 if 100 - qEnd < qSta: leg = qEnd
-                nn  = string.atof(sample.split(':')[fmat['FN']])
+                nn  = string.atof(sample.split(':')[fmat['NR']])
                 n   = round(1000 * nn) / 10.0                                  # N ratio
                 alt = string.atoi(sample.split(':')[fmat['AA']].split(',')[1]) # Alternate perfect
                 bot = string.atoi(sample.split(':')[fmat['AA']].split(',')[3]) # Both imperfect
-                #pro = string.atoi(sample.split(':')[fmat['RP']].split(',')[0]) # Proper Pair
-                #ipr = string.atoi(sample.split(':')[fmat['RP']].split(',')[1]) # ImProper Pair
                 pro, ipr = [0,0]
-                ms  = string.atoi(sample.split(':')[fmat['MS']] )              # Mapping score 
-                mip = string.atof(sample.split(':')[fmat['MIP']])              # Mismapping probability
-                aveI= string.atoi(sample.split(':')[fmat['AE']].split(',')[3]) # ave_iden in AGE
+                ms  = string.atoi(sample.split(':')[fmat['AS']])                # Mapping score 
+                mip = string.atof(sample.split(':')[fmat['MS']])                # Mismapping probability
+                aveI= string.atoi(sample.split(':')[fmat['AGE']].split(',')[3]) # ave_iden in AGE
                 
                 annotations[i].append([leg, n, alt, bot, pro, ipr, ms, mip, aveI])
     I.close()
