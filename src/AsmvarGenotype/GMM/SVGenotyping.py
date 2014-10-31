@@ -526,13 +526,16 @@ def main(opt):
                     else:
                         rr, aa = 0, 0
 
-                    if rr + aa == 0 or 'FALSE_GENOTYPE' in col[6]:
+                    # still keep the genotype info in 'FALSE_GENOTYPE'
+                    # if rr + aa == 0 or 'FALSE_GENOTYPE' in col[6]:
+                    if rr + aa == 0:
                         fi[fmat['GQ']] = '0'
                         fi[fmat['GT']] = './.'
+                        fi[fmat['PL']] = '.'
                         col[9+i] = ':'.join(fi)
-                        gnt[i]   = './.'
+                        gnt[i]   = fi[fmat['GT']]
                         genotypeQuality[i] = 0
-                        
+                    if 'FALSE_GENOTYPE' in col[6]: gnt[i] = './.'
 
                 """
                 size = re.search ( r';SVSIZE=([^;]+)', col[7] )
