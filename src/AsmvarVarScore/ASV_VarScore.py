@@ -52,7 +52,10 @@ def main(opt):
 
            if re.search(r'^#', line): continue
 
-           col   = line.strip('\n').split()
+           col  = line.strip('\n').split()
+           fmat = {k:i for i,k in enumerate(col[8].split(':'))} # Get Format
+           if 'QR' not in fmat: continue # Cause by INTERGAP !
+
            order = col[0] + ':' + col[1]
            d     = dataSet[j]
            j    += 1 # Increase the index of dataSet for the next cycle
