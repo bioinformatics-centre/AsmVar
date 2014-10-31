@@ -473,19 +473,26 @@ def main(opt):
 
                     for i in range(len(col[9:])): 
 
-                        fi    = col[9+i].split(':')
-                        fi[0] = './.'
+                        if col[9+i] == './.':
+                        
+                            for j in range(len(fmat) - 1): col[9+i] += ':.'
+                            col[9+i] += ':0:65535,65535,65535'
+                        else:
 
-                        if 'GQ' not in fmat: 
-                            fi.append('0')
-                        else: 
-                            fi[fmat['GQ']] = '0'
+                            fi    = col[9+i].split(':')
+                            fi[0] = './.'
 
-                        if 'PL' not in fmat: 
-                            fi.append('65535,65535,65535')
-                        else: 
-                            fi[fmat['PL']] = '65535,65535,65535'
-                        col[9+i] = ':'.join(fi)
+                            if 'GQ' not in fmat: 
+                                fi.append('0')
+                            else: 
+                                fi[fmat['GQ']] = '0'
+
+                            if 'PL' not in fmat: 
+                                fi.append('65535,65535,65535')
+                            else: 
+                                fi[fmat['PL']] = '65535,65535,65535'
+                            col[9+i] = ':'.join(fi)
+
                     outFailGtyHandle.write('\t'.join(col) + '\n')
                     continue
 
