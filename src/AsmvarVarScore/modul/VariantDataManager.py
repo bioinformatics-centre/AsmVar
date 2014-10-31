@@ -176,7 +176,7 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
             if 'QR' not in fmat: continue
 
             for tag in ['AA', 'QR', 'NR']:
-                if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian %s in VCF %s' %(tag, opt.vcfInfile))
+                if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian %s in VCF %s' %(tag, vcfInfile))
 
             annotations = []
             atleastOne  = False
@@ -201,7 +201,7 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 qEnd = string.atoi(qregion[-1])
 
                 if sampleId not in qFaLen          : raise ValueError('[ERROR] The sample name $s(in vcf) is not in the name of Fa list.' % sampleId)
-                if      qId not in qFaLen[sampleId]: raise ValueError('[ERROR]', qId, 'is not been found in file', opt.qFalen, '\n')
+                if      qId not in qFaLen[sampleId]: raise ValueError('[ERROR]', qId, 'is not been found in fa file\n')
                 qSta= int(qSta * 100 / qFaLen[sampleId][qId] + 0.5)
                 qEnd= int(qEnd * 100 / qFaLen[sampleId][qId] + 0.5)
                 if qSta > 100 or qEnd > 100: raise ValueError('[ERROR] Query size Overflow! sample: %s; scaffold: %s' %(sampleId, qId))
