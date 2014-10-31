@@ -22,7 +22,7 @@ def main(opt):
     hInfo, dataSet = vdm.LoadDataSet(opt.vcfInfile, traningSet, vdm.LoadFaLen(opt.qFalen)) #Identify the traning sites
     vr             = vror.VariantRecalibrator() # init VariantRecalibrator object
     vr.OnTraversalDone(dataSet) # Traning modul and calculate the VQ for all the dataSet
-    vr.VisualizationLodVStrainingSet('BadLodSelectInTraining')
+    vr.VisualizationLodVStrainingSet(opt.figure + '.BadLodSelectInTraining')
 
     # Outputting the result as VCF format
     hInfo.Add('INFO', 'VQ', 1, 'Float' , 'Variant Quality')
@@ -100,13 +100,14 @@ if __name__ == '__main__':
     optp.add_option('-i', '--InVcf' , dest='vcfInfile', metavar='VCF', help='VCF for predict.', default=[])
     optp.add_option('-T', '--Train' , dest='trainData', metavar='TRU', help='Traing data set at true  category', default=[])
     optp.add_option('-q', '--qFalen', dest='qFalen'   , metavar='LEN', help='The length list of query sequence', default=[])
+    optp.add_option("-f", "--fig",    dest="figure",    metavar="FIG", help="The prefix of figure.",             default='figtest')
 
     opt, _ = optp.parse_args()
     if len(opt.vcfInfile) == 0: optp.error("Required [-i vcfInfile]\n"            )
     if len(opt.trainData) == 0: optp.error("Required [-T trainData. VCF Format]\n")
     if len(opt.qFalen   ) == 0: optp.error("Required [-q Query fa length list]\n")
     print >> sys.stderr, '[INFO] Parameters: python' , sys.argv[0], '\n\t-i', opt.vcfInfile, \
-          '\n\t-T', opt.trainData, '\n\t-q', opt.qFalen, '\n'
+          '\n\t-T', opt.trainData, '\n\t-q', opt.qFalen, '\n\t-f', opt.figure, '\n'
 
     main(opt)
     print >> sys.stderr, '*********************** ALL DONE ***********************'

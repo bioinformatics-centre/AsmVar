@@ -142,8 +142,7 @@ def LoadTrainingSiteFromVCF(vcffile):
         for line in lines:
 
             if re.search(r'^#', line): continue
-            col  = line.strip('\n').split()
-            if not re.search(r'^PASS', col[6]): continue
+            col = line.strip('\n').split()
             dataSet.add(col[0] + ':' + col[1])
     I.close()
 
