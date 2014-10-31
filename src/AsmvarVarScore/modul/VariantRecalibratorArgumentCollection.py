@@ -5,9 +5,9 @@ Author : Shujia Huang
 Date   : 2014-05-21 18:03:28
 
 """
-class VariantRecalibratorArgumentCollection :
+class VariantRecalibratorArgumentCollection:
 
-    def __init__ (self) :
+    def __init__ (self):
         self.NITER = 150
         self.NINIT = 100
         self.STD_THRESHOLD         = 10.0
