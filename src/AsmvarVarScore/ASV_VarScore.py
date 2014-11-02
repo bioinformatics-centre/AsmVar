@@ -73,6 +73,7 @@ def main(opt):
 
            tot += 1.0 # Record For summary
            culprit[annoTexts[d.worstAnnotation]] = culprit.get(annoTexts[d.worstAnnotation], 0.0) + 1.0 #For summary
+           d.lod = float('%.2f' % d.lod)
            for lod in [0, 1, 2, 3, 4]:
                if d.lod >= lod: good[lod] = good.get(lod, 0.0) + 1.0
         

@@ -151,6 +151,7 @@ def main (argv):
 
             fmat = { k:i for i,k in enumerate(col[8].split(':')) }
             if 'VS' not in fmat or 'QR' not in fmat: continue
+            if 'AGE' not in fmat: continue
             if len(annotations) == 0: annotations = [[] for _ in col[9:] ]
 
             vcfinfo = { d.split('=')[0]: d.split('=')[1] for d in col[7].split(';') if len(d.split('=')) == 2 }
@@ -195,7 +196,10 @@ def main (argv):
                 pro, ipr = [0,0]
                 ms  = string.atoi(sample.split(':')[fmat['AS']])                # Mapping score 
                 mip = string.atof(sample.split(':')[fmat['MS']])                # Mismapping probability
-                aveI= string.atoi(sample.split(':')[fmat['AGE']].split(',')[3]) # ave_iden in AGE
+                if sample.split(':')[fmat['AGE']] != '.':
+                    aveI = string.atoi(sample.split(':')[fmat['AGE']].split(',')[3]) # ave_iden in AGE
+                else:
+                    aveI = 0
                 
                 annotations[i].append([leg, n, alt, bot, pro, ipr, ms, mip, aveI])
     I.close()
