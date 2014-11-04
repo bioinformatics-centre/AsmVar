@@ -1243,8 +1243,10 @@ void Variant::Output2VCF(string referenceId, string file) {
             int tvs = allvariant[it->second][i].target.end - 
                       allvariant[it->second][i].target.start + 1;
             int vs = (allvariant[it->second][i].type == "INTERGAP" ||
-                      allvariant[it->second][i].type == "REFCALL") ? 
-                      tvs : vcfline.alt_.length() - vcfline.ref_.length();
+                      allvariant[it->second][i].type == "REFCALL"  ||
+                      allvariant[it->second][i].type == "SNP"      ||
+                      allvariant[it->second][i].type == "MNP") ? 
+                  tvs : vcfline.alt_.length() - vcfline.ref_.length();
 			format.Add("VS", itoa(vs));
 
 			string age(".");
