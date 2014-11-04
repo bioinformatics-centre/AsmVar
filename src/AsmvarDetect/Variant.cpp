@@ -1240,10 +1240,11 @@ void Variant::Output2VCF(string referenceId, string file) {
 				isncall) ++vs; //Not Variant, should +1!
 			if (allvariant[it->second][i].type == "COMPLEX") vs = labs(tvs - qvs); 
 */
+            int tvs = allvariant[it->second][i].target.end - 
+                      allvariant[it->second][i].target.start + 1;
             int vs = (allvariant[it->second][i].type == "INTERGAP" ||
                       allvariant[it->second][i].type == "REFCALL") ? 
-                      vcfline.ref_.length() : 
-                      vcfline.alt_.length() - vcfline.ref_.length();
+                      tvs : vcfline.alt_.length() - vcfline.ref_.length();
 			format.Add("VS", itoa(vs));
 
 			string age(".");
