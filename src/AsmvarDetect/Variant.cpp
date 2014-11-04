@@ -527,9 +527,9 @@ void Variant::MarkHete() {
 
         for (size_t i(0); i < it->second.size(); ++i) {
 
-            if (it->second[i].type.find("GAP") != string::npos) continue;
-            if (it->second[i].type ==  "REFCALL") continue;
             // Just deal with variants 
+            if (it->second[i].type == "INTERGAP") continue;
+            if (it->second[i].type.find("REFCALL") != string::npos) continue;
 
             bool flag(true);
             for (size_t j(index[it->first]); j < it->second.size(); ++j) {
@@ -1191,10 +1191,14 @@ void Variant::Output2VCF(string referenceId, string file) {
 			vcfline.filters_ = "."; // Defualt set to '.', it means nothing filter
 			if (allvariant[it->second][i].type.find("GAP") != string::npos) {
 			// It's Inter-, Intra- or REFGAP 
-				vcfline.filters_ = allvariant[it->second][i].type;
+                vcfline.filters_ = allvariant[it->second][i].type;
+			}
+			if (allvariant[it->second][i].type == "INTERGAP") {
+            // Type is Intergap.
 				gt = "./.";
 			} else if (allvariant[it->second][i].type.find("REFCALL") != string::npos) {
 				vcfline.filters_ = "REFCALL"; // REFCALL reference region
+                allvariant[it->second][i].type = "REFCALL";
 				gt = "0/0";
 			} else {
 			// Variants
@@ -1220,6 +1224,7 @@ void Variant::Output2VCF(string referenceId, string file) {
 			if (allvariant[it->second][i].type == "INTERGAP") 
 				format.Set("QR", ".");
 			format.Add("VT", allvariant[it->second][i].type);
+/*
 			int qvs = allvariant[it->second][i].query.end - 
 					  allvariant[it->second][i].query.start; // Do not +1!!
 			int tvs = allvariant[it->second][i].target.end - 
@@ -1234,6 +1239,11 @@ void Variant::Output2VCF(string referenceId, string file) {
 				vcfline.filters_ == "INTERGAP"||
 				isncall) ++vs; //Not Variant, should +1!
 			if (allvariant[it->second][i].type == "COMPLEX") vs = labs(tvs - qvs); 
+*/
+            int vs = (allvariant[it->second][i].type == "INTERGAP" ||
+                      allvariant[it->second][i].type == "REFCALL") ? 
+                      vcfline.ref_.length() : 
+                      vcfline.alt_.length() - vcfline.ref_.length();
 			format.Add("VS", itoa(vs));
 
 			string age(".");
@@ -1257,8 +1267,8 @@ void Variant::Output2VCF(string referenceId, string file) {
 						allvariant[it->second][i].query.start - 100 : 0, 
 						allvariant[it->second][i].query.end + 100);
 			}
-			double nr = double (qn) / (vs + 200);
-			format.Add("NR",ftoa(nr));
+			double nr = double (qn) / (vs + 200); // NR in query sequece
+			format.Add("NR",ftoa(nr)); 
 			vcfline.sample_.push_back(format);
 
 			O << vcfline << "\n";
