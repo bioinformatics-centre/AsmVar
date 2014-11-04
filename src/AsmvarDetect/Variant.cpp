@@ -564,7 +564,7 @@ void Variant::Unique(vector<VarUnit> &v) {
         string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
             + itoa(v[i].target.end) + "-" + v[i].query.id   + ":"
             + itoa(v[i].query.start)+ ":" + itoa(v[i].query.end);
-        if (hasAppear.count(key)) v[i].Clear(); // Mask the repeat appear var!
+        if (hasAppear.count(key)) v[i].Clear(); // Mask the repeat variant!
         hasAppear.insert(key);
     }
 }
@@ -887,10 +887,9 @@ void Variant::SummaryVar() {
             vs = (ts > qs) ? ts : qs;
 
             bool isncall = (it->second[i].type == "REFGAP" && 
-                    toupper(it->second[i].tarSeq[0]) == 'N') 
-                ||
-                (it->second[i].type  == "INTRAGAP" && 
-                 toupper(it->second[i].qrySeq[0]) == 'N');
+                    toupper(it->second[i].tarSeq[0]) == 'N') ||
+                    (it->second[i].type  == "INTRAGAP" && 
+                    toupper(it->second[i].qrySeq[0]) == 'N');
             if (it->second[i].type == "INTERGAP"||
                     isncall || // Make sure query is totally N
                     it->second[i].type == "REFCALL") ++vs;
@@ -1212,10 +1211,10 @@ void Variant::Output2VCF(string referenceId, string file) {
 			format.Add("MS", ftoa(allvariant[it->second][i].mismap)); // Mismap
 			format.Add("HR", itoa(allvariant[it->second][i].homoRun));// HRun
 			format.Add("END",itoa(allvariant[it->second][i].target.end));
-			format.Add("TR", allvariant[it->second][i].target.id + "-" +
+			format.Add("TR", allvariant[it->second][i].target.id + "=" +
 						   itoa(allvariant[it->second][i].target.start)+ "-" +
 						   itoa(allvariant[it->second][i].target.end));
-			format.Add("QR", allvariant[it->second][i].query.id + "-" +
+			format.Add("QR", allvariant[it->second][i].query.id + "=" +
 						   itoa(allvariant[it->second][i].query.start) + "-" +
 						   itoa(allvariant[it->second][i].query.end));
 			if (allvariant[it->second][i].type == "INTERGAP") 
