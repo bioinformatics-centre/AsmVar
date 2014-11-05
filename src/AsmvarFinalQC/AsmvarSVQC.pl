@@ -36,8 +36,8 @@ sub Output {
 	for (my $i = 0; $i < @$info; ++$i) {
 
 		my $mark   = shift @{$$info[$i]};
-        my $vq     = shift @{$$info[$i]};
 		my $bestNR = shift @{$$info[$i]};
+        my $vq     = shift @{$$info[$i]};
         my $asmNum = shift @{$$info[$i]};
         my $mapnum = shift @{$$info[$i]};
         my $svtype = shift @{$$info[$i]};
@@ -51,7 +51,6 @@ sub Output {
 		#} else {
 		#	print join "\t", @{$$info[$i]}; print "\n";
 		#}
-		++$total;
 
         # For the $mark's detail:
         # If the vq is all > qualityThd
@@ -63,7 +62,6 @@ sub Output {
 		my $dup = 0;
 		if ($mark == -1) {
 			$$info[$i][6] = 'FALSE';
-			++$false;
 		} elsif ($mark == -2 and $vq >= $qualityThd) {
             $$info[$i][6] = ($$info[$i][6] eq '.' || $$info[$i][6] == 'PASS') ? 
                              'DUPLIC' : 'DUPLIC;'. $$info[$i][6];
@@ -76,6 +74,8 @@ sub Output {
         # Low Quality variant score
             $$info[$i][6] = 'FALSE';
         }
+		++$total;
+		++$false if $$info[$i][6] eq 'FALSE';
 		print join "\t", @{$$info[$i]}; print "\n";
 	}
 
@@ -133,9 +133,9 @@ sub LoadVarRegFromVcf {
 		$t[7] =~ s/;SPN=[^;]+//g;
         $t[7] .= ";SPN=$asmNum";
 
-        my ($vq) = $t[7] =~ m/;VQ=[^;]+/; # Get variant score
+        my ($vq) = $t[7] =~ m/;VQ=([^;]+)/; # Get variant score
 		$vq      = sprintf("%.2f", $vq);
-		my $ma = ($nr > 0.5) ? -1: 0; # '-1' is Mark for delete if too much 'N'
+		my $ma   = ($nr > 0.5) ? -1: 0; # '-1' is Mark for delete if too much 'N'
 		push(@$info, [$ma, $nr, $vq, $asmNum, $nummap, $svtype, 
                       $svsize, $tId, $tStart, $tEnd, @t]);
 	}
@@ -204,7 +204,6 @@ sub RemoveOverlap { # Find the best region from nerby positions(regions) by vcf 
     my ($distance_delta, $info) = @_;
     my (%prePos, @index, $id, $start, $end, @data);
 
-#push(@$info, [$ma, $nr, $vq, $asmNum, $nummap, $svtype, $svsize, $tId, $tStart, $tEnd, @t]);
 
 	my ($rI, $sI, $eI) = (7, 8, 9);
     @$info = sort { 
@@ -283,7 +282,6 @@ sub Rm {
     my $bk = (sort{ $a<=>$b } keys %hash)[0];      # Best NR Key
     my $kn = scalar(keys %hash);
 
-	##[$mark, $nr,      $asmNum, $nummap, $svtype, $svsize, $tId, $tStart, $tEnd, @t]
 	##[$mark, $nr, $vq, $asmNum, $nummap, $svtype, $svsize, $tId, $tStart, $tEnd, @t]
 	my @leftIndex;
 	for my $j (sort { $a <=> $b } @{$hash{$bk}}) {
@@ -344,7 +342,6 @@ sub Rm {
 sub StatisticOverlap {
 
 	my ($info, @index) = @_;
-	##[$mark, $nr,      $asmNum, $nummap, $svtype, $svsize, $tId, $tStart, $tEnd, @t]
 	##[$mark, $nr, $vq, $asmNum, $nummap, $svtype, $svsize, $tId, $tStart, $tEnd, @t]
 	my (@pos, @nr, @type, @size, @spn);
 
