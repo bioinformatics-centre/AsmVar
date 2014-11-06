@@ -134,8 +134,8 @@ sub LoadVarRegFromVcf {
 			$tStart -= 5; $tStart = 1 if ($tStart < 0);
 			$tEnd   += 5;
 		}
-		$t[7] =~ s/;?SPN=[^;]+//g;
-        $t[7] .= ";?SPN=$asmNum";
+		$t[7] =~ s/;SPN=[^;]+//g;
+        $t[7] .= ";SPN=$asmNum";
 
         my ($vq) = $t[7] =~ m/;VQ=([^;]+)/; # Get variant score
 		my $ma   = ($nr > 0.5) ? -1: 0; # '-1' is Mark for delete if too much 'N'
