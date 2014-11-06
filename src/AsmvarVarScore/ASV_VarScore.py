@@ -60,7 +60,7 @@ def main(opt):
            d     = dataSet[j]
            j    += 1 # Increase the index of dataSet for the next cycle
            if d.variantOrder != order: 
-               raise ValueError('[BUG] The order(%s) must be the same as dataSet(%s)' %(order, d.variantOrder))
+               raise ValueError('[BUG] The order(%s) must be the same as dataSet(%s)' % (order, d.variantOrder))
 
            vcfinfo = {}
            # Deal with the INFO line
@@ -68,7 +68,7 @@ def main(opt):
                k = info.split('=')[0]
                if monitor and k in vcfinfo: 
                    monitor = False
-                   print >>sys.stderr,'[WARNING] The tag: %s double hits in the INFO column at %s'%(k, opt.vcfInfile)
+                   print >>sys.stderr,'[WARNING] The tag: %s double hits in the INFO column at %s' % (k, opt.vcfInfile)
                vcfinfo[k] = info
 
            tot += 1.0 # Record For summary
@@ -81,8 +81,9 @@ def main(opt):
            if d.atAntiTrainingSite: vcfinfo['NEGATIVE_TRAIN_SITE'] = 'NEGATIVE_TRAIN_SITE'
            vcfinfo['VQ'] = 'VQ=' + str(d.lod)
            vcfinfo['CU'] = 'CU=' + annoTexts[d.worstAnnotation]
+
            for text in annoTexts: 
-               vcfinfo[text] = text + '=' + str(d.annotations[idx[text]])
+               vcfinfo[text] = text + '=' + str('%.2f' % d.annotations[idx[text]])
            col[7] = ';'.join(sorted(vcfinfo.values()))
            if d.lod < 0: d.lod = 0 # QUAL: donot allow value below 0
            col[5] = str(d.lod) # In fact QUAL field should use phred scala

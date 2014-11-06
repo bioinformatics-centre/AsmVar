@@ -25,24 +25,29 @@ class VariantDataManager:
         self.VRAC = VRAC.VariantRecalibratorArgumentCollection()
         self.annotationMean = None
         self.annotationSTD  = None
-        self.annoTexts      = [['AllelicNum', 'Integer', 'Allelic number: bi- or mult-allelic'], \
-                               ['Position', 'Float', 'The median of relative position on Assembly Scaffold'], \
-                               ['NRatio'  , 'Float', 'The median of N normal ratio of the query sequences'], \
-                               ['AlternatePerfect' , 'Float', 'The median of Depth of Alt_Perfect'  ], \
-                               ['BothImperfect'    , 'Float', 'The median of Depth of Both_Imperfect']]
+        self.annoTexts      = [['AllelicNum', 'Float', 'Allelic number: bi- or mult-allelic'], \
+                               ['InbCoeff',   'Float', 'Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount'], \
+                               ['Position',   'Float', 'Relative position on Assembly Scaffold'], \
+                               ['NRatio'  ,   'Float', 'N normal ratio of the query sequences'], \
+                               ['AlternatePerfect', 'Float', 'Support Alt_Perfect'  ], \
+                               ['BothImperfect',    'Float', 'Support Both_Imperfect']]
 
         self.data = [] # list < VariantDatum >
         if data: # data is not None
-            if not isinstance(data[0],vd.VariantDatum): raise ValueError('[ERROR] The data type should be "VariantDatum" in VariantDataManager(),but found %s'% str(type(data[0])))
+            if not isinstance(data[0],vd.VariantDatum): 
+                raise ValueError('[ERROR] The data type should be "VariantDatum" in VariantDataManager(),but found %s'% str(type(data[0])))
             self.data = data
             for i, d in enumerate(self.data): self.data[i].annotations = np.array(self.data[i].annotations)
 
     def SetData(self, data):
-        if not isinstance(data[0],vd.VariantDatum): raise ValueError('[ERROR] The data type should be "VariantDatum" in VariantDataManager(),but found %s' % str(type(data[0])))
+
+        if not isinstance(data[0],vd.VariantDatum): 
+            raise ValueError('[ERROR] The data type should be "VariantDatum" in VariantDataManager(),but found %s' % str(type(data[0])))
         self.data = data
         for i, d in enumerate(self.data): self.data[i].annotations = np.array(d.annotations)
 
     def NormalizeData(self):
+
         data = np.array([d.annotations for d in self.data], dtype=float)
         mean = data.mean(axis=0); self.annotationMean = mean
         std  = data.std(axis=0) ; self.annotationSTD  = std
@@ -50,9 +55,9 @@ class VariantDataManager:
         # foundZeroVarianceAnnotation
         if any(std < 1e-5): raise ValueError('[ERROR] Found annotations with zero variance. They must be excluded before proceeding.')
         
-        # Each data point is now(x - mean) / standard deviation
+        # Each data point now is (x - mean)/sd
         for i, d in enumerate(data):
-            self.data[i].annotations =(d - mean) / std 
+            self.data[i].annotations = (d - mean) / std 
             # trim data by standard deviation threshold and mark failing data for exclusion later
             self.data[i].failingSTDThreshold = False
             if any(np.abs(self.data[i].annotations) > self.VRAC.STD_THRESHOLD):
@@ -89,7 +94,7 @@ class VariantDataManager:
 
             # I just use the 'roc_curve' function to calculate the worst LOD threshold, not use it to draw ROC curve
             # And 'roc_curve' function will output the increse order, so that I don't have to sort it again
-            _ , tpr, thresholds = roc_curve(lodDist[:,0], lodDist[:,1]) 
+            _, tpr, thresholds = roc_curve(lodDist[:,0], lodDist[:,1]) 
             lodCum = [[thresholds[i], 1.0 - r] for i, r in enumerate(tpr)]
 
             for i, r in enumerate(tpr):
@@ -182,6 +187,13 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
 
             isBiallelic = True
             if len(col[4].split(',')) > 1: isBiallelic = False
+            # Get inbreeding coefficient
+            # It's calculated like: 1.0 - hetCount/Expected_hetCount in VCF
+            #inbCoeff = re.search(r';?InbCoeff=([^;]+)', col[7])
+            inbCoeff = re.search(r';F=([^;]+)', col[7])
+            if not inbCoeff:
+                print >> sys.stderr, '[ERROR] No inbreeding coefficient "InbCoeff=..." in INFO field in vcf:\n%s\n' % vcfInfile
+            inbCoeff = float('%.2f' % float(inbCoeff.group(1)))
 
             annotations = []
             atleastOne  = False
@@ -210,19 +222,17 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 if qSta > 100 or qEnd > 100: raise ValueError('[ERROR] Query size Overflow! sample: %s; scaffold: %s' %(sampleId, qId))
 
                 leg = min(qSta, 100 - qEnd)
-                #nn  = string.atof(sample.split(':')[fmat['FN']])
                 nn  = string.atof(sample.split(':')[fmat['NR']])
                 n   = int(1000 * nn + 0.5) / 10.0 # n ratio range: [0, 100]
                 alt = string.atoi(sample.split(':')[fmat['AA']].split(',')[1]) # Alternate perfect
                 bot = string.atoi(sample.split(':')[fmat['AA']].split(',')[3]) # Both imperfect
-                #annotations.append([leg, n , alt, bot])
-                annotations.append([isBiallelic, leg, n , alt, bot])
+                annotations.append([isBiallelic, inbCoeff, leg, n , alt, bot])
 
             if not atleastOne: raise ValueError('[ERROR] All the samples don\'t contain this variant.', col)
-            datum              = vd.VariantDatum()
-            datum.annotations  = np.median(annotations, axis = 0)
-            pos                = col[0] + ':' + col[1]
-            datum.variantOrder = pos
+            datum                = vd.VariantDatum()
+            datum.annotations    = np.median(annotations, axis = 0)
+            pos                  = col[0] + ':' + col[1]
+            datum.variantOrder   = pos
             if pos in traningSet: datum.atTrainingSite = True
             data.append(datum)
 
