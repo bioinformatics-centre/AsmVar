@@ -25,7 +25,8 @@ class VariantDataManager:
         self.VRAC = VRAC.VariantRecalibratorArgumentCollection()
         self.annotationMean = None
         self.annotationSTD  = None
-        self.annoTexts      = [['Position', 'Float', 'The median of relative position on Assembly Scaffold'], \
+        self.annoTexts      = [['AllelicNum', 'Integer', 'Allelic number: bi- or mult-allelic'], \
+                               ['Position', 'Float', 'The median of relative position on Assembly Scaffold'], \
                                ['NRatio'  , 'Float', 'The median of N normal ratio of the query sequences'], \
                                ['AlternatePerfect' , 'Float', 'The median of Depth of Alt_Perfect'  ], \
                                ['BothImperfect'    , 'Float', 'The median of Depth of Both_Imperfect']]
@@ -127,6 +128,9 @@ def LoadFaLen(faLenLstFile):
     return data
 
 def LoadTrainingSiteFromVCF(vcffile):
+"""
+Just record the training site positions
+"""
 
     if vcffile[-3:] == '.gz':
         I = os.popen('gzip -dc %s' % vcffile)
@@ -176,17 +180,18 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
             for tag in ['AA', 'QR', 'NR']:
                 if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian "%s" in VCF: %s\nAT: %s\n' %(tag, vcfInfile, line))
 
+            isBiallelic = True
+            if len(col[4].split(',')) > 1: isBiallelic = False
+
             annotations = []
             atleastOne  = False
             for i, sample in enumerate(col[9:]): 
 
                 sampleId  = col2sam[9+i]
                 if sample == './.': continue
-                if len(sample.split(':')[fmat['AA']].split(',')) != 4:
-                    #print >> sys.stderr,'[WARNING] %s\n%s' %(line, sample.split(':')[fmat['AA']])
-                    continue
-
                 field = sample.split(':')
+                if len(field[fmat['AA']].split(',')) != 4: continue
+
                 if len(field) < fmat['QR'] + 1: continue
                 qr    = field[fmat['QR']].split(',')[-1]
                 if qr == '.': continue
@@ -200,8 +205,8 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
 
                 if sampleId not in qFaLen          : raise ValueError('[ERROR] The sample name $s(in vcf) is not in the name of Fa list.' % sampleId)
                 if      qId not in qFaLen[sampleId]: raise ValueError('[ERROR]', qId, 'is not been found in fa file\n')
-                qSta= int(qSta * 100 / qFaLen[sampleId][qId] + 0.5)
-                qEnd= int(qEnd * 100 / qFaLen[sampleId][qId] + 0.5)
+                qSta = int(qSta * 100 / qFaLen[sampleId][qId] + 0.5)
+                qEnd = int(qEnd * 100 / qFaLen[sampleId][qId] + 0.5)
                 if qSta > 100 or qEnd > 100: raise ValueError('[ERROR] Query size Overflow! sample: %s; scaffold: %s' %(sampleId, qId))
 
                 leg = min(qSta, 100 - qEnd)
@@ -210,7 +215,8 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 n   = int(1000 * nn + 0.5) / 10.0 # n ratio range: [0, 100]
                 alt = string.atoi(sample.split(':')[fmat['AA']].split(',')[1]) # Alternate perfect
                 bot = string.atoi(sample.split(':')[fmat['AA']].split(',')[3]) # Both imperfect
-                annotations.append([leg, n , alt, bot])
+                #annotations.append([leg, n , alt, bot])
+                annotations.append([isBiallelic, leg, n , alt, bot])
 
             if not atleastOne: raise ValueError('[ERROR] All the samples don\'t contain this variant.', col)
             datum              = vd.VariantDatum()
