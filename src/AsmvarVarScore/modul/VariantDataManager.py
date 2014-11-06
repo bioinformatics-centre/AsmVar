@@ -128,9 +128,9 @@ def LoadFaLen(faLenLstFile):
     return data
 
 def LoadTrainingSiteFromVCF(vcffile):
-"""
-Just record the training site positions
-"""
+    """
+    Just record the training site positions
+    """
 
     if vcffile[-3:] == '.gz':
         I = os.popen('gzip -dc %s' % vcffile)
