@@ -84,7 +84,8 @@ def main(opt):
            for text in annoTexts: 
                vcfinfo[text] = text + '=' + str(d.annotations[idx[text]])
            col[7] = ';'.join(sorted(vcfinfo.values()))
-           col[5] = str(d.lod)
+           if d.lod < 0: d.lod = 0 # QUAL: donot allow value below 0
+           col[5] = str(d.lod) # In fact QUAL field should use phred scala
 
            print '\t'.join(col)
 
