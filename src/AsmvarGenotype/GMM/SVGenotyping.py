@@ -191,10 +191,10 @@ def UpdateInfoFromGMM(gmm, ppr, grey, red, green, blue, data, sam2col, family):
         data[7] += ';W=' + weight
     """
 
-    if re.search(r';F=([^;]+)', data[7]): 
-        data[7] = re.sub(r';F=([^;]+)', ';F=' + str(f), data[7])
+    if re.search(r';InbCoeff=([^;]+)', data[7]): 
+        data[7] = re.sub(r';InbCoeff=([^;]+)', ';InbCoeff=' + str(f), data[7])
     else: 
-        data[7] += ';F=' + str(f)
+        data[7] += ';InbCoeff=' + str(f)
 
     if homCount == N + 1 or refCount == N + 1: # The all sample are totally 1/1 or 0/0! 
         if data[6] == '.' or data[6] == 'PASS':
@@ -442,8 +442,8 @@ def main(opt):
                     #outFailGtyHandle.write('##INFO=<ID=K,Number=1,Type=String,Description="Number of genotype stats">\n')
                     #outHandle.write('##INFO=<ID=W,Number=1,Type=String,Description="The wieghts for each genotype stats. And the order is: HOM_REF,HETE_VAR,HOM_VAR">\n')
                     #outFailGtyHandle.write('##INFO=<ID=W,Number=1,Type=String,Description="The wieghts for each genotype stats. And the order is: HOM_REF,HETE_VAR,HOM_VAR">\n')
-                    outHandle.write('##INFO=<ID=F,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">\n')
-                    outFailGtyHandle.write('##INFO=<ID=F,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">\n')
+                    outHandle.write('##INFO=<ID=InbCoeff,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">\n')
+                    outFailGtyHandle.write('##INFO=<ID=InbCoeff,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">\n')
                 elif re.search(r'^##', line):
                     outHandle.write(line + '\n')
                     outFailGtyHandle.write(line + '\n')
