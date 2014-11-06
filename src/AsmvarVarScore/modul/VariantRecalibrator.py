@@ -34,7 +34,7 @@ class VariantRecalibrator:
         print >> sys.stderr, '[INFO] The converged information of goodModel is:'   , goodModel.converged_
         print >> sys.stderr, '[INFO] The means of gaussion of goodModel is:\n'     , goodModel.means_
         print >> sys.stderr, '[INFO] The covariance of gaussion of goodModel is:\n', goodModel.covars_, '\n'
-        self.engine.EvaluateData (self.dataManager.data, goodModel, False)
+        self.engine.EvaluateData(self.dataManager.data, goodModel, False)
 
         self.badLodCutoff, self.LodCumInTrain = self.dataManager.CalculateWorstLodCutoff()
 
