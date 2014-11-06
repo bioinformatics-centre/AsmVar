@@ -63,19 +63,21 @@ sub Output {
 		if ($mark == -1) {
 			$$info[$i][6] = 'FALSE';
 		} elsif ($mark == -2 and $vq >= $qualityThd) {
-            $$info[$i][6] = ($$info[$i][6] eq '.' || $$info[$i][6] == 'PASS') ? 
+            $$info[$i][6] = ($$info[$i][6] eq '.' || $$info[$i][6] eq 'PASS') ? 
                              'DUPLIC' : 'DUPLIC;'. $$info[$i][6];
 			++$duplic;
 		} elsif ($mark == 1 and $vq >= $qualityThd) {
+
 			$$info[$i][6] = 'PASS';
 		} elsif ($vq >= $qualityThd) {
+
             $$info[$i][6] = 'PASS';
         } else {
         # Low Quality variant score
-            $$info[$i][6] = 'FALSE';
+            $$info[$i][6] = "q$qualityThd";
         }
 		++$total;
-		++$false if $$info[$i][6] eq 'FALSE';
+		++$false if $$info[$i][6] eq 'FALSE' or $$info[$i][6] eq "q$qualityThd";
 		print join "\t", @{$$info[$i]}; print "\n";
 	}
 
@@ -98,6 +100,8 @@ sub LoadVarRegFromVcf {
 			print;
 			#print "##FILTER=<ID=PASS_DUP,Description=\"The main variant in the duplication variants class. Should Keep it!\">\n";
 			print "##FILTER=<ID=DUPLIC,Description=\"Duplication variants. Don't need to keep them!\">\n";
+			print "##FILTER=<ID=FALSE,Description=\"unconfident variant\">\n";
+			print "##FILTER=<ID=q$qualityThd,Description=\"Variant quality below $qualityThd\">\n";
 			next;
 		} elsif (/^#CHROM/) {
 			print "##INFO=<ID=SPN,Number=1,Type=Integer,Description=\"The count of assambly which support this variant region\">\n";
@@ -132,6 +136,7 @@ sub LoadVarRegFromVcf {
 		}
 		$t[7] =~ s/;SPN=[^;]+//g;
         $t[7] .= ";SPN=$asmNum";
+$t[5] = 0 if $t[5] < 0;
 
         my ($vq) = $t[7] =~ m/;VQ=([^;]+)/; # Get variant score
 		$vq      = sprintf("%.2f", $vq);
@@ -154,6 +159,8 @@ sub FindBestInSingleVariant {
     for my $sam (@sample) {
 
         my @f = split /:/, $sam; #./.:52,2:58,2:T:0.02:F:11,16,0,0,0,18,1:11,35:scaffold71302-155-202:0,0,0,0,0,0,0:0,0:11-151472-151472:3:INS
+        next if uc $f[$svtIndex] eq 'REFCALL';
+
 		++$asmNum if ((@f > 1) and ($f[$qrIndex] ne '.')); # ignore the FORMAT just have './.'
         next if $f[0] eq './.' or $f[$qrIndex] eq '.'; 
 
@@ -265,7 +272,8 @@ sub RemoveOverlap { # Find the best region from nerby positions(regions) by vcf 
 
     Rm($info, @index) if (@index > 1);
 
-    @$info = sort {$a->[3] <=> $b->[3]} @$info; # Set back
+    # Set the output order back to the original vcfInfile.
+    @$info = sort {$a->[4] <=> $b->[4]} @$info;
     print STDERR "\n** RemoveOverlap Done **\n";
 	return;
 }
@@ -342,14 +350,14 @@ sub Rm {
 sub StatisticOverlap {
 
 	my ($info, @index) = @_;
-	##[$mark, $nr, $vq, $asmNum, $nummap, $svtype, $svsize, $tId, $tStart, $tEnd, @t]
 	my (@pos, @nr, @type, @size, @spn);
 
+	##[$mark, $nr, $vq, $asmNum, $nummap, $svtype, $svsize, $tId, $tStart, $tEnd, @t]
 	for my $i (@index) {
 
 		if ($$info[$i][0] < 0) {
 
-			my $m = ($$info[$i][0] == -2) ? '^' : '*';
+			my $m = ($$info[$i][0] == -2) ? '^' : '*'; # -2 => DUPLIC
 			push @pos , $m."$$info[$i][10]-$$info[$i][11]";
 			push @type, $m."$$info[$i][5]";
 			push @size, $m."$$info[$i][6]";
