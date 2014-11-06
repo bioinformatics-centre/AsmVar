@@ -192,9 +192,9 @@ def UpdateInfoFromGMM(gmm, ppr, grey, red, green, blue, data, sam2col, family):
     """
 
     if re.search(r';InbCoeff=([^;]+)', data[7]): 
-        data[7] = re.sub(r';InbCoeff=([^;]+)', ';InbCoeff=' + str(f), data[7])
+        data[7] = re.sub(r';InbCoeff=([^;]+)', ';InbCoeff=%.2f' % f, data[7])
     else: 
-        data[7] += ';InbCoeff=' + str(f)
+        data[7] += ';InbCoeff=%.2f' % f
 
     if homCount == N + 1 or refCount == N + 1: # The all sample are totally 1/1 or 0/0! 
         if data[6] == '.' or data[6] == 'PASS':
