@@ -34,7 +34,7 @@ def main(opt):
  
     culprit, good, tot = {}, {}, 0.0
     annoTexts = [d[0] for d in vr.dataManager.annoTexts]
-    idx = {c:i for i,c in enumerate(annoTexts)}
+    idx = {c:i for i, c in enumerate(annoTexts)}
 
     for k,v in sorted(hInfo.header.items(), key = lambda d: d[0]): print v
     if opt.vcfInfile[-3:] == '.gz':
