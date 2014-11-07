@@ -32,7 +32,7 @@ print STDERR "\n********************** ALL DONE ********************\n";
 sub Output {
 
 	my ($qualityThd, $info) = @_;
-	my ($total, $duplic, $false) = (0,0,0);
+	my ($total, $pass, $duplic, $false, $lowQ) = (0,0,0,0,0);
 	for (my $i = 0; $i < @$info; ++$i) {
 
 		my $mark   = shift @{$$info[$i]};
@@ -77,15 +77,22 @@ sub Output {
             $$info[$i][6] = "q$qualityThd";
         }
 		++$total;
-		++$false if $$info[$i][6] eq 'FALSE' or $$info[$i][6] eq "q$qualityThd";
+		++$false if $$info[$i][6] eq 'FALSE';
+        ++$lowQ  if $$info[$i][6] eq "q$qualityThd";
+        ++$pass  if $$info[$i][6] eq 'PASS';
 		print join "\t", @{$$info[$i]}; print "\n";
 	}
 
 	my $rf = sprintf "%.3f", $false/$total;
 	my $rd = sprintf "%.3f", $duplic/$total;
-	print STDERR "\n** Total variants      : $total\n";
-	print STDERR "** False variants      : $false  ($rf)\n";
-	print STDERR "** Duplication variants: $duplic ($rd)\n";
+    my $rp = sprintf "%.3f", $pass/$total;
+    my $rl = sprintf "%.3f", $lowQ/$total;
+	print STDERR "\n** Summary **\n\n";
+	print STDERR "** Total variants  : $total\n";
+	print STDERR "** PASS variants   : $pass ($rp)\n";
+	print STDERR "** q$qualityThd variants    : $lowQ ($rl)\n";
+	print STDERR "** FALSE variants  : $false ($rf)\n";
+	print STDERR "** DUPLIC variants : $duplic ($rd)\n\n";
 }
 
 sub LoadVarRegFromVcf {
@@ -159,7 +166,8 @@ sub FindBestInSingleVariant {
         my @f = split /:/, $sam; #./.:52,2:58,2:T:0.02:F:11,16,0,0,0,18,1:11,35:scaffold71302-155-202:0,0,0,0,0,0,0:0,0:11-151472-151472:3:INS
         next if uc $f[$svtIndex] eq 'REFCALL';
 
-		++$asmNum if ((@f > 1) and ($f[$qrIndex] ne '.')); # ignore the FORMAT just have './.'
+        # ignore the FORMAT just have './.'
+		++$asmNum if ((@f > $qrIndex + 1) and ($f[$qrIndex] ne '.'));
         next if $f[0] eq './.' or $f[$qrIndex] eq '.'; 
 
         $svtype = uc $f[$svtIndex];  # SV Type
@@ -209,23 +217,21 @@ sub RemoveOverlap { # Find the best region from nerby positions(regions) by vcf 
     my ($distance_delta, $info) = @_;
     my (%prePos, @index, $id, $start, $end, @data);
 
-
 	my ($rI, $sI, $eI) = (7, 8, 9);
     @$info = sort { 
-                    my $da=$a->[$rI]; 
-                    my $db=$b->[$rI]; 
+                    my $da = $a->[$rI]; 
+                    my $db = $b->[$rI]; 
                     if($da eq $db) { 
                         $a->[$sI] <=> $b->[$sI]; 
                     } else { 
                         $a->[$rI] cmp $b->[$rI]; 
                     }
-
                   } @$info;
 
     print STDERR "\n** Starting to RemoveOverlap **\n\n";
-    for(my $i = 0; $i < @$info; ++$i) {
+    for (my $i = 0; $i < @$info; ++$i) {
 
-        next if $$info[$i][0] < 0 ;
+        next if $$info[$i][0] < 0;
 
         die "[ERROR]Your region start > end (@{$$info[$i]}). ".
             "This is not allow in RemoveOverlap() function.\n" 

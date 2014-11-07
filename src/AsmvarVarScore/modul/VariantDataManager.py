@@ -189,10 +189,11 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
             if len(col[4].split(',')) > 1: isBiallelic = False
             # Get inbreeding coefficient
             # It's calculated like: 1.0 - hetCount/Expected_hetCount in VCF
-            #inbCoeff = re.search(r';?InbCoeff=([^;]+)', col[7])
-            inbCoeff = re.search(r';F=([^;]+)', col[7])
+            #inbCoeff = re.search(r';F=([^;]+)', col[7])
+            inbCoeff = re.search(r';?InbCoeff=([^;]+)', col[7])
             if not inbCoeff:
-                print >> sys.stderr, '[ERROR] No inbreeding coefficient "InbCoeff=..." in INFO field in vcf:\n%s\n' % vcfInfile
+                continue
+                #print >> sys.stderr, '[ERROR] No inbreeding coefficient "InbCoeff=..." in INFO field in vcf:\n%s\n' % vcfInfile
             inbCoeff = float('%.2f' % float(inbCoeff.group(1)))
 
             annotations = []
