@@ -53,8 +53,14 @@ def main(opt):
            if re.search(r'^#', line): continue
 
            col  = line.strip('\n').split()
+           
+           # Ignore if all the samples are not containing 'QR' or 'InbCoeff'
            fmat = {k:i for i,k in enumerate(col[8].split(':'))} # Get Format
            if 'QR' not in fmat: continue # Cause by INTERGAP. But We'd better delete this statment, because the error is cause by the USER
+
+           inbCoeff = re.search(r';?InbCoeff=([^;]+)', col[7])
+           if not inbCoeff: continue
+           ### Conitnue End ###
 
            order = col[0] + ':' + col[1]
            d     = dataSet[j]

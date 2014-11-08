@@ -67,22 +67,30 @@ class VariantDataManager:
 
         trainingData = [d for d in self.data if(not d.failingSTDThreshold) and d.atTrainingSite]
         print >> sys.stderr, '[INFO] Training with %d variants after standard deviation thresholding.' % len(trainingData)
+
         if len(trainingData) < self.VRAC.MIN_NUM_BAD_VARIANTS:
             print >> sys.stderr,'[WARNING] Training with very few variant sites! Please check the model reporting PDF to ensure the quality of the model is reliable.'
         if len(trainingData) > self.VRAC.MAX_NUM_TRAINING_DATA:
             print >> sys.stderr, '[WARING] Very large training set detected. Downsampling to %d training variants.' % self.VRAC.MAX_NUM_TRAINING_DATA
             np.random.shuffle(trainingData) # Random shuffling
-            return [trainingData[i] for i in range(self.VRAC.MAX_NUM_TRAINING_DATA)]
+            return list(trainingData[i] for i in range(self.VRAC.MAX_NUM_TRAINING_DATA))
+
         return trainingData 
 
     def SelectWorstVariants(self, badLod):
 
         trainingData = []
         for i,d in enumerate(self.data):
-            if(d.lod < badLod) and(not d.failingSTDThreshold):
+            if(d.lod < badLod) and (not d.failingSTDThreshold):
                 trainingData.append(d)
-                self.data[i].atAntiTrainingSite = True # I need the i order must be the same size as self.data 
+                self.data[i].atAntiTrainingSite = True # I do need: i order to be the same as self.data 
         print >> sys.stderr, '[INFO] Training with worst %d scoring variants --> variants with LOD < %.2f.' %(len(trainingData), badLod)
+
+        if len(trainingData) > self.VRAC.MAX_NUM_TRAINING_DATA:
+            print >> sys.stderr, '[WARING] Very large training set detected. Downsampling to %d training variants.' % self.VRAC.MAX_NUM_TRAINING_DATA
+            np.random.shuffle(trainingData) # Random shuffling
+            return list(trainingData[i] for i in range(self.VRAC.MAX_NUM_TRAINING_DATA))
+
         return trainingData
 
     def CalculateWorstLodCutoff(self):
@@ -180,14 +188,7 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 hInfo.Record(line.strip('\n'))
                 continue
 
-            fmat = {k:i for i,k in enumerate(col[8].split(':'))} # Get Format
-            if 'QR' not in fmat: continue # Cause by INTERGAP. But We'd better delete this statment, because the error is cause by the USER 
-            for tag in ['AA', 'QR', 'NR']:
-                if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian "%s" in VCF: %s\nAT: %s\n' %(tag, vcfInfile, line))
-
-            isBiallelic = True
-            if len(col[4].split(',')) > 1: isBiallelic = False
-            # Get inbreeding coefficient
+            # Get inbreeding coefficient. If fail then continue.
             # It's calculated like: 1.0 - hetCount/Expected_hetCount in VCF
             #inbCoeff = re.search(r';F=([^;]+)', col[7])
             inbCoeff = re.search(r';?InbCoeff=([^;]+)', col[7])
@@ -195,6 +196,15 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 continue
                 #print >> sys.stderr, '[ERROR] No inbreeding coefficient "InbCoeff=..." in INFO field in vcf:\n%s\n' % vcfInfile
             inbCoeff = float('%.2f' % float(inbCoeff.group(1)))
+
+            fmat = {k:i for i,k in enumerate(col[8].split(':'))} # Get Format
+            if 'QR' not in fmat: continue # Cause by INTERGAP. But We'd better delete this statment, because the error is cause by the USER 
+
+            for tag in ['AA', 'QR', 'NR']:
+                if tag not in fmat: raise ValueError('[ERROR] The "Format" fields did not contian "%s" in VCF: %s\nAT: %s\n' %(tag, vcfInfile, line))
+
+            isBiallelic = True
+            if len(col[4].split(',')) > 1: isBiallelic = False
 
             annotations = []
             atleastOne  = False
