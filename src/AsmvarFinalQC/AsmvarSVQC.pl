@@ -7,6 +7,10 @@ use strict;
 use warnings;
 use Getopt::Long;
 use List::Util;
+use File::Basename qw/dirname/;
+
+use lib dirname($0)."/../lib";
+use AsmvarVCFtools;
 
 my ($vcffile);
 my $qualityThd = 2;
@@ -137,7 +141,7 @@ sub Output {
 }
 
 sub Summary {
-# Calculate the number and length in different SV types
+# Calculate the number and length in different SV types for each variant
     my ($summary, $allsvtype, $refseq, $altseq, $col2sam, 
         $vsIndex, $vtIndex, $qrIndex, @samples) = @_;
 
@@ -158,103 +162,58 @@ sub Summary {
         next if $f[0] eq './.' or $f[0] eq '0/0';
         #next if (@f < $qrIndex + 1 or $f[$qrIndex] eq '.'); # Sample region. Too strict
 
-        my $ai = GetAltIdx($f[0]); # Get the ALT sequence index
-        my ($svtype, $svsize) = GetSVtypeAndSize($seq[0],     # Ref-sequence
-                                                 $seq[$ai],   # Alt-sequence
-                                                 $f[$vsIndex],# Init svsize 
-                                                 (split /#/, $f[$vtIndex])[0]);
-        $$summary{$sampleId}{$svtype}->[0] ++; # sv number
-        $$summary{$sampleId}{$svtype}->[1] += $svsize; # add all the svsize up
-
+        #Get the ALT sequence index
+        my $ai = AsmvarVCFtools::GetAltIdxByGTforSample($f[0]); # Get the ALT sequence index
+        my ($svtype, $svsize) = AsmvarVCFtools::GetSVtypeAndSizeForSample(
+                                    $seq[0],     # Ref-sequence
+                                    $seq[$ai],   # Alt-sequence
+                                    $f[$vsIndex],# Init svsize 
+                                                 # Split '#',in case of 'TRANS'
+                                    (split /#/, $f[$vtIndex])[0]);
+    
+        SetValueToSummary(\$$summary{$sampleId}{$svtype}, $svsize);
         if ($svtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
-            $$summary{$sampleId}{'0.Total'}->[0] ++; # sv number
-            $$summary{$sampleId}{'0.Total'}->[1] += $svsize; # add all the svsize up
+            SetValueToSummary(\$$summary{$sampleId}{'0.Total'}, $svsize);
         }
 
         # Use for getting SVforAll(population) in this position
         $svstat{$svtype}->[0] ++;
         $svstat{$svtype}->[1] = [$svtype, $svsize];
 
-        $$allsvtype{$svtype} = 1; # Record all the svtype using for output
+        # Record all the svtype using for output
+        $$allsvtype{$svtype} = 1;
         $isempty = 0;
     }
     $$allsvtype{'0.Total'} = 1;
     return if $isempty;
 
-    my ($totalsvtype, $totalsvsize) = GetSVforAll(\%svstat);
-#print STDERR "\n[Debug]\ntotalsvtype: $totalsvtype\ttotalsvsize: $totalsvsize\n\n***********************\n\n";
-
-    $$summary{'~Population'}{$totalsvtype}->[0] ++;
-    $$summary{'~Population'}{$totalsvtype}->[1] += $totalsvsize;
-
+    my ($totalsvtype, $totalsvsize) = 
+        AsmvarVCFtools::GetSVforAllPerVariantLine(\%svstat);
+    
+    SetValueToSummary(\$$summary{'~Population'}{$totalsvtype}, $totalsvsize);
     if ($totalsvtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
-        $$summary{'~Population'}{'0.Total'}->[0] ++;
-        $$summary{'~Population'}{'0.Total'}->[1] += $totalsvsize;
+        SetValueToSummary(\$$summary{'~Population'}{'0.Total'}, $totalsvsize);
     }
 
     return;
 }
 
-sub GetAltIdx {
-# Get the ALT sequence according to 'GT' information
-    my ($gt) = @_;
+sub SetValueToSummary {
+# Input: an array reference => [] and svsize
 
-    my @gt  = split /\//, $gt; # It'll just be [0,0] or [0,1] or [1,1]
-    my $ind = 0;
-    for my $i (@gt) {
-        if ($i > 0) { $ind = $i; last; }
-    }
-#print STDERR "[Debug] GetAltIdx(): ind = $ind\t$gt\n";
-    return $ind;
-}
+    my ($record, $svsize) = @_;
 
-sub GetSVtypeAndSize {
-
-    my ($refseq, $altseq, $initSVsize, $initSVtype) = @_;
-
-    my $size = length($altseq) - length($refseq);
-    my ($svtype, $svsize);
-
-    # The front number of svtype is used for sorting the output order
-    if ($initSVtype =~ /INV/) { # Inversion
-        ($svtype, $svsize) = ("3.INV", $initSVsize);
-    } elsif ($initSVtype =~ /TRANS/) { # Translocation
-        ($svtype, $svsize) = ("4.TRANS", $initSVsize);
-    } elsif ($size > 0) { # Insertion
-        ($svtype, $svsize) = ("1.INS", abs($size));
-    } elsif ($size < 0) { # Deletion
-        ($svtype, $svsize) = ("2.DEL", abs($size));
-    } else { # The genotype is 0/0 or it's SNP
-        ($svtype, $svsize) = ("9.REF_OR_SNP", length($refseq));
+    # Check have been inited or not
+    if (not defined $$record->[0]) {
+    # [num, all_size, min_size, max_size]
+        $$record = [0, 0, $svsize, $svsize];
     }
 
-#print STDERR "[Debug] GetSVtypeAndSize(): ($refseq, $altseq, $initSVsize, $initSVtype): size = $size :($svtype, $svsize)\n";
-    return ($svtype, $svsize);
+    $$record->[0] ++;         # sv number
+    $$record->[1] += $svsize; # add all the svsize up
+    $$record->[2]  = $svsize if $svsize < $$record->[2]; # MIN
+    $$record->[3]  = $svsize if $svsize > $$record->[3]; # MAX
 }
-
-sub GetSVforAll {
-
-    my ($svstat) = @_;
-
-    my ($svtype, $svsize);
-    my $svnum = 0;
-    for my $k (keys %$svstat) {
-
-        if ($k eq 'INV' or $k eq 'TRANS') {
-            ($svtype, $svsize) = @{$$svstat{$k}->[1]};
-            last;
-        } else { # INDEL
-            if ($svnum < $$svstat{$k}->[0]) {
-                $svnum = $$svstat{$k}->[0];
-                ($svtype, $svsize) = @{$$svstat{$k}->[1]} 
-            }
-        }
-    }
-
-#print STDERR "\n[Debug] GetSVforAll(): $svtype\t$svsize\n";
-    return ($svtype, $svsize);
-}
-
 ##################
 
 sub OutputSummary {
@@ -266,18 +225,23 @@ sub OutputSummary {
         # Do not include the number in front of the $svtype in output header.
         # The format is always be: 'Number.Type'
         $svtype  = (split /\./, $svtype)[-1];
-        $header .= "\t$svtype-Number\t$svtype-Length";
+        $header .= "\t$svtype-NUM\t$svtype-LEN\t$svtype-MIN\t$svtype-MAX\t$svtype-MEAN";
     }
 
     print STDERR "$header\n";
     for my $sampleId (sort {$a cmp $b} keys %$summaryInfo) {
 
         my @outinfo;
+        my $mean;
         for my $svtype (sort {$a cmp $b} keys %$allsvtype) {
             if (exists $$summaryInfo{$sampleId}{$svtype}) {
-                push @outinfo, (join "\t",@{$$summaryInfo{$sampleId}{$svtype}});
+                $mean = $$summaryInfo{$sampleId}{$svtype}->[1] / 
+                        $$summaryInfo{$sampleId}{$svtype}->[0];
+                push @outinfo, (join "\t", 
+                                @{$$summaryInfo{$sampleId}{$svtype}},
+                                sprintf("%.2f", $mean));
             } else {
-                push @outinfo, "0\t0";
+                push @outinfo, (join "\t", (0) x 5);
             }
         }
         print STDERR join "\t", $sampleId, @outinfo, "\n";
@@ -369,16 +333,16 @@ sub FindBestInSingleVariant {
     }
 
     my $bk = (sort{$a<=>$b} keys %hash)[0]; # Best NR Key
-        my $bt; # Best SV-Type
-        if (exists $hash{$bk}{INDEL}     ) {
-            $bt = 'INDEL';
-        } elsif (exists $hash{$bk}{TRANS}) {
-            $bt = 'TRANS';
-        } elsif (exists $hash{$bk}{INV}  ) {
-            $bt = 'INV';
-        } else {
-            $bt = (keys %{$hash{$bk}})[0];
-        }
+    my $bt; # Best SV-Type
+    if (exists $hash{$bk}{INDEL}     ) {
+        $bt = 'INDEL';
+    } elsif (exists $hash{$bk}{TRANS}) {
+        $bt = 'TRANS';
+    } elsif (exists $hash{$bk}{INV}  ) {
+        $bt = 'INV';
+    } else {
+        $bt = (keys %{$hash{$bk}})[0];
+    }
     my $bs = (sort{$a<=>$b} %{$hash{$bk}{$bt}})[0];
 
 # I can do here after genotyping process, but Donot random select 
@@ -539,7 +503,7 @@ sub StatisticOverlap {
         if ($$info[$i][0] < 0) {
 
             my $m = ($$info[$i][0] == -2) ? '^' : '*'; # -2 => DUPLIC
-                push @pos , $m."$$info[$i][10]-$$info[$i][11]";
+            push @pos , $m."$$info[$i][10]-$$info[$i][11]";
             push @type, $m."$$info[$i][5]";
             push @size, $m."$$info[$i][6]";
             push @nr  , $m."$$info[$i][1]";
@@ -565,7 +529,7 @@ sub Usage {
 Version: 0.0.1 (2014-11-05)
 Author : Shujia Huang
 
-        Last Modify: 2014-11-05  Update many things and debug
+        Last Modify: 2014-11-09  Update many things and debug
 
         Usage: perl $0 [Options] -v [vcfInfile] > output.vcf
 
