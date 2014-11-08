@@ -16,7 +16,7 @@ class VariantRecalibratorArgumentCollection:
         self.TRAIN_SIZE_RATE       = 0.6        # The ratio of Traing date set   
         self.CV_SIZE_RATE          = 0.2        # The ratio of cross validation data set    
         self.TEST_SIZE_RATE        = 0.2        # The ratio of test data set
-        self.MAX_GAUSSIANS         = 8
+        self.MAX_GAUSSIANS         = 6
         self.POSITIVE_TO_NEGATIVE_RATE        = 0.01  # The threshold that the positive training set -> negative
         self.MAX_GAUSSIANS_FOR_NEGATIVE_MODEL = 4
 
