@@ -20,7 +20,13 @@ our @EXPORT_OK = qw (
     GetAltIdxByGTforSample
     GetSVtypeAndSizeForSample
     GetSVforAllPerVariantLine
+    IsNoGenotype
+    GetDataInSpFormat
 );
+#    GetAltIdxByGTforSample
+#    GetSVtypeAndSizeForSample
+#    GetSVforAllPerVariantLine
+#);
 
 ########################### Functions ################################
 
@@ -119,3 +125,44 @@ sub IsNoGenotype {
     }
     return $isNogt;
 }
+
+sub GetDataInSpFormat {
+# Get the specific data by specific field in FORMAT of each sample
+# Input: (1) 'Specific_format_field'. e.g: 'GT', 'TR' ...
+#        (2) 'FORMAT' format
+#        (3) all samples in VCF
+# Output: An array which recording this specific field data
+#         and igonore the one which doesn't contain infomation in this field
+#
+    my ($sf, $format, @samples) = @_;
+    my @format = split /:/, $format;
+    my %fm;
+    for (my $i = 0; $i < @format; ++$i) { 
+        $fm{$format[$i]} = $i;
+    }
+
+    if (not exists $fm{$sf}) {
+        print STDERR "[WARN]  USER ERROR. '$sf' is not in FORMAT($format)! ". 
+                     "the program will continue and return empty data here ".
+                     "for '$sf' field for all the samples\n";
+        return ();
+    }
+
+    my @data;
+    for (my $i = 0; $i < @samples; ++$i) {
+
+        my @s = split /:/, $samples[$i];
+
+        next if @s < $fm{$sf} or $s[$fm{$sf}] eq '.' or $s[$fm{$sf}] eq './.';
+        push @data, $s[$fm{$sf}];
+    }
+
+    return @data;
+
+}
+
+
+
+
+
+
