@@ -23,10 +23,6 @@ our @EXPORT_OK = qw (
     IsNoGenotype
     GetDataInSpFormat
 );
-#    GetAltIdxByGTforSample
-#    GetSVtypeAndSizeForSample
-#    GetSVforAllPerVariantLine
-#);
 
 ########################### Functions ################################
 
