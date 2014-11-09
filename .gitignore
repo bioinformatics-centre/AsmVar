@@ -3,8 +3,7 @@ Trash
 obj
 bin
 data
-git.sh
-rsync.sh
+*.sh
 *.pyc
 */*.pyc
 *.o
