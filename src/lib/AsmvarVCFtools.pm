@@ -23,6 +23,7 @@ our @EXPORT_OK = qw (
 );
 
 ########################### Functions ################################
+
 sub GetAltIdxByGTforSample {
 # Get the ALT sequence according to 'GT' information
 # Input : 'GT' field per sample in VCF, 'GT' should not be like './.'
@@ -100,3 +101,21 @@ sub GetSVforAllPerVariantLine {
     return ($svtype, $svsize);
 }
 
+sub IsNoGenotype {
+# Determining the samples got non-reference genotype or not
+# Input : Samples field with 'FORMAT' format and must contain 'GT'
+# Output: boolean
+
+    my (@samples) = @_;
+
+    my $isNogt = 1;
+    for (my $i = 0; $i < @samples; ++$i) {
+
+        my $gt = (split /:/, $samples[$i])[0];
+        if ($gt ne '0/0' and $gt ne './.') {
+            $isNogt = 0;
+            last;
+        }
+    }
+    return $isNogt;
+}

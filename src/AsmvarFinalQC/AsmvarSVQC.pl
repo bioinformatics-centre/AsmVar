@@ -39,7 +39,8 @@ sub Output {
     my ($total, $pass, $duplic, $false, $lowQ) = (0,0,0,0,0);
 
     my (%col2sam, %summary, %allsvtype);
-    my $fh; my ($i, $n) = (0, 0);
+    my $fh; 
+    my ($i, $n) = (0, 0);
     open($fh, ($fn =~ /\.gz$/) ? "gzip -dc $fn |" : $fn) || die "Cannot open file $fn : $!\n";
     while (<$fh>) {
 
@@ -111,6 +112,7 @@ sub Output {
         # Low Quality variant score
             $col[6] = "q$qualityThd";
         }
+
         ++$total;
         ++$false if $col[6] eq 'FALSE';
         ++$lowQ  if $col[6] eq "q$qualityThd";
@@ -120,16 +122,17 @@ sub Output {
         # Record information for summary output
 #print STDERR join "\t", "[Before Summary]", @col[0..4], "\n";
         Summary(\%summary, \%allsvtype, @col[3,4], \%col2sam,
-                $format{VS}, $format{VT}, $format{QR}, @col[9..$#col]) if $col[6] eq 'PASS';;
+                $format{VS}, $format{VT}, $format{QR}, @col[9..$#col]) if $col[6] eq 'PASS';
     }
 
     my $rf = sprintf "%.3f", $false/$total;
     my $rd = sprintf "%.3f", $duplic/$total;
     my $rp = sprintf "%.3f", $pass/$total;
     my $rl = sprintf "%.3f", $lowQ/$total;
-
+    my $tr = sprintf "%.3f", $total/$n;
     print STDERR "\n** Summary **\n\n";
-    print STDERR "** Total variants  : $total\n";
+    print STDERR "** The whole set of variants in VCF: $n\n";
+    print STDERR "** The number of useful variants   : $total ($tr)\n";
     print STDERR "** PASS variants   : $pass ($rp)\n";
     print STDERR "** q$qualityThd variants     : $lowQ ($rl)\n";
     print STDERR "** FALSE variants  : $false ($rf)\n";
@@ -260,12 +263,13 @@ sub LoadVarRegFromVcf {
 
         my @t = split;
         die "[ERROR] VCF FORMAT ERROR. The 'GT' field MUST BE present and always appear as the first field in $fn.\n" if ($t[8] !~ /^GT:/);
-
         ++$nummap; # Record the line order. It'll be use in Output
-            my %format;
+        next if AsmvarVCFtools::IsNoGenotype(@t[9..$#t]);
+
+        my %format;
         my @f = split /:/, $t[8];
         for (my $i = 0; $i < @f; ++$i) { $format{$f[$i]} = $i; }
-        next if (!exists $format{QR});
+        next if not exists $format{QR};
 
         die "[ERROR] VCF FORMAT ERROR. Missing the 'TR' information in the 'FORMAT'fields in your $fn\n" if (!exists $format{TR});
         die "[ERROR] VCF FORMAT ERROR. Missing the 'NR' information in the 'FORMAT'fields in your $fn\n" if (!exists $format{NR});
