@@ -39,8 +39,9 @@ def GetPPrate(fmat, formatInfo):
         else:
             rr, aa = 0, 0
         r  = theta
-        if rr + aa >  0: r = rr/(rr + aa)
-        if rr + aa > 10: trainIndx.append(i)
+        if rr + aa >  0: 
+            r = rr/(rr + aa)
+            trainIndx.append(i)
 
         ppr.append([r])
         pp.append([rr, aa])

@@ -165,11 +165,10 @@ sub Summary {
         #Get the ALT sequence index
         my $ai = AsmvarVCFtools::GetAltIdxByGTforSample($f[0]); # Get the ALT sequence index
         my ($svtype, $svsize) = AsmvarVCFtools::GetSVtypeAndSizeForSample(
-                                    $seq[0],     # Ref-sequence
-                                    $seq[$ai],   # Alt-sequence
-                                    $f[$vsIndex],# Init svsize 
-                                                 # Split '#',in case of 'TRANS'
-                                    (split /#/, $f[$vtIndex])[0]);
+                  $seq[0],     # Ref-sequence
+                  $seq[$ai],   # Alt-sequence
+                  $f[$vsIndex],# Init svsize 
+                  (split /#/, $f[$vtIndex])[0]); # Split '#',in case of 'TRANS'
     
         SetValueToSummary(\$$summary{$sampleId}{$svtype}, $svsize);
         if ($svtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
@@ -291,7 +290,7 @@ sub LoadVarRegFromVcf {
     }
     close($fh);
 
-    print STDERR "*** Complete loading the vcf file $fn **\n** Start removing duplicate and calculating the best region **\n\n";
+    print STDERR "*** Complete loading the vcf file $fn **\n** Start removing duplicate and calculating the best region **\n";
 }
 
 sub FindBestInSingleVariant {
@@ -354,7 +353,7 @@ sub FindBestInSingleVariant {
 
 sub RemoveOverlap { # Find the best region from nerby positions(regions) by vcf format
 
-    print STDERR "** Start removing duplicate and calculating the best region **\n\n";
+    print STDERR "** Start removing duplicate and calculating the best region **\n";
     my ($distance_delta, $info) = @_;
     my (%prePos, @index, $id, $start, $end, @data);
 

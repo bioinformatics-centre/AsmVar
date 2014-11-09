@@ -165,27 +165,22 @@ sub Summary {
         #Get the ALT sequence index
         my $ai = AsmvarVCFtools::GetAltIdxByGTforSample($f[0]); # Get the ALT sequence index
         my ($svtype, $svsize) = AsmvarVCFtools::GetSVtypeAndSizeForSample(
-                                    $seq[0],     # Ref-sequence
-                                    $seq[$ai],   # Alt-sequence
-                                    $f[$vsIndex],# Init svsize 
-                                                 # Split '#',in case of 'TRANS'
-                                    (split /#/, $f[$vtIndex])[0]);
+                  $seq[0],     # Ref-sequence
+                  $seq[$ai],   # Alt-sequence
+                  $f[$vsIndex],# Init svsize 
+                  (split /#/, $f[$vtIndex])[0]); # Split '#',in case of 'TRANS'
     
-        $$summary{$sampleId}{$svtype} = [0, 0, $svsize, $svsize] 
-            if not exists $$summary{$sampleId}{$svtype};
-
-        $$summary{$sampleId}{$svtype}->[0] ++; # sv number
-        $$summary{$sampleId}{$svtype}->[1] += $svsize; # add all the svsize up
+        SetValueToSummary(\$$summary{$sampleId}{$svtype}, $svsize);
         if ($svtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
-            $$summary{$sampleId}{'0.Total'}->[0] ++; # sv number
-            $$summary{$sampleId}{'0.Total'}->[1] += $svsize; # add all the svsize up
+            SetValueToSummary(\$$summary{$sampleId}{'0.Total'}, $svsize);
         }
 
         # Use for getting SVforAll(population) in this position
         $svstat{$svtype}->[0] ++;
         $svstat{$svtype}->[1] = [$svtype, $svsize];
 
-        $$allsvtype{$svtype} = 1; # Record all the svtype using for output
+        # Record all the svtype using for output
+        $$allsvtype{$svtype} = 1;
         $isempty = 0;
     }
     $$allsvtype{'0.Total'} = 1;
@@ -194,34 +189,29 @@ sub Summary {
     my ($totalsvtype, $totalsvsize) = 
         AsmvarVCFtools::GetSVforAllPerVariantLine(\%svstat);
     
-    $$summary{'~Population'}{$totalsvtype} = [0, 0, $totalsvsize, $totalsvsize]
-        if not exists $$summary{'~Population'}{$totalsvtype};
-    $$summary{'~Population'}{$totalsvtype}->[0] ++;
-    $$summary{'~Population'}{$totalsvtype}->[1] += $totalsvsize;
-	
+    SetValueToSummary(\$$summary{'~Population'}{$totalsvtype}, $totalsvsize);
     if ($totalsvtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
-        $$summary{'~Population'}{'0.Total'}->[0] ++;
-        $$summary{'~Population'}{'0.Total'}->[1] += $totalsvsize;
+        SetValueToSummary(\$$summary{'~Population'}{'0.Total'}, $totalsvsize);
     }
 
     return;
 }
 
 sub SetValueToSummary {
-# Input: $$hash{sampleID}{svtype} => []
+# Input: an array reference => [] and svsize
 
     my ($record, $svsize) = @_;
 
     # Check have been inited or not
-    if (not defined $record->[0]) {
+    if (not defined $$record->[0]) {
     # [num, all_size, min_size, max_size]
-        $record = [0, 0, $svsize, $svsize];
+        $$record = [0, 0, $svsize, $svsize];
     }
 
-    $record->[0] ++;         # sv number
-    $record->[1] += $svsize; # add all the svsize up
-    $record->[2]  = $svsize if $svsize < $record->[2]; # MIN
-    $record->[3]  = $svsize if $svsize > $record->[3]; # MAX
+    $$record->[0] ++;         # sv number
+    $$record->[1] += $svsize; # add all the svsize up
+    $$record->[2]  = $svsize if $svsize < $$record->[2]; # MIN
+    $$record->[3]  = $svsize if $svsize > $$record->[3]; # MAX
 }
 ##################
 
@@ -234,7 +224,6 @@ sub OutputSummary {
         # Do not include the number in front of the $svtype in output header.
         # The format is always be: 'Number.Type'
         $svtype  = (split /\./, $svtype)[-1];
-        #$header .= "\t$svtype-NUM\t$svtype-LEN";
         $header .= "\t$svtype-NUM\t$svtype-LEN\t$svtype-MIN\t$svtype-MAX\t$svtype-MEAN";
     }
 
@@ -242,11 +231,16 @@ sub OutputSummary {
     for my $sampleId (sort {$a cmp $b} keys %$summaryInfo) {
 
         my @outinfo;
+        my $mean;
         for my $svtype (sort {$a cmp $b} keys %$allsvtype) {
             if (exists $$summaryInfo{$sampleId}{$svtype}) {
-                push @outinfo, (join "\t",@{$$summaryInfo{$sampleId}{$svtype}});
+                $mean = $$summaryInfo{$sampleId}{$svtype}->[1] / 
+                        $$summaryInfo{$sampleId}{$svtype}->[0];
+                push @outinfo, (join "\t", 
+                                @{$$summaryInfo{$sampleId}{$svtype}},
+                                sprintf("%.2f", $mean));
             } else {
-                push @outinfo, "0\t0";
+                push @outinfo, (join "\t", (0) x 5);
             }
         }
         print STDERR join "\t", $sampleId, @outinfo, "\n";
@@ -296,7 +290,7 @@ sub LoadVarRegFromVcf {
     }
     close($fh);
 
-    print STDERR "*** Complete loading the vcf file $fn **\n** Start removing duplicate and calculating the best region **\n\n";
+    print STDERR "*** Complete loading the vcf file $fn **\n** Start removing duplicate and calculating the best region **\n";
 }
 
 sub FindBestInSingleVariant {
@@ -338,16 +332,16 @@ sub FindBestInSingleVariant {
     }
 
     my $bk = (sort{$a<=>$b} keys %hash)[0]; # Best NR Key
-        my $bt; # Best SV-Type
-        if (exists $hash{$bk}{INDEL}     ) {
-            $bt = 'INDEL';
-        } elsif (exists $hash{$bk}{TRANS}) {
-            $bt = 'TRANS';
-        } elsif (exists $hash{$bk}{INV}  ) {
-            $bt = 'INV';
-        } else {
-            $bt = (keys %{$hash{$bk}})[0];
-        }
+    my $bt; # Best SV-Type
+    if (exists $hash{$bk}{INDEL}     ) {
+        $bt = 'INDEL';
+    } elsif (exists $hash{$bk}{TRANS}) {
+        $bt = 'TRANS';
+    } elsif (exists $hash{$bk}{INV}  ) {
+        $bt = 'INV';
+    } else {
+        $bt = (keys %{$hash{$bk}})[0];
+    }
     my $bs = (sort{$a<=>$b} %{$hash{$bk}{$bt}})[0];
 
 # I can do here after genotyping process, but Donot random select 
@@ -359,7 +353,7 @@ sub FindBestInSingleVariant {
 
 sub RemoveOverlap { # Find the best region from nerby positions(regions) by vcf format
 
-    print STDERR "** Start removing duplicate and calculating the best region **\n\n";
+    print STDERR "** Start removing duplicate and calculating the best region **\n";
     my ($distance_delta, $info) = @_;
     my (%prePos, @index, $id, $start, $end, @data);
 
@@ -534,7 +528,7 @@ sub Usage {
 Version: 0.0.1 (2014-11-05)
 Author : Shujia Huang
 
-        Last Modify: 2014-11-05  Update many things and debug
+        Last Modify: 2014-11-09  Update many things and debug
 
         Usage: perl $0 [Options] -v [vcfInfile] > output.vcf
 
