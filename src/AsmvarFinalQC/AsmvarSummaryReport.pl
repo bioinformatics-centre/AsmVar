@@ -11,30 +11,32 @@ use File::Basename qw/dirname/;
 
 use lib dirname($0)."/../lib";
 use AsmvarVCFtools;
+use AsmvarCommon;
 
 my ($vcffile);
-my $qualityThd = 2;
+my $qualityThd = 2; # No use now
+my $filter     = 'ALL';
 GetOptions(
 
     "v=s"   => \$vcffile,
     "q=i"   => \$qualityThd,
+    "f=s"   => \$filter,
 );
 Usage() if (!$vcffile);
-print STDERR "\nCommand Parameter: perl $0 -v $vcffile -q $qualityThd\n\n";
+print STDERR "\nCommand Parameter: perl $0 -v $vcffile -q $qualityThd -f $filter\n\n";
 
 my (%sample, %col2sample, @info);
-SV_SummaryReport($vcffile, $qualityThd);
+SV_SummaryReport($vcffile, $filter, $qualityThd);
 
 print STDERR "\n********************** ALL DONE ********************\n";
 
 #################################################
-
 sub SV_SummaryReport {
 
-    my ($fn, $qualityThd) = @_;
+    my ($fn, $filter, $qualityThd) = @_;
     my ($total, $pass, $duplic, $false, $lowQ) = (0,0,0,0,0);
 
-    my (%col2sam, %summary, %allsvtype);
+    my (%col2sam, %sizeSpectrum, %summary, %allsvtype);
     my $fh; 
 	my $n = 0;
     open($fh, ($fn =~ /\.gz$/) ? "gzip -dc $fn |" : $fn) || die "Cannot open file $fn : $!\n";
@@ -50,18 +52,28 @@ sub SV_SummaryReport {
         next if /^#/;
         ++$n;
         next if AsmvarVCFtools::IsNoGenotype(@col[9..$#col]);
+        print STDERR "[INFO] Loading $n lines\n" if $n % 100000 == 0;
 
         my %format; 
         my @f = split /:/, $col[8];
         for (my $i = 0; $i < @f; ++$i) { $format{$f[$i]} = $i; }
+        next if not exists $format{QR}; # May be INTERGAP 
 
         ++$total;
         ++$false if $col[6] eq 'FALSE';
         ++$pass  if $col[6] eq 'PASS';
 
         # Record information for summary output
-        Summary(\%summary, \%allsvtype, @col[3,4], \%col2sam,
-                $format{VS}, $format{VT}, $format{QR}, @col[9..$#col]) if $col[6] eq 'PASS';
+        Summary(\%summary, 
+                \%allsvtype, 
+                \%sizeSpectrum,
+                @col[3,4], 
+                \%col2sam,
+                $format{VS}, 
+                $format{VT}, 
+                $format{QR}, 
+                @col[9..$#col]) if (uc($filter) eq 'ALL') or 
+                                   (uc($col[6]) eq uc($filter));
     }
 
     my $rf = sprintf "%.3f", $false/$total;
@@ -73,18 +85,28 @@ sub SV_SummaryReport {
     print "** PASS variants : $pass ($rp)\n";
     print "** FALSE variants: $false ($rf)\n\n";
 
-    print "-- Just For 'PASS' variants --\n";
+    print "-- Just for '$filter' variants --\n";
     OutputSummary(\%allsvtype, \%summary);
+
+    print "\n\n-- Size Spectrum for all variants --\n";
+    OutputSpectrum(\%sizeSpectrum);
 
     return;
 }
 
 sub Summary {
 # Calculate the number and length in different SV types for each variant
-    my ($summary, $allsvtype, $refseq, $altseq, $col2sam, 
-        $vsIndex, $vtIndex, $qrIndex, @samples) = @_;
+    my ($summary, 
+        $allsvtype, 
+        $sizeSpectrum,
+        $refseq, 
+        $altseq, 
+        $col2sam, 
+        $vsIndex, 
+        $vtIndex, 
+        $qrIndex, 
+        @samples) = @_;
 
-#print STDERR join "\n", "[DEbug]", @samples, "\n";
     my @seq = ($refseq); # First element is REF: [0]=>REF
     push @seq, $_ for (split /,/, $altseq);
 
@@ -99,7 +121,8 @@ sub Summary {
         # If the sample could be genotype here 
         # than we'd better treat it get this SV
         next if $f[0] eq './.' or $f[0] eq '0/0';
-        #next if (@f < $qrIndex + 1 or $f[$qrIndex] eq '.'); # Sample region. Too strict
+#next if $f[0] eq './.';
+#next if (@f < $qrIndex + 1) or ($f[$qrIndex] eq '.'); # Sample region. Too strict
 
         #Get the ALT sequence index
         my $ai = AsmvarVCFtools::GetAltIdxByGTforSample($f[0]); # Get the ALT sequence index
@@ -108,10 +131,15 @@ sub Summary {
                   $seq[$ai],   # Alt-sequence
                   $f[$vsIndex],# Init svsize 
                   (split /#/, $f[$vtIndex])[0]); # Split '#',in case of 'TRANS'
-    
+ 
         SetValueToSummary(\$$summary{$sampleId}{$svtype}, $svsize);
         if ($svtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
+
             SetValueToSummary(\$$summary{$sampleId}{'0.Total'}, $svsize);
+
+            # Calculate size spectrum
+            my $bin = AsmvarCommon::SizeBinSp($svsize);
+            $$sizeSpectrum{$sampleId}{$bin} ++; # Just for Variant
         }
 
         # Use for getting SVforAll(population) in this position
@@ -130,7 +158,11 @@ sub Summary {
     
     SetValueToSummary(\$$summary{'~Population'}{$totalsvtype}, $totalsvsize);
     if ($totalsvtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
+
         SetValueToSummary(\$$summary{'~Population'}{'0.Total'}, $totalsvsize);
+        # Calculate size spectrum
+        my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
+        $$sizeSpectrum{'~Population'}{$bin} ++; # Just for Variant
     }
 
     return;
@@ -186,6 +218,35 @@ sub OutputSummary {
     }
 }
 
+sub OutputSpectrum {
+    my ($sizeSpectrum) = @_;
+
+    my %size;
+    for my $s (keys %$sizeSpectrum) {
+        # Format : 'start-end'
+        $size{$_} = 1 for (keys %{$$sizeSpectrum{$s}});
+    }
+
+    my @size = sort {my $da = (split /\-/, $a)[0]; 
+                     my $db = (split /\-/, $b)[0]; 
+                     $da <=> $db;
+                    } keys %size;
+    print join "\t", "#SampleID", @size, "\n";
+    for my $sampleId (sort {$a cmp $b} keys %$sizeSpectrum) {
+
+        my @outinfo;
+
+        for my $s (@size) {
+
+            $$sizeSpectrum{$sampleId}{$s} = 0 
+                if not exists $$sizeSpectrum{$sampleId}{$s};
+
+            push @outinfo, $$sizeSpectrum{$sampleId}{$s};
+        }
+        print join "\t", $sampleId, @outinfo, "\n";
+    }
+}
+
 #########
 sub Usage {
 
@@ -201,6 +262,7 @@ Author : Shujia Huang
 
               -v  [str]  Variants file. [Reguire]
               -q  [int]  Threshold for Variant qsulity score. [$qualityThd]
+              -f  [str]  Specific FILTER. e.g: 'PASS'.  [ALL]
 
 U
      exit(0);
