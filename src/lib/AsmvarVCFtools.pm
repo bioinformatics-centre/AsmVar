@@ -5,7 +5,7 @@ package AsmvarVCFtools;
 
 $VERSION = '0.0.1';
 $DATE    = '2014-11-08';
-$Modify  = '2014-11-08';
+$Modify  = '2014-11-';
 $AUTHOR  = 'Shujia Huang';
 
 use strict;
@@ -19,6 +19,7 @@ our @EXPORT_OK = qw (
 
     GetAltIdxByGTforSample
     GetSVtypeAndSizeForSample
+    GetGATKSVtypeAndSizeForSample
     GetSVforAllPerVariantLine
     IsNoGenotype
     GetDataInSpFormat
@@ -78,10 +79,32 @@ sub GetSVtypeAndSizeForSample {
     return ($svtype, $svsize);
 }
 
+sub GetGATKSVtypeAndSizeForSample {
+# For GATK vcf
+# Get the SV type and size for specific sample from VCF creat by GATK
+# Input : Ref-sequence, 
+#         Alt-sequence
+# Output: ($svtype, $svsize) for the sample
+    my ($refseq, $altseq) = @_;
+
+    my $size = length($altseq) - length($refseq);
+    my ($svtype, $svsize);
+
+    if ($size > 0) { # Insertion
+        ($svtype, $svsize) = ("1.INS", abs($size));
+    } elsif ($size < 0) { # Deletion
+        ($svtype, $svsize) = ("2.DEL", abs($size));
+    } else { # The genotype is 0/0 or it's SNP
+        ($svtype, $svsize) = ("9.REF_OR_SNP", length($refseq));
+    }
+
+    return ($svtype, $svsize);
+}
+
 sub GetSVforAllPerVariantLine {
 # Get the population SV typs and size for per-variant in one VCF line
 # Input : hash with svtype, svtype=>[num_support_svtype, [svtype,svsize]]
-# Output : ($svtype, $svsize) for this variant line(VCF line)
+# Output: The most supported ($svtype, $svsize) for this VCF line
     my ($svstat) = @_;
 
     my ($svtype, $svsize);
@@ -126,7 +149,7 @@ sub GetDataInSpFormat {
 # Get the specific data by specific field in FORMAT of each sample
 # Input: (1) 'Specific_format_field'. e.g: 'GT', 'TR' ...
 #        (2) 'FORMAT' format
-#        (3) all samples in VCF
+#        (3) All samples in VCF
 # Output: An array which recording this specific field data
 #         and igonore the one which doesn't contain infomation in this field
 #
@@ -157,6 +180,23 @@ sub GetDataInSpFormat {
 
 }
 
+sub GetDataInSpInfo {
+# Get the specific data by specific field in INFO of each sample
+# Input: (1) 'Specific_INFO_field'. e.g: 'AC', 'AF', 'NRatio', 'VQ' ...
+#        (2) Reference of INFO
+# Output: Return the data of this field
+#
+# e.g. AsmvarVCFtools::GetDataInSpInfo('VQ', \$t[7])
+# 
+    my ($spInfo, $info) = @_;
+
+    my ($data) = $$info =~ m/;$spInfo=([^;]+)/;
+    if (not defined $data) {# Must be the first one
+        ($data) = $$info =~ m/^$spInfo=([^;]+)/;
+    }
+
+    return $data;
+}
 
 
 

@@ -287,10 +287,10 @@ sub LoadVarRegFromVcf {
         $t[7] =~ s/;SPN=[^;]+//g;
         $t[7] .= ";SPN=$asmNum";
 
-        my ($vq) = $t[7] =~ m/;VQ=([^;]+)/; # Get variant score
-            my $ma   = ($nr > 0.5) ? -1: 0; # '-1' is Mark for delete if too much 'N'
-            push(@$info, [$ma, $nr, $vq, $asmNum, $nummap, $svtype, 
-                    $svsize, $tId, $tStart, $tEnd, @t[0,1]]);
+        my $vq = AsmvarVCFtools::GetDataInSpInfo('VQ', \$t[7]); # Get variant score
+        my $ma = ($nr > 0.5) ? -1: 0; # '-1' is Mark for delete if too much 'N'
+        push(@$info, [$ma, $nr, $vq, $asmNum, $nummap, $svtype, 
+                      $svsize, $tId, $tStart, $tEnd, @t[0,1]]);
     }
     close($fh);
 
