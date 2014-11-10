@@ -40,7 +40,7 @@ sub GetAltIdxByGTforSample {
 
     my ($gt) = @_;
 
-    # It'll just be [0,0] or [0,1] or [1,1] or [0,2] or [2,2]
+    # It could just be [0,0] or [0,1] or [1,1] or [0,2] or [2,2]
     my @gt  = split /\//, $gt;
     my $ind = 0;
     for my $i (@gt) {
