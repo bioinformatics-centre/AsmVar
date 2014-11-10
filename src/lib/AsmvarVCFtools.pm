@@ -23,6 +23,7 @@ our @EXPORT_OK = qw (
     GetSVforAllPerVariantLine
     IsNoGenotype
     GetDataInSpFormat
+    GetDataInSpInfo
 );
 
 ########################### Functions ################################
