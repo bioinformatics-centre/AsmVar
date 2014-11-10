@@ -73,7 +73,6 @@ sub SizeBinSp {
 	my ($size) = @_;
 
 	my $logbin = ($size > 1) ? int(log($size) / log(10)): 0;
-
     # it'll always turn to be '1-$size', if not step back one
     --$logbin if ($logbin and $size == 10 ** $logbin);
 
