@@ -65,11 +65,13 @@ sub GetSVtypeAndSizeForSample {
 
     # The front number of svtype is used for sorting the output order
     if ($initSVtype =~ /INV/) { # Inversion
-        ($svtype, $svsize) = ("3.INV", $initSVsize);
+        ($svtype, $svsize) = ("4.INV", $initSVsize);
     } elsif ($initSVtype =~ /TRANS/) { # Translocation
-        ($svtype, $svsize) = ("4.TRANS", $initSVsize);
+        ($svtype, $svsize) = ("5.TRANS", $initSVsize);
     } elsif ($initSVtype eq 'COMPLEX') {
-        ($svtype, $svsize) = ("5.REPLACEMENT", $initSVsize);
+        ($svtype, $svsize) = ("6.REPLACEMENT", $initSVsize);
+    } elsif ($initSVtype eq 'MNP') {
+        ($svtype, $svsize) = ("3.MNP", $initSVsize);
     } elsif ($size > 0) { # Insertion
         ($svtype, $svsize) = ("1.INS", abs($size));
     } elsif ($size < 0) { # Deletion
