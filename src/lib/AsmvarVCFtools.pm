@@ -68,6 +68,8 @@ sub GetSVtypeAndSizeForSample {
         ($svtype, $svsize) = ("3.INV", $initSVsize);
     } elsif ($initSVtype =~ /TRANS/) { # Translocation
         ($svtype, $svsize) = ("4.TRANS", $initSVsize);
+    } elsif ($initSVtype eq 'COMPLEX') {
+        ($svtype, $svsize) = ("5.REPLACEMENT", $initSVsize);
     } elsif ($size > 0) { # Insertion
         ($svtype, $svsize) = ("1.INS", abs($size));
     } elsif ($size < 0) { # Deletion
