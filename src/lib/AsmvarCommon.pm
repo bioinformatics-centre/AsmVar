@@ -17,10 +17,10 @@ our @EXPORT = ();
 
 our @EXPORT_OK = qw (
 
-	SizeBin
-	SizeBinLog
-	SizeBinLog2
-	SizeBinLog10
+    SizeBin
+    SizeBinLog
+    SizeBinLog2
+    SizeBinLog10
     SizeBinSp
 );
 
@@ -70,11 +70,11 @@ sub SizeBinLog10 {
 
 sub SizeBinSp {
 # The bin is specific
-	my ($size) = @_;
+    my ($size) = @_;
 
-	my $logbin = ($size > 1) ? int(log($size) / log(10)): 0;
+    my $logbin = ($size > 1) ? int(log($size) / log(10)): 0;
     # it'll always turn to be '1-$size', if not step back one
     --$logbin if ($logbin and $size == 10 ** $logbin);
 
-	return SizeBin($size, 10 ** $logbin);
+    return SizeBin($size, 10 ** $logbin);
 }
