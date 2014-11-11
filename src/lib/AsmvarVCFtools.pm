@@ -147,12 +147,12 @@ sub IsNoGenotype {
 }
 
 sub GetDataInSpFormat {
-# Get the specific data by specific field in FORMAT of each sample
+# Get the specific data by specific field in FORMAT for each sample
 # Input: (1) 'Specific_format_field'. e.g: 'GT', 'TR' ...
 #        (2) 'FORMAT' format
 #        (3) All samples in VCF
 # Output: An array which recording this specific field data
-#         and igonore the one which doesn't contain infomation in this field
+#         and return NULL if it doesn't contain infomation in this field
 #
     my ($sf, $format, @samples) = @_;
     my @format = split /:/, $format;
@@ -182,7 +182,7 @@ sub GetDataInSpFormat {
 }
 
 sub GetDataInSpInfo {
-# Get the specific data by specific field in INFO of each sample
+# Get the specific data by specific field in INFO for each sample
 # Input: (1) 'Specific_INFO_field'. e.g: 'AC', 'AF', 'NRatio', 'VQ' ...
 #        (2) Reference of INFO
 # Output: Return the data of this field
