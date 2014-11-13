@@ -35,6 +35,7 @@ sub SV_SummaryReport {
 
     my ($fn, $filter, $qualityThd) = @_;
     my ($total, $pass, $duplic, $false, $lowQ) = (0,0,0,0,0);
+    my $passMultiAllelic = 0;
 
     my (%col2sam, %sizeSpectrum, %summary, %allsvtype);
     my $fh; 
@@ -63,6 +64,9 @@ sub SV_SummaryReport {
         ++$false if $col[6] eq 'FALSE';
         ++$pass  if $col[6] eq 'PASS';
 
+        my @mult = split /,/, $col[4];
+        ++$passMultiAllelic if @mult > 1 and $col[6] eq 'PASS';
+
         # Record information for summary output
         Summary(\%summary, 
                 \%allsvtype, 
@@ -79,16 +83,18 @@ sub SV_SummaryReport {
     my $rf = sprintf "%.3f", $false/$total;
     my $rp = sprintf "%.3f", $pass/$total;
     my $tr = sprintf "%.3f", $total/$n;
+    my $mr = sprintf "%.3f", $passMultiAllelic/$total;
     print "\n** Summary **\n\n";
     print "** The whole set of variants in VCF: $n\n";
     print "** The number of useful variants   : $total ($tr)\n";
-    print "** PASS variants : $pass ($rp)\n";
-    print "** FALSE variants: $false ($rf)\n\n";
+    print "** PASS variants    : $pass ($rp)\n";
+    print "** PASS MultiAllelic: $passMultiAllelic ($mr)\n";
+    print "** FALSE variants   : $false ($rf)\n\n";
 
     print "-- Just for '$filter' variants --\n";
     OutputSummary(\%allsvtype, \%summary);
 
-    print "\n\n-- Size Spectrum for all variants --\n";
+    print "\n\n-- Size Spectrum for all '$filter' variants --\n";
     OutputSpectrum(\%sizeSpectrum);
 
     return;
