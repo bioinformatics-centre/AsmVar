@@ -561,9 +561,12 @@ void Variant::Unique(vector<VarUnit> &v) {
     cerr << "[INFO] Masking the duplication varaints.\n";
     set<string> hasAppear;
     for (size_t i(0); i < v.size(); ++i) {
-        string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
+        /*string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
             + itoa(v[i].target.end) + "-" + v[i].query.id   + ":"
             + itoa(v[i].query.start)+ ":" + itoa(v[i].query.end);
+        */
+        string key = v[i].target.id + ":" + itoa(v[i].target.start) + ":"
+            + itoa(v[i].target.end) + "-" + v[i].type;
         if (hasAppear.count(key)) v[i].Clear(); // Mask the repeat variant!
         hasAppear.insert(key);
     }
