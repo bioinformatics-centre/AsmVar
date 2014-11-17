@@ -23,7 +23,7 @@ void VcfHeader::DefualtHeader() {
 	Add("FORMAT", "QR", "1", "String",  "Variant regions in query");
 	Add("FORMAT", "VS", "1", "Integer", "SV Size. But for SNP it'll be 0");
 	Add("FORMAT", "VT", "1", "String" , 
-		"SV Type. Including: REFCALL(Mapped, and it's homozygous reference), REFGAP(Mapped, but contained 'N' in REF-Region), INTRAGAP(Mapped, but contained 'N' in ALT-Region), INTERGAP(Unmapped region in reference), SNP, INS, DEL, MNP, COMPLEX, INV, TRANS; For TRANS the format is : VT=>TRANS#TRANSLOCATED_TR#TRANSLOCATED_QR. For the variants that the REF and ALT alleles are the same, the ALT alleles will be replaced by 'N' string");
+		"SV Type. Including: REFCALL(Mapped, and it's homozygous reference), REFGAP(Mapped, but contained 'N' in REF-Region), INTRAGAP(Mapped, but contained 'N' in ALT-Region), INTERGAP(Unmapped region in reference), SNP, INS, DEL, MNP, REPLACEMENT, INV, TRANS; For TRANS the format is : VT=>TRANS#TRANSLOCATED_TR#TRANSLOCATED_QR. For the variants that the REF and ALT alleles are the same, the ALT alleles will be replaced by 'N' string");
 
 	Add("##FILTER=<ID=INTERGAP>", 
 		"##FILTER=<ID=INTERGAP,Description=\"Unmapped reference region.\">");

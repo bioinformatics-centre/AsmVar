@@ -454,8 +454,8 @@ VarUnit AgeAlignment::CallVarInExcise(pair<MapData, MapData> &lf, // Left side
 		vu.query.start  = (strand == '+') ? lf.second._end + 1 : rt.second._start + 1;
 		vu.query.end    = vu.query.start + qlen - 1;
 	} else {
-		// Simultaneous gap => COMPLEX
-		vu.type = "COMPLEX";
+		// Simultaneous gap => REPLACEMENT
+		vu.type = "REPLACEMENT";
 		vu.target.start = lf.first._end;
 		vu.target.end   = vu.target.start + tlen;
 		vu.query.start  = (strand == '+') ? lf.second._end : rt.second._start + 1;

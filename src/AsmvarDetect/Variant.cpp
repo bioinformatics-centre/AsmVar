@@ -131,8 +131,8 @@ void Variant::CallSNP (string referenceId) {
             tmpsnp.ConvQryCoordinate( qryfa.fa[query.id].length() ); // coordinates uniform to the positive strand!
             snp.push_back(tmpsnp);
 
-            ++summary["2.[VCF]SNP"].first;
-            ++summary["2.[VCF]SNP"].second;
+            ++summary["0.[SVD]SNP"].first;
+            ++summary["0.[SVD]SNP"].second;
         }
     }
     return;
@@ -893,7 +893,7 @@ void Variant::SummaryVar() {
             if (it->second[i].type == "INTERGAP"||
                     isncall || // Make sure query is totally N
                     it->second[i].type == "REFCALL") ++vs;
-            if (it->second[i].type == "COMPLEX") vs = labs(ts - qs);
+            if (it->second[i].type == "REPLACEMENT") vs = labs(ts - qs);
 
             ks = "2.[VCF]" + it->second[i].type;
             if (ks.find("TRANS") != string::npos) ks = "2.[VCF]TRANS";
@@ -1238,7 +1238,7 @@ void Variant::Output2VCF(string referenceId, string file) {
 			if (vcfline.filters_ == "REFCALL" || 
 				vcfline.filters_ == "INTERGAP"||
 				isncall) ++vs; //Not Variant, should +1!
-			if (allvariant[it->second][i].type == "COMPLEX") vs = labs(tvs - qvs); 
+			if (allvariant[it->second][i].type == "REPLACEMENT") vs = labs(tvs - qvs); 
 */
             int tvs = allvariant[it->second][i].target.end - 
                       allvariant[it->second][i].target.start + 1;
