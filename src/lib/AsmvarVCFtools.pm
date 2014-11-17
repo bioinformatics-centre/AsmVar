@@ -60,6 +60,8 @@ sub GetSVtypeAndSizeForSample {
 
     my ($refseq, $altseq, $initSVsize, $initSVtype) = @_;
 
+    $initSVsize = abs($initSVsize); # Make sure it's positive value
+
     my $size = length($altseq) - length($refseq);
     my ($svtype, $svsize);
 
@@ -68,7 +70,7 @@ sub GetSVtypeAndSizeForSample {
         ($svtype, $svsize) = ("4.INV", $initSVsize);
     } elsif ($initSVtype =~ /TRANS/) { # Translocation
         ($svtype, $svsize) = ("5.TRANS", $initSVsize);
-    } elsif ($initSVtype eq 'COMPLEX') {
+    } elsif ($initSVtype eq 'COMPLEX' or $initSVtype eq 'REPLACEMENT') {
         ($svtype, $svsize) = ("6.REPLACEMENT", $initSVsize);
     } elsif ($initSVtype eq 'MNP') {
         ($svtype, $svsize) = ("3.MNP", $initSVsize);
