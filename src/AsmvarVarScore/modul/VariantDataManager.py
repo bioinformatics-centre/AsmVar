@@ -230,7 +230,10 @@ def LoadDataSet(vcfInfile, traningSet, qFaLen):
                 if      qId not in qFaLen[sampleId]: raise ValueError('[ERROR]', qId, 'is not been found in fa file\n')
                 qSta = int(qSta * 100 / qFaLen[sampleId][qId] + 0.5)
                 qEnd = int(qEnd * 100 / qFaLen[sampleId][qId] + 0.5)
-                if qSta > 100 or qEnd > 100: raise ValueError('[ERROR] Query size Overflow! sample: %s; scaffold: %s' %(sampleId, qId))
+                if qSta > 100: qSta = 100 # Bug!!! Should delete
+                if qEnd > 100: qEnd = 100 # Bug!!! Should delete
+                if qSta > 100 or qEnd > 100: 
+                    raise ValueError('[ERROR] Query size Overflow! sample: %s; scaffold: %s\n%s\n%s' % (sampleId, qId, sample, line))
 
                 leg = min(qSta, 100 - qEnd)
                 nn  = string.atof(sample.split(':')[fmat['NR']])
