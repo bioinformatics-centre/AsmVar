@@ -6,43 +6,68 @@
 use strict;
 use warnings;
 use Getopt::Long;
-use List::Util;
-use File::Basename qw/dirname/;
 
-use lib dirname($0)."/../lib";
-use AsmvarVCFtools;
-use AsmvarCommon;
+die qq/
+Usage : perl $0 <command> [<arguments>] \n
+Command:
+    summary    Summary report for SV. Including SV number 
+               and svsize distribution
+    duplidist  Distribution of duplication for SV
 
-my ($vcffile);
-my $qualityThd = 2; # No use now
-my $filter     = 'ALL';
-my $isgatkvcf;
-GetOptions(
+/ if @ARGV < 1;
 
-    "v=s"   => \$vcffile,
-    "q=i"   => \$qualityThd,
-    "f=s"   => \$filter,
-    "g"     => \$isgatkvcf,
-);
-Usage() if (!$vcffile);
-print STDERR "\nCommand Parameter: perl $0 -v $vcffile -q $qualityThd -f $filter\n\n";
+my $command = shift @ARGV;
+my %func    = ('summary' => \&SV_SummaryReport,
+               'duplidist' => \&SV_DuplicDist);
+die "Unknown command $command\n" if not exists $func{$command};
+&{$func{$command}};
 
-my (%sample, %col2sample, @info);
-SV_SummaryReport($vcffile, $filter, $qualityThd);
-
-print STDERR "\n********************** ALL DONE ********************\n";
-
+print STDERR "\n*************** Processing $command DONE ***************\n";
 #################################################
 sub SV_SummaryReport {
 
-    my ($fn, $filter, $qualityThd) = @_;
+    use File::Basename qw/dirname/;
+    use lib dirname($0)."/../lib";
+    use AsmvarVCFtools;
+    use AsmvarCommon;
+
+    my ($vcffile, $isgatkvcf);
+    my $filter = 'ALL';
+    GetOptions(
+
+        "v=s"   => \$vcffile,
+        "f=s"   => \$filter,
+        "g"     => \$isgatkvcf,
+    );
+
+    die qq/
+Version: 0.0.1 (2014-11-05)
+Author : Shujia Huang
+
+    Last Modify: 2014-11-18  Update many things and debug
+
+    Usage: perl summary $0 [Options] -v [vcfInfile] > output.vcf
+
+    Options:
+
+          -v  [str]  Variants file. [Reguire]
+          -f  [str]  Specific FILTER. e.g: 'PASS'.  [ALL]
+          -g         Input gatk vcf. [NULL]
+\n/ if not defined $vcffile;
+
+    print STDERR "\nCommand Parameter: 
+          perl $0 summary 
+               -v $vcffile 
+               -f $filter\n\n";
+
     my ($total, $pass, $duplic, $false, $lowQ) = (0,0,0,0,0);
     my $passMultiAllelic = 0;
 
-    my (%col2sam, %sizeSpectrum, %summary, %allsvtype);
+    my (%col2sam, %sizeSpectrum, %numSpectrum);
     my $fh; 
 	my $n = 0;
-    open($fh, ($fn =~ /\.gz$/) ? "gzip -dc $fn |" : $fn) || die "Cannot open file $fn : $!\n";
+    open($fh, ($vcffile =~ /\.gz$/) ? "gzip -dc $vcffile |" : $vcffile) or 
+        die "Cannot open file $vcffile : $!\n";
     while (<$fh>) {
 
         chomp;
@@ -53,6 +78,7 @@ sub SV_SummaryReport {
             }
         }
         next if /^#/;
+
         ++$n;
         next if AsmvarVCFtools::IsNoGenotype(@col[9..$#col]);
         print STDERR "[INFO] Loading $n lines\n" if $n % 100000 == 0;
@@ -70,17 +96,16 @@ sub SV_SummaryReport {
         ++$passMultiAllelic if @mult > 1 and $col[6] eq 'PASS';
 
         # Record information for summary output
-        Summary($isgatkvcf, # GATK VCF or not!
-                \%summary, 
-                \%allsvtype, 
-                \%sizeSpectrum,
-                @col[3,4], 
-                \%col2sam,
-                $format{VS}, 
-                $format{VT}, 
-                $format{QR}, 
-                @col[9..$#col]) if (uc($filter) eq 'ALL') or 
-                                   (uc($col[6]) eq uc($filter));
+        _SummarySV($isgatkvcf, # GATK VCF or not!
+                   \%numSpectrum, 
+                   \%sizeSpectrum,
+                   @col[3,4], 
+                   \%col2sam,
+                   $format{VS}, 
+                   $format{VT}, 
+                   $format{QR}, 
+                   @col[9..$#col]) if (uc($filter) eq 'ALL') or 
+                                      (uc($col[6]) eq uc($filter));
     }
 
     my $rf = sprintf "%.3f", $false/$total;
@@ -94,20 +119,19 @@ sub SV_SummaryReport {
     print "** PASS MultiAllelic: $passMultiAllelic ($mr)\n";
     print "** FALSE variants   : $false ($rf)\n\n";
 
-    print "-- Just for '$filter' variants --\n";
-    OutputSummary(\%allsvtype, \%summary);
+    print "-- SV number spectrum for '$filter' variants --\n\n";
+    _OutputNumSpectrum(\%numSpectrum);
 
-    print "\n\n-- Size Spectrum for all '$filter' variants --\n";
-    OutputSpectrum(\%sizeSpectrum);
+    print "\n\n-- Size spectrum for '$filter' variants --\n";
+    _OutputSizeSpectrum(\%sizeSpectrum);
 
     return;
 }
 
-sub Summary {
-# Calculate the number and length in different SV types for each variant
+sub _SummarySV {
+    # Calculate the number and length in different SV types for each variant
     my ($isgatkvcf,
-        $summary, 
-        $allsvtype, 
+        $numSpectrum, 
         $sizeSpectrum,
         $refseq, 
         $altseq, 
@@ -133,7 +157,7 @@ sub Summary {
         next if $f[0] eq './.' or $f[0] eq '0/0';
 
         #Get the ALT sequence index
-        my $ai = AsmvarVCFtools::GetAltIdxByGTforSample($f[0]); # Get the ALT sequence index
+        my $ai = AsmvarVCFtools::GetAltIdxByGTforSample($f[0]);
         my ($svtype, $svsize);
         if ($isgatkvcf) {
 
@@ -149,52 +173,56 @@ sub Summary {
                   (split /#/, $f[$vtIndex])[0]); # Split '#',in case of 'TRANS'
         }
  
-        SetValueToSummary(\$$summary{$sampleId}{$svtype}, $svsize);
-        if ($svtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
+        _SetValueToSummary(\$$numSpectrum{$sampleId}{$svtype}, $svsize);
 
-            SetValueToSummary(\$$summary{$sampleId}{'0.Total'}, $svsize);
+        # Don't include such type when calculate total.
+        if ($svtype !~ /REF_OR_SNP/) {
+
+            _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total'}, $svsize);
 
             # Calculate size spectrum
             #my $bin = AsmvarCommon::SizeBinSp($svsize);
             my $bin = AsmvarCommon::SizeBin($svsize, 10);
             $$sizeSpectrum{$sampleId}{$svtype}{$bin} ++; # Just for Variant
+            $$sizeSpectrum{$sampleId}{'0.ALLSV'}{$bin} ++; # For all Variant
         }
 
         # Use for getting SVforAll(population) in this position
         $svstat{$svtype}->[0] ++;
         $svstat{$svtype}->[1] = [$svtype, $svsize];
 
-        # Record all the svtype using for output
-        $$allsvtype{$svtype} = 1;
         $isempty = 0;
     }
-    $$allsvtype{'0.Total'} = 1;
     return if $isempty;
 
     my ($totalsvtype, $totalsvsize) = 
         AsmvarVCFtools::GetSVforAllPerVariantLine(\%svstat);
     
-    SetValueToSummary(\$$summary{'~Population'}{$totalsvtype}, $totalsvsize);
-    if ($totalsvtype !~ /REF_OR_SNP/) { # Don't include such type when calculate total.
+    _SetValueToSummary(\$$numSpectrum{'~Population'}{$totalsvtype}, 
+                        $totalsvsize);
+    # Don't include such type when calculate total.
+    if ($totalsvtype !~ /REF_OR_SNP/) {
 
-        SetValueToSummary(\$$summary{'~Population'}{'0.Total'}, $totalsvsize);
+        _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total'}, 
+                            $totalsvsize);
         # Calculate size spectrum
         #my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
         my $bin = AsmvarCommon::SizeBin($totalsvsize, 10);
-        $$sizeSpectrum{'~Population'}{$totalsvtype}{$bin} ++; # Just for Variant
+        $$sizeSpectrum{'~Population'}{$totalsvtype}{$bin} ++; #Just for Variant
+        $$sizeSpectrum{'~Population'}{'0.ALLSV'}{$bin} ++; # For all Variant
     }
 
     return;
 }
 
-sub SetValueToSummary {
+sub _SetValueToSummary {
 # Input: an array reference => [] and svsize
 
     my ($record, $svsize) = @_;
 
     # Check have been inited or not
     if (not defined $$record->[0]) {
-    # [num, all_size, min_size, max_size]
+        # [num, all_size, min_size, max_size]
         $$record = [0, 0, $svsize, $svsize];
     }
 
@@ -203,31 +231,37 @@ sub SetValueToSummary {
     $$record->[2]  = $svsize if $svsize < $$record->[2]; # MIN
     $$record->[3]  = $svsize if $svsize > $$record->[3]; # MAX
 }
-##################
 
-sub OutputSummary {
+sub _OutputNumSpectrum {
 
-    my ($allsvtype, $summaryInfo) = @_;
+    my ($svNumSpectrum) = @_;
 
-    my $header = "#SampleID";
-    for my $svtype (sort {$a cmp $b} keys %$allsvtype) {
+    my %allsvtype;
+    for my $s (keys %$svNumSpectrum) {
+        $allsvtype{$_} = 1 for keys %{$$svNumSpectrum{$s}};
+    }
+
+    my $type;
+    for my $svtype (sort {$a cmp $b} keys %allsvtype) {
         # Do not include the number in front of the $svtype in output header.
         # The format is always be: 'Number.Type'
         $svtype  = (split /\./, $svtype)[-1];
-        $header .= "\t$svtype-NUM\t$svtype-LEN\t$svtype-MIN\t$svtype-MAX\t$svtype-MEAN";
+        $type   .= "\t$svtype-NUM\t$svtype-LEN\t$svtype-MIN".
+                    "\t$svtype-MAX\t$svtype-MEAN";
     }
 
-    print "$header\n";
-    for my $sampleId (sort {$a cmp $b} keys %$summaryInfo) {
+    print "#SampleID\t$type\n";
+    for my $sampleId (sort {$a cmp $b} keys %$svNumSpectrum) {
 
         my @outinfo;
         my $mean;
-        for my $svtype (sort {$a cmp $b} keys %$allsvtype) {
-            if (exists $$summaryInfo{$sampleId}{$svtype}) {
-                $mean = $$summaryInfo{$sampleId}{$svtype}->[1] / 
-                        $$summaryInfo{$sampleId}{$svtype}->[0];
+        for my $svtype (sort {$a cmp $b} keys %allsvtype) {
+
+            if (exists $$svNumSpectrum{$sampleId}{$svtype}) {
+                $mean = $$svNumSpectrum{$sampleId}{$svtype}->[1] / 
+                        $$svNumSpectrum{$sampleId}{$svtype}->[0];
                 push @outinfo, (join "\t", 
-                                @{$$summaryInfo{$sampleId}{$svtype}},
+                                @{$$svNumSpectrum{$sampleId}{$svtype}},
                                 sprintf("%.2f", $mean));
             } else {
                 push @outinfo, (join "\t", (0) x 5);
@@ -237,7 +271,7 @@ sub OutputSummary {
     }
 }
 
-sub OutputSpectrum {
+sub _OutputSizeSpectrum {
 
     my ($sizeSpectrum) = @_;
 
@@ -276,34 +310,3 @@ sub OutputSpectrum {
         }
     }
 }
-
-#########
-sub Usage {
-
-    print STDERR <<U;
-Version: 0.0.1 (2014-11-05)
-Author : Shujia Huang
-
-        Last Modify: 2014-11-09  Update many things and debug
-
-        Usage: perl $0 [Options] -v [vcfInfile] > output.vcf
-
-        Options:
-
-              -v  [str]  Variants file. [Reguire]
-              -q  [int]  Threshold for Variant qsulity score. [$qualityThd]
-              -f  [str]  Specific FILTER. e.g: 'PASS'.  [ALL]
-              -g         Input gatk vcf. [NULL]
-U
-     exit(0);
-}
-
-
-
-
-
-
-
-
-
-
