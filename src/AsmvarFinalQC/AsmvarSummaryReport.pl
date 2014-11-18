@@ -17,15 +17,133 @@ Command:
 / if @ARGV < 1;
 
 my $command = shift @ARGV;
-my %func    = ('summary' => \&SV_SummaryReport,
+my %func    = ('summary'   => \&SV_SummaryReport,
                'duplidist' => \&SV_DuplicDist);
 die "Unknown command $command\n" if not exists $func{$command};
 &{$func{$command}};
 
 print STDERR "\n*************** Processing $command DONE ***************\n";
 #################################################
+sub SV_DuplicDist {
+
+    my $vcffile;
+    my $distance = 20; # The distance of variant nearby for duplication
+    my $filter   = "ALL";
+    GetOptions("v=s" => \$vcffile, "d=i" => \$distance, "f=s" => \$filter);
+
+    print STDERR "\nCommand Parameter: 
+          perl $0 duplidist 
+               -v $vcffile 
+               -d $distance
+               -f $filter\n\n";
+
+    my $fh;
+    my @position;
+    my %pos;   # %pos for checking the sorted status of vcf, 
+    my $mi; # $mi record the median index of positions
+    my %dupliDist; # Distribution of duplication variants
+    my $dnum;
+    my ($n, $total, $pass, $false, $lowQ) = (0, 0, 0, 0, 0);
+    my $passMultiAllelic = 0;
+    open($fh, ($vcffile =~ /\.gz$/) ? "gzip -dc $vcffile |" : $vcffile) or
+        die "Cannot open file $vcffile : $!\n";
+    while (<$fh>) {
+
+        next if /^#/;
+        chomp;
+
+        my @col = split;
+        ++$n;
+
+        next if uc($filter) ne 'ALL' and uc($filter) ne uc($col[6]);
+        next if AsmvarVCFtools::IsNoGenotype(@col[9..$#col]);
+        print STDERR "[INFO] Loading $n lines\n" if $n % 100000 == 0;
+
+        ++$total;
+        ++$false if $col[6] eq 'FALSE';
+        ++$pass  if $col[6] eq 'PASS';
+
+        my @mult = split /,/, $col[4];
+        ++$passMultiAllelic if @mult > 1 and $col[6] eq 'PASS';
+
+        die "[ERROR] VCF file need to be sorted by position\n" 
+            if exists $pos{$col[0]} and $pos{$col[0]} > $col[1];
+        $pos{$col[0]} = $col[1];
+
+        if (@position > 0) {
+
+            $dnum = @position;
+            while (@position and 
+                   $mi < @position and 
+                   $position[$mi][0] eq $col[0] and 
+                   $position[$mi][1] + $distance < $col[1]) {
+
+                while ($mi >= 0 and 
+                       $position[$mi][1] > $position[0][1] + $distance) {
+                    shift @position;
+                    $dnum = @position;
+                    --$mi;
+                }
+#print join "\t", "** $mi dnum=$dnum", $position[$mi][1], (join ",", (map{$_->[1]} @position)), "\n";
+                ++$dupliDist{$dnum};
+
+                if (@position > 1) {
+                    ++$mi;
+                } else {
+                    shift @position;
+                }
+            }
+
+            if (@position > 0 and $position[0][0] ne $col[0]) {
+#print join "\t", "** $mi dnum=$dnum", $position[$mi][1], (join ",", (map{$_->[1]} @position)), "\n";
+
+                $dnum              = @position;
+                $dupliDist{$dnum} += $dnum;
+                @position          = ();
+                $mi                = 0;
+            }
+        }
+        $mi = 0 if not defined $mi or $mi < 0;
+        push @position, [@col[0,1]]; # REF_ID and Position
+    }
+    close $fh;
+
+    if (@position > 0) {
+
+        while ($mi >= 0 and 
+               $position[$mi][1] > $position[0][1] + $distance) {
+            shift @position;
+            $dnum = @position;
+            --$mi;
+        }
+        $dnum              = @position;
+        $dupliDist{$dnum} += $dnum;
+    }
+
+    my $rf = sprintf "%.3f", $false/$total;
+    my $rp = sprintf "%.3f", $pass/$total;
+    my $tr = sprintf "%.3f", $total/$n;
+    my $mr = sprintf "%.3f", $passMultiAllelic/$total;
+    print "\n** Summary **\n\n";
+    print "** The whole set of variants in VCF: $n\n";
+    print "** The number of useful variants   : $total ($tr)\n";
+    print "** PASS variants    : $pass ($rp)\n";
+    print "** PASS MultiAllelic: $passMultiAllelic ($mr)\n";
+    print "** FALSE variants   : $false ($rf)\n\n";
+
+    print "-- SV duplication spectrum for '$filter' variants --\n\n";
+    print "#Duplication_number\tNumber\tRatio\n";
+    for my $n (sort {$a <=> $b} keys %dupliDist) {
+        my $r = sprintf "%.3f", $dupliDist{$n} / $total;
+        print join "\t", $n, $dupliDist{$n}, $r, "\n";
+    }
+
+    return;
+}
+
 sub SV_SummaryReport {
 
+# Calculate the SV number and SV size distribution
     use File::Basename qw/dirname/;
     use lib dirname($0)."/../lib";
     use AsmvarVCFtools;
@@ -60,7 +178,7 @@ Author : Shujia Huang
                -v $vcffile 
                -f $filter\n\n";
 
-    my ($total, $pass, $duplic, $false, $lowQ) = (0,0,0,0,0);
+    my ($total, $pass, $false, $lowQ) = (0,0,0,0);
     my $passMultiAllelic = 0;
 
     my (%col2sam, %sizeSpectrum, %numSpectrum);
@@ -107,6 +225,7 @@ Author : Shujia Huang
                    @col[9..$#col]) if (uc($filter) eq 'ALL') or 
                                       (uc($col[6]) eq uc($filter));
     }
+    close $fh;
 
     my $rf = sprintf "%.3f", $false/$total;
     my $rp = sprintf "%.3f", $pass/$total;
