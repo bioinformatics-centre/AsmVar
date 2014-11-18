@@ -885,6 +885,9 @@ void Variant::SummaryVar() {
             ++it) {
 
         for (size_t i(0); i < it->second.size(); ++i) {
+
+            if (it->second[i].Empty()) continue;
+
             ts = it->second[i].target.end - it->second[i].target.start;
             qs = it->second[i].query.end  - it->second[i].query.start;
             vs = (ts > qs) ? ts : qs;
