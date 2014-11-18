@@ -16,7 +16,6 @@ use AsmvarCommon;
 my ($vcffile);
 my $qualityThd = 2; # No use now
 my $filter     = 'ALL';
-#my $isgatkvcf  = 0;
 my $isgatkvcf;
 GetOptions(
 
@@ -156,8 +155,9 @@ sub Summary {
             SetValueToSummary(\$$summary{$sampleId}{'0.Total'}, $svsize);
 
             # Calculate size spectrum
-            my $bin = AsmvarCommon::SizeBinSp($svsize);
-            $$sizeSpectrum{$sampleId}{$bin} ++; # Just for Variant
+            #my $bin = AsmvarCommon::SizeBinSp($svsize);
+            my $bin = AsmvarCommon::SizeBin($svsize, 10);
+            $$sizeSpectrum{$sampleId}{$svtype}{$bin} ++; # Just for Variant
         }
 
         # Use for getting SVforAll(population) in this position
@@ -179,8 +179,9 @@ sub Summary {
 
         SetValueToSummary(\$$summary{'~Population'}{'0.Total'}, $totalsvsize);
         # Calculate size spectrum
-        my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
-        $$sizeSpectrum{'~Population'}{$bin} ++; # Just for Variant
+        #my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
+        my $bin = AsmvarCommon::SizeBin($totalsvsize, 10);
+        $$sizeSpectrum{'~Population'}{$totalsvtype}{$bin} ++; # Just for Variant
     }
 
     return;
@@ -237,31 +238,42 @@ sub OutputSummary {
 }
 
 sub OutputSpectrum {
+
     my ($sizeSpectrum) = @_;
 
     my %size;
+    my %type;
     for my $s (keys %$sizeSpectrum) {
-        # Format : 'start-end'
-        $size{$_} = 1 for (keys %{$$sizeSpectrum{$s}});
+
+        $type{$_} = 1 for keys %{$$sizeSpectrum{$s}}; # all the svtype
+        for my $k (keys %type) {
+            # Format : 'start-end'
+            $size{$_} = 1 for (keys %{$$sizeSpectrum{$s}{$k}});
+        }
     }
 
+    my @type = sort {$a cmp $b} keys %type;
     my @size = sort {my $da = (split /\-/, $a)[0]; 
                      my $db = (split /\-/, $b)[0]; 
                      $da <=> $db;
                     } keys %size;
-    print join "\t", "#SampleID", @size, "\n";
-    for my $sampleId (sort {$a cmp $b} keys %$sizeSpectrum) {
 
-        my @outinfo;
+    for my $k (@type) {
 
-        for my $s (@size) {
+        print "\n** Size Spectrum for '", (split /\./, $k)[-1], "' **\n";
+        print join "\t", "#SampleID", @size, "\n";
 
-            $$sizeSpectrum{$sampleId}{$s} = 0 
-                if not exists $$sizeSpectrum{$sampleId}{$s};
+        for my $sampleId (sort {$a cmp $b} keys %$sizeSpectrum) {
 
-            push @outinfo, $$sizeSpectrum{$sampleId}{$s};
+            my @outinfo;
+            for my $s (@size) {
+
+                $$sizeSpectrum{$sampleId}{$k}{$s} = 0 
+                    if not exists $$sizeSpectrum{$sampleId}{$k}{$s};
+                push @outinfo, $$sizeSpectrum{$sampleId}{$k}{$s};
+            }
+            print join "\t", $sampleId, @outinfo, "\n";
         }
-        print join "\t", $sampleId, @outinfo, "\n";
     }
 }
 
