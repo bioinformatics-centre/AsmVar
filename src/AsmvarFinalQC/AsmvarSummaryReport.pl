@@ -63,6 +63,9 @@ sub SV_DuplicDist {
 
         ++$total;
         ++$filterStatistic{$col[6]};
+        if (AsmvarVCFtools::IsSpInfo('NEGATIVE_TRAIN_SITE', \$col[7])) {
+            ++$filterStatistic{$col[6]."->NEGATIVE_TRAIN_SITE"};
+        }
 
         my @mult = split /,/, $col[4];
         ++$filterStatistic{PASS_MultiAllelic} 
@@ -164,6 +167,7 @@ Author : Shujia Huang
           -v  [str]  Variants file. [Reguire]
           -f  [str]  Specific FILTER. e.g: 'PASS'.  [ALL]
           -g         Input gatk vcf. [NULL]
+
 \n/ if not defined $vcffile;
 
     print STDERR "\nCommand Parameter: 
@@ -202,6 +206,8 @@ Author : Shujia Huang
 
         ++$total;
         ++$filterStatistic{$col[6]};
+        ++$filterStatistic{$col[6]."_NEGATIVE_TRAIN_SITE"} 
+            if AsmvarVCFtools::IsSpInfo('NEGATIVE_TRAIN_SITE', \$col[7]);
 
         my @mult = split /,/, $col[4];
         ++$filterStatistic{PASS_MultiAllelic} if @mult > 1 and $col[6] eq 'PASS';
@@ -222,11 +228,12 @@ Author : Shujia Huang
 
     print "\n** Summary **\n\n";
     _PrintVarStatistciSummary($n, $total, %filterStatistic);
-    print "\n-- SV number spectrum for '$filter' variants --\n\n";
-    _OutputNumSpectrum(\%numSpectrum);
+
+    print "\n\n-- SV number spectrum for '$filter' variants --\n\n";
+    _PrintNumSpectrum(\%numSpectrum);
 
     print "\n\n-- Size spectrum for '$filter' variants --\n";
-    _OutputSizeSpectrum(\%sizeSpectrum);
+    _PrintSizeSpectrum(\%sizeSpectrum);
 
     return;
 }
@@ -281,7 +288,8 @@ sub _SummarySV {
         # Don't include such type when calculate total.
         if ($svtype !~ /REF_OR_SNP/) {
 
-            _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total'}, $svsize);
+            _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total(Exclude_HomoREF_And_SNP)'}, 
+                               $svsize);
 
             # Calculate size spectrum
             my $bin = AsmvarCommon::SizeBinSp($svsize);
@@ -306,7 +314,7 @@ sub _SummarySV {
     # Don't include such type when calculate total.
     if ($totalsvtype !~ /REF_OR_SNP/) {
 
-        _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total'}, 
+        _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total(Exclude_HomoREF_And_SNP)'}, 
                             $totalsvsize);
         # Calculate size spectrum
         my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
@@ -323,7 +331,7 @@ sub _SetValueToSummary {
 
     my ($record, $svsize) = @_;
 
-    # Check have been inited or not
+    # Check inited or not
     if (not defined $$record->[0]) {
         # [num, all_size, min_size, max_size]
         $$record = [0, 0, $svsize, $svsize];
@@ -350,7 +358,7 @@ sub _PrintVarStatistciSummary {
     }
 }
 
-sub _OutputNumSpectrum {
+sub _PrintNumSpectrum {
 
     my ($svNumSpectrum) = @_;
 
@@ -389,7 +397,7 @@ sub _OutputNumSpectrum {
     }
 }
 
-sub _OutputSizeSpectrum {
+sub _PrintSizeSpectrum {
 
     my ($sizeSpectrum) = @_;
 
