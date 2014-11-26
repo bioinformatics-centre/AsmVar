@@ -40,11 +40,13 @@ sub SV_DuplicDist {
     my $fh;
     my @position;
     my %pos;   # %pos for checking the sorted status of vcf, 
-    my $mi; # $mi record the median index of positions
+    my $mi;    # $mi record the median index of positions
     my %dupliDist; # Distribution of duplication variants
     my $dnum;
-    my ($n, $total, $pass, $false, $lowQ) = (0, 0, 0, 0, 0);
-    my $passMultiAllelic = 0;
+    my ($n, $total) = (0, 0);
+    my %filterStatistic = ("PASS" => 0, 
+                           "PASS_MultiAllelic" => 0, 
+                           "FALSE" => 0);
     open($fh, ($vcffile =~ /\.gz$/) ? "gzip -dc $vcffile |" : $vcffile) or
         die "Cannot open file $vcffile : $!\n";
     while (<$fh>) {
@@ -60,11 +62,11 @@ sub SV_DuplicDist {
         print STDERR "[INFO] Loading $n lines\n" if $n % 100000 == 0;
 
         ++$total;
-        ++$false if $col[6] eq 'FALSE';
-        ++$pass  if $col[6] eq 'PASS';
+        ++$filterStatistic{$col[6]};
 
         my @mult = split /,/, $col[4];
-        ++$passMultiAllelic if @mult > 1 and $col[6] eq 'PASS';
+        ++$filterStatistic{PASS_MultiAllelic} 
+            if @mult > 1 and $col[6] eq 'PASS';
 
         die "[ERROR] VCF file need to be sorted by position\n" 
             if exists $pos{$col[0]} and $pos{$col[0]} > $col[1];
@@ -120,18 +122,9 @@ sub SV_DuplicDist {
         $dupliDist{$dnum} += $dnum;
     }
 
-    my $rf = sprintf "%.3f", $false/$total;
-    my $rp = sprintf "%.3f", $pass/$total;
-    my $tr = sprintf "%.3f", $total/$n;
-    my $mr = sprintf "%.3f", $passMultiAllelic/$total;
     print "\n** Summary **\n\n";
-    print "** The whole set of variants in VCF: $n\n";
-    print "** The number of useful variants   : $total ($tr)\n";
-    print "** PASS variants    : $pass ($rp)\n";
-    print "** PASS MultiAllelic: $passMultiAllelic ($mr)\n";
-    print "** FALSE variants   : $false ($rf)\n\n";
-
-    print "-- SV duplication spectrum for '$filter' variants --\n\n";
+    _PrintVarStatistciSummary($n, $total, %filterStatistic);
+    print "\n-- SV duplication spectrum for '$filter' variants --\n\n";
     print "#Duplication_number\tNumber\tRatio\n";
     for my $n (sort {$a <=> $b} keys %dupliDist) {
         my $r = sprintf "%.3f", $dupliDist{$n} / $total;
@@ -178,12 +171,13 @@ Author : Shujia Huang
                -v $vcffile 
                -f $filter\n\n";
 
-    my ($total, $pass, $false, $lowQ) = (0,0,0,0);
-    my $passMultiAllelic = 0;
+    my ($n, $total) = (0, 0);
+    my %filterStatistic = ("PASS" => 0, 
+                           "PASS_MultiAllelic" => 0, 
+                           "FALSE" => 0);
 
     my (%col2sam, %sizeSpectrum, %numSpectrum);
     my $fh; 
-	my $n = 0;
     open($fh, ($vcffile =~ /\.gz$/) ? "gzip -dc $vcffile |" : $vcffile) or 
         die "Cannot open file $vcffile : $!\n";
     while (<$fh>) {
@@ -207,11 +201,10 @@ Author : Shujia Huang
         next if not $isgatkvcf and not exists $format{QR}; # May be INTERGAP 
 
         ++$total;
-        ++$false if $col[6] eq 'FALSE';
-        ++$pass  if $col[6] eq 'PASS';
+        ++$filterStatistic{$col[6]};
 
         my @mult = split /,/, $col[4];
-        ++$passMultiAllelic if @mult > 1 and $col[6] eq 'PASS';
+        ++$filterStatistic{PASS_MultiAllelic} if @mult > 1 and $col[6] eq 'PASS';
 
         # Record information for summary output
         _SummarySV($isgatkvcf, # GATK VCF or not!
@@ -227,18 +220,9 @@ Author : Shujia Huang
     }
     close $fh;
 
-    my $rf = sprintf "%.3f", $false/$total;
-    my $rp = sprintf "%.3f", $pass/$total;
-    my $tr = sprintf "%.3f", $total/$n;
-    my $mr = sprintf "%.3f", $passMultiAllelic/$total;
     print "\n** Summary **\n\n";
-    print "** The whole set of variants in VCF: $n\n";
-    print "** The number of useful variants   : $total ($tr)\n";
-    print "** PASS variants    : $pass ($rp)\n";
-    print "** PASS MultiAllelic: $passMultiAllelic ($mr)\n";
-    print "** FALSE variants   : $false ($rf)\n\n";
-
-    print "-- SV number spectrum for '$filter' variants --\n\n";
+    _PrintVarStatistciSummary($n, $total, %filterStatistic);
+    print "\n-- SV number spectrum for '$filter' variants --\n\n";
     _OutputNumSpectrum(\%numSpectrum);
 
     print "\n\n-- Size spectrum for '$filter' variants --\n";
@@ -300,8 +284,8 @@ sub _SummarySV {
             _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total'}, $svsize);
 
             # Calculate size spectrum
-            #my $bin = AsmvarCommon::SizeBinSp($svsize);
-            my $bin = AsmvarCommon::SizeBin($svsize, 10);
+            my $bin = AsmvarCommon::SizeBinSp($svsize);
+            #my $bin = AsmvarCommon::SizeBin($svsize, 10);
             $$sizeSpectrum{$sampleId}{$svtype}{$bin} ++; # Just for Variant
             $$sizeSpectrum{$sampleId}{'0.ALLSV'}{$bin} ++; # For all Variant
         }
@@ -325,8 +309,8 @@ sub _SummarySV {
         _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total'}, 
                             $totalsvsize);
         # Calculate size spectrum
-        #my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
-        my $bin = AsmvarCommon::SizeBin($totalsvsize, 10);
+        my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
+        #my $bin = AsmvarCommon::SizeBin($totalsvsize, 10);
         $$sizeSpectrum{'~Population'}{$totalsvtype}{$bin} ++; #Just for Variant
         $$sizeSpectrum{'~Population'}{'0.ALLSV'}{$bin} ++; # For all Variant
     }
@@ -349,6 +333,21 @@ sub _SetValueToSummary {
     $$record->[1] += $svsize; # add all the svsize up
     $$record->[2]  = $svsize if $svsize < $$record->[2]; # MIN
     $$record->[3]  = $svsize if $svsize > $$record->[3]; # MAX
+}
+
+sub _PrintVarStatistciSummary {
+
+    my ($allvaraint, $usefulvariant, %filterStatistic) = @_;
+
+    my $tr = sprintf "%.3f", $usefulvariant / $allvaraint;
+    print "** The whole set of variants in VCF: $allvaraint\n";
+    print "** The number of useful variants   : $usefulvariant ($tr)\n";
+
+    for my $k (sort {$a cmp $b} keys %filterStatistic) {
+
+        my $r = sprintf "%.3f", $filterStatistic{$k} / $usefulvariant;
+        print "** $k variants: $filterStatistic{$k} ($r) **\n";
+    }
 }
 
 sub _OutputNumSpectrum {
