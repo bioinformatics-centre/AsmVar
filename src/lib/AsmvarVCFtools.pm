@@ -24,6 +24,7 @@ our @EXPORT_OK = qw (
     IsNoGenotype
     GetDataInSpFormat
     GetDataInSpInfo
+    IsSpInfo
 );
 
 ########################### Functions ################################
@@ -205,6 +206,21 @@ sub GetDataInSpInfo {
     return $data;
 }
 
+sub IsSpInfo {
+# Determine whether the specific field is in INFO or not
+# just reture a bool value not the value for this field
+# Input: (1) 'Specific_INFO_field'. e.g: 'AC', 'AF', 'NRatio', 'VQ' ...
+#        (2) Reference of INFO
+# Output: Return 1(Yes) or 0(No)
+#
+# e.g. AsmvarVCFtools::GetDataInSpInfo('VQ', \$t[7])
+#
+    my ($spInfo, $info) = @_;
+    my $isHaveInfo = 0;
+    $isHaveInfo = 1 if $$info =~ /;$spInfo/ or $$info =~ /^$spInfo/;
+
+    return $isHaveInfo;
+}
 
 
 
