@@ -288,7 +288,7 @@ sub _SummarySV {
         # Don't include such type when calculate total.
         if ($svtype !~ /REF_OR_SNP/) {
 
-            _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total(Exclude_HomoREF_And_SNP)'}, 
+            _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total(NON_SNP_VAR)'}, 
                                $svsize);
 
             # Calculate size spectrum
@@ -314,7 +314,7 @@ sub _SummarySV {
     # Don't include such type when calculate total.
     if ($totalsvtype !~ /REF_OR_SNP/) {
 
-        _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total(Exclude_HomoREF_And_SNP)'}, 
+        _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total(NON_SNP_VAR)'}, 
                             $totalsvsize);
         # Calculate size spectrum
         my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
