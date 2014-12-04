@@ -176,7 +176,7 @@ sub GetSVforPop {
         $svstat{"$svtype.$ai"}->[1] = [$ai, $svtype, $svsize];
         $isempty = 0;
     }
-    return (0, '-', '0') if $isempty;;
+    return (0, '-', 0) if $isempty;
 
     my ($altIndex, $svtype, $svsize);
     my $svnum = 0;    
