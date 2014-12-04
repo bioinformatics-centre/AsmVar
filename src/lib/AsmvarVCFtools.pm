@@ -21,6 +21,8 @@ our @EXPORT_OK = qw (
     GetSVtypeAndSizeForSample
     GetGATKSVtypeAndSizeForSample
     GetSVforAllPerVariantLine
+    GetSVforPop
+    RecalcuSVBreakpoint
     IsNoGenotype
     GetDataInSpFormat
     GetDataInSpInfo
@@ -110,7 +112,7 @@ sub GetGATKSVtypeAndSizeForSample {
 }
 
 sub GetSVforAllPerVariantLine {
-# Get the population SV typs and size for per-variant in one VCF line
+# Get the population SV types and size for per-variant in one VCF line
 # Input : hash with svtype, svtype=>[num_support_svtype, [svtype,svsize]]
 # Output: The most supported ($svtype, $svsize) for this VCF line
     my ($svstat) = @_;
@@ -133,6 +135,94 @@ sub GetSVforAllPerVariantLine {
 #print STDERR "\n[Debug] GetSVforAll(): $svtype\t$svsize\n";
     return ($svtype, $svsize);
 }
+
+sub GetSVforPop {
+# Get the population SV types and size for per-variant in one VCF line
+# We use GATK style to determine the SV type, it means we don't care 
+# about the MNP, INV, REPLACEMENT and TRANSLOCATION
+#
+# Input : 
+#         (1) Sequence of REF field
+#         (2) Sequence of ALT field
+#         (3) The reference of all samples' fields array
+# Output: The most supported ($altIndex, $svtype, $svsize) for this VCF line
+# 
+    my ($refseq, $altseq, $samples) = @_;
+
+    my @seq = ($refseq); # First element is REF: [0]=>REF
+    push @seq, $_ for (split /,/, $altseq);
+
+    my %svstat;
+    my $isempty = 1;
+	for (my $i = 0; $i < @$samples; ++$i) {
+
+        my @f = split /:/, $$samples[$i];
+        # Ignore un-genotype and reference type samples
+        next if $f[0] eq './.' or $f[0] eq '0/0';
+
+        # Get the ALT sequence index
+        my $ai = GetAltIdxByGTforSample($f[0]);
+        my ($svtype, $svsize);
+  
+        # We use GATK Style to determine the SV Type.
+        # So that the MNP, INV, Translocation will treat to be the 'REF_OR_SNP'
+        ($svtype, $svsize) = GetGATKSVtypeAndSizeForSample(
+                $seq[0],    # Ref-sequence
+                $seq[$ai]); # Alt-sequence
+
+        $svtype = (split /\./, $svtype)[-1];
+        # Use for getting SVforAll(population) in this position
+        $svstat{"$svtype.$ai"}->[0] ++;
+        $svstat{"$svtype.$ai"}->[1] = [$ai, $svtype, $svsize];
+        $isempty = 0;
+    }
+    return (0, '-', '0') if $isempty;;
+
+    my ($altIndex, $svtype, $svsize);
+    my $svnum = 0;    
+    for my $k (keys %svstat) {
+
+        if ($svnum < $svstat{$k}->[0]) {
+            $svnum = $svstat{$k}->[0];
+            ($altIndex, $svtype, $svsize) = @{$svstat{$k}->[1]};
+        }
+    }
+
+#print STDERR "\n[Debug] GetSVforPop(): ($altIndex, $svtype, $svsize)\n";
+    return ($altIndex, $svtype, $svsize);
+}
+
+sub RecalcuSVBreakpoint {
+# Recalculation the Break point position according to the REF-Seq and ALT-Seq
+# Often, this function should just be called after calling 'GetSVforPop()'
+# Input: (1) REF_POS in POS field of VCF
+#        (2) REF Sequence in REF field of VCF
+#        (3) The identity ALT sequence, get from 'GetSVforPop()'
+#        (4) The SV Type get from 'GetSVforPop()'
+#
+# Output:
+#        (1) recalculate breakpoint on REF
+#        (2) SVTYPE still get from 'GetSVforPop()'
+#        (3) variant sequence
+#
+    my ($refpos, $refseq, $oneAltSeq, $svtype) = @_;
+
+    my $varseq; # Record the sequence of variant
+    if (length($oneAltSeq) > length($refseq)) { # INSERTION like
+
+        $refpos += length($refseq) - 1;
+        $varseq = substr($oneAltSeq, length($refseq));
+    } elsif (length($oneAltSeq) < length($refseq)) { # DELETION like
+
+        $refpos += length($oneAltSeq);
+        $varseq = substr($refseq, length($oneAltSeq));
+    } else { # '=='
+        $varseq = $oneAltSeq; # Nothing change
+    }
+
+#print STDERR "\n[Debug] RecalcuSVBreakpoint(): ($refpos, $svtype, $varseq)\n";
+    return ($refpos, $svtype, $varseq);
+} 
 
 sub IsNoGenotype {
 # Determining the samples got non-reference genotype or not
