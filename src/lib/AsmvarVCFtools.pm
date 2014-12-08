@@ -34,12 +34,10 @@ our @EXPORT_OK = qw (
 sub GetAltIdxByGTforSample {
 # Get the ALT sequence according to 'GT' information
 # Input : 'GT' field per sample in VCF, 'GT' should not be like './.'
-# Output: Index of ALT-Sequence in 'ALT' field of VCF.
-#     But I put REF-Sequence and ALT-Sequence in one array, 
-#     and REF-Seq is the first element of this array. So the 
-#     index should count in the REF-Sequence together.
-#     e.g : if 'GT' = '1/1', return 1 not 0. and '0/2' will return 2 not 1!! 
-#           index 0 will always => REF-Sequence
+# Output: Index of ALT-Sequence in 'ALT' field.
+#     e.g : if  'GT' = '0/1' or '1/1', will return 1, 
+#           and 'GT' = '0/2' or '2/2', will return 2,
+#           index 0 will always means REF-Sequence
 
     my ($gt) = @_;
 
@@ -202,7 +200,7 @@ sub RecalcuSVBreakpoint {
 #
 # Output:
 #        (1) recalculate breakpoint on REF
-#        (2) SVTYPE still get from 'GetSVforPop()'
+#        (2) SVTYPE: No change, still get from 'GetSVforPop()'
 #        (3) variant sequence
 #
     my ($refpos, $refseq, $oneAltSeq, $svtype) = @_;
