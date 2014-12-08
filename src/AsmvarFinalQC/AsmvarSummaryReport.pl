@@ -189,6 +189,7 @@ Author : Shujia Huang
         chomp;
         my @col = split;
         if (/^#CHROM/) {
+            # Get Sample ID and build a hash to point to sample
             for (my $i = 9; $i < @col; ++$i) {
                 $col2sam{$i-9} = $col[$i];
             }
@@ -225,6 +226,7 @@ Author : Shujia Huang
                                       (uc($col[6]) eq uc($filter));
     }
     close $fh;
+#die "";
 
     print "\n** Summary **\n\n";
     _PrintVarStatistciSummary($n, $total, %filterStatistic);
@@ -253,6 +255,8 @@ sub _SummarySV {
 
     my @seq = ($refseq); # First element is REF: [0]=>REF
     push @seq, $_ for (split /,/, $altseq);
+#my ($ii, $t, $s) = AsmvarVCFtools::GetSVforPop($refseq, $altseq, \@samples);
+#my () = AsmvarVCFtools::RecalcuSVBreakpoint(1, $refseq, $seq[$ii], $t);
 
     my %svstat;
     my $isempty = 1;
@@ -285,7 +289,7 @@ sub _SummarySV {
  
         _SetValueToSummary(\$$numSpectrum{$sampleId}{$svtype}, $svsize);
 
-        # Don't include such type when calculate total.
+        # Don't include 'REF_OR_SNP' when calculate total.
         if ($svtype !~ /REF_OR_SNP/) {
 
             _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total(NON_SNP_VAR)'}, 
@@ -311,7 +315,7 @@ sub _SummarySV {
     
     _SetValueToSummary(\$$numSpectrum{'~Population'}{$totalsvtype}, 
                         $totalsvsize);
-    # Don't include such type when calculate total.
+    # Don't include 'REF_OR_SNP' when calculate total.
     if ($totalsvtype !~ /REF_OR_SNP/) {
 
         _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total(NON_SNP_VAR)'}, 
