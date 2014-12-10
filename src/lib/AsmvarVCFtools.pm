@@ -35,14 +35,14 @@ sub GetAltIdxByGTforSample {
 # Get the ALT sequence according to 'GT' information
 # Input : 'GT' field per sample in VCF, 'GT' should not be like './.'
 # Output: Index of ALT-Sequence in 'ALT' field.
-#     e.g : if  'GT' = '0/1' or '1/1', will return 1, 
-#           and 'GT' = '0/2' or '2/2', will return 2,
+#     e.g : if  'GT' = '0/1' '0|1' or '1/1' '1|1', will return 1, 
+#           and 'GT' = '0/2' '0|2' or '2/2' '2|2', will return 2,
 #           index 0 will always means REF-Sequence
 
     my ($gt) = @_;
 
     # It could just be [0,0] or [0,1] or [1,1] or [0,2] or [2,2]
-    my @gt  = split /\//, $gt;
+    my @gt  = split /[\|\/]/, $gt;
     my $ind = 0;
     for my $i (@gt) {
         if ($i > 0) { $ind = $i; last; }
@@ -156,7 +156,7 @@ sub GetSVforPop {
 
         my @f = split /:/, $$samples[$i];
         # Ignore un-genotype and reference type samples
-        next if $f[0] eq './.' or $f[0] eq '0/0';
+        next if $f[0] eq './.' or $f[0] eq '0/0' or $f[0] eq '0|0';
 
         # Get the ALT sequence index
         my $ai = GetAltIdxByGTforSample($f[0]);
@@ -233,7 +233,7 @@ sub IsNoGenotype {
     for (my $i = 0; $i < @samples; ++$i) {
 
         my $gt = (split /:/, $samples[$i])[0];
-        if ($gt ne '0/0' and $gt ne './.') {
+        if ($gt ne '0/0' and $gt ne '0|0' and $gt ne './.') {
             $isNogt = 0;
             last;
         }
@@ -273,7 +273,6 @@ sub GetDataInSpFormat {
     }
 
     return @data;
-
 }
 
 sub GetDataInSpInfo {
