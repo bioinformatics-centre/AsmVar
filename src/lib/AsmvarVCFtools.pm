@@ -224,15 +224,16 @@ sub RecalcuSVBreakpoint {
 
 sub IsNoGenotype {
 # Determining the samples got non-reference genotype or not
-# Input : Samples field with 'FORMAT' format and must contain 'GT'
+# Input : Samples array reference and field with 'FORMAT' format 
+#         and must contain 'GT'
 # Output: boolean
 
-    my (@samples) = @_;
+    my ($samples) = @_;
 
     my $isNogt = 1;
-    for (my $i = 0; $i < @samples; ++$i) {
+    for (my $i = 0; $i < @$samples; ++$i) {
 
-        my $gt = (split /:/, $samples[$i])[0];
+        my $gt = (split /:/, $$samples[$i])[0];
         if ($gt ne '0/0' and $gt ne '0|0' and $gt ne './.') {
             $isNogt = 0;
             last;
@@ -249,7 +250,7 @@ sub GetDataInSpFormat {
 # Output: An array which recording this specific field data
 #         and return NULL if it doesn't contain infomation in this field
 #
-    my ($sf, $format, @samples) = @_;
+    my ($sf, $format, $samples) = @_;
     my @format = split /:/, $format;
     my %fm;
     for (my $i = 0; $i < @format; ++$i) { 
@@ -264,9 +265,9 @@ sub GetDataInSpFormat {
     }
 
     my @data;
-    for (my $i = 0; $i < @samples; ++$i) {
+    for (my $i = 0; $i < @$samples; ++$i) {
 
-        my @s = split /:/, $samples[$i];
+        my @s = split /:/, $$samples[$i];
 
         next if @s < $fm{$sf} or $s[$fm{$sf}] eq '.' or $s[$fm{$sf}] eq './.';
         push @data, $s[$fm{$sf}];
