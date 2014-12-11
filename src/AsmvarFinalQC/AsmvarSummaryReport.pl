@@ -58,7 +58,7 @@ sub SV_DuplicDist {
         ++$n;
 
         next if uc($filter) ne 'ALL' and uc($filter) ne uc($col[6]);
-        next if AsmvarVCFtools::IsNoGenotype(@col[9..$#col]);
+        next if AsmvarVCFtools::IsNoGenotype(\@col[9..$#col]);
         print STDERR "[INFO] Loading $n lines\n" if $n % 100000 == 0;
 
         ++$total;
@@ -197,7 +197,7 @@ Author : Shujia Huang
         next if /^#/;
 
         ++$n;
-        next if AsmvarVCFtools::IsNoGenotype(@col[9..$#col]);
+        next if AsmvarVCFtools::IsNoGenotype(\@col[9..$#col]);
         print STDERR "[INFO] Loading $n lines\n" if $n % 100000 == 0;
 
         my %format; 
