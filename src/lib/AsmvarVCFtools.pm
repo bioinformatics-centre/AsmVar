@@ -68,19 +68,23 @@ sub GetSVtypeAndSizeForSample {
 
     # The front number of svtype is used for sorting the output order
     if ($initSVtype =~ /INV/) { # Inversion
-        ($svtype, $svsize) = ("4.INV", $initSVsize);
+        ($svtype, $svsize) = ("5.INV", $initSVsize);
     } elsif ($initSVtype =~ /TRANS/) { # Translocation
-        ($svtype, $svsize) = ("5.TRANS", $initSVsize);
+        ($svtype, $svsize) = ("6.TRANS", $initSVsize);
     } elsif ($initSVtype eq 'COMPLEX' or $initSVtype eq 'REPLACEMENT') {
-        ($svtype, $svsize) = ("6.REPLACEMENT", $initSVsize);
+        ($svtype, $svsize) = ("7.REPLACEMENT", $initSVsize);
     } elsif ($initSVtype eq 'MNP') {
         ($svtype, $svsize) = ("3.MNP", $initSVsize);
     } elsif ($size > 0) { # Insertion
         ($svtype, $svsize) = ("1.INS", abs($size));
     } elsif ($size < 0) { # Deletion
         ($svtype, $svsize) = ("2.DEL", abs($size));
-    } else { # The genotype is 0/0 or it's SNP
-        ($svtype, $svsize) = ("9.REF_OR_SNP", length($refseq));
+    } elsif ($altseq ne '.') { # $size == 0 and the genotype is not 0/0
+        ($svtype, $svsize) = (length($altseq) == 1) ?
+                             ("4.SNP", length($altseq)):
+                             ("3.MNP", length($altseq)); # May useless here
+    } else {
+        ($svtype, $svsize) = ("9.REF", length($refseq));
     }
 
 #print STDERR "[Debug] GetSVtypeAndSize(): ($refseq, $altseq, $initSVsize, $initSVtype): size = $size :($svtype, $svsize)\n";
@@ -102,8 +106,12 @@ sub GetGATKSVtypeAndSizeForSample {
         ($svtype, $svsize) = ("1.INS", abs($size));
     } elsif ($size < 0) { # Deletion
         ($svtype, $svsize) = ("2.DEL", abs($size));
-    } else { # The genotype is 0/0 or it's SNP
-        ($svtype, $svsize) = ("9.REF_OR_SNP", length($refseq));
+    } elsif ($altseq ne '.') { # $size == 0 and the genotype is not 0/0
+        ($svtype, $svsize) = (length($altseq) == 1) ? 
+                             ("4.SNP", length($altseq)): 
+                             ("3.MNP", length($altseq));
+    } else {
+        ($svtype, $svsize) = ("9.REF", length($refseq));
     }
 
     return ($svtype, $svsize);
@@ -224,16 +232,17 @@ sub RecalcuSVBreakpoint {
 
 sub IsNoGenotype {
 # Determining the samples got non-reference genotype or not
-# Input : Samples array reference and field with 'FORMAT' format 
-#         and must contain 'GT'
+# Input : Each vcf line reference, but we just use sample field 
+#         with 'FORMAT' format and must contain 'GT'
 # Output: boolean
 
-    my ($samples) = @_;
+    my ($vcfline) = @_;
 
     my $isNogt = 1;
-    for (my $i = 0; $i < @$samples; ++$i) {
+    for (my $i = 9; $i < @$vcfline; ++$i) {
 
-        my $gt = (split /:/, $$samples[$i])[0];
+        # Just loop all samples
+        my $gt = (split /:/, $$vcfline[$i])[0];
         if ($gt ne '0/0' and $gt ne '0|0' and $gt ne './.') {
             $isNogt = 0;
             last;
