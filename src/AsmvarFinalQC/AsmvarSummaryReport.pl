@@ -58,7 +58,7 @@ sub SV_DuplicDist {
         ++$n;
 
         next if uc($filter) ne 'ALL' and uc($filter) ne uc($col[6]);
-        next if AsmvarVCFtools::IsNoGenotype(\@col[9..$#col]);
+        next if AsmvarVCFtools::IsNoGenotype(\@col);
         print STDERR "[INFO] Loading $n lines\n" if $n % 100000 == 0;
 
         ++$total;
@@ -197,7 +197,7 @@ Author : Shujia Huang
         next if /^#/;
 
         ++$n;
-        next if AsmvarVCFtools::IsNoGenotype(\@col[9..$#col]);
+        next if AsmvarVCFtools::IsNoGenotype(\@col);
         print STDERR "[INFO] Loading $n lines\n" if $n % 100000 == 0;
 
         my %format; 
@@ -226,7 +226,6 @@ Author : Shujia Huang
                                       (uc($col[6]) eq uc($filter));
     }
     close $fh;
-#die "";
 
     print "\n** Summary **\n\n";
     _PrintVarStatistciSummary($n, $total, %filterStatistic);
@@ -287,15 +286,13 @@ sub _SummarySV {
                   (split /#/, $f[$vtIndex])[0]); # Split '#',in case of 'TRANS'
         }
  
-        _SetValueToSummary(\$$numSpectrum{$sampleId}{$svtype}, $svsize);
-
+        _SetValueToSummary(\$$numSpectrum{$sampleId}{$svtype},   $svsize);
+        _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total'}, $svsize)
+            if $svtype !~ /REF/;
         # Don't include 'REF_OR_SNP' when calculate total.
-        if ($svtype !~ /REF_OR_SNP/) {
+        if ($svtype !~ /REF/ and $svtype !~ /SNP/) {
 
-            _SetValueToSummary(\$$numSpectrum{$sampleId}{'0.Total(NON_SNP_VAR)'}, 
-                               $svsize);
-
-            # Calculate size spectrum
+            # Calculate non snp variants' size spectrum
             my $bin = AsmvarCommon::SizeBinSp($svsize);
             #my $bin = AsmvarCommon::SizeBin($svsize, 10);
             $$sizeSpectrum{$sampleId}{$svtype}{$bin} ++; # Just for Variant
@@ -315,12 +312,12 @@ sub _SummarySV {
     
     _SetValueToSummary(\$$numSpectrum{'~Population'}{$totalsvtype}, 
                         $totalsvsize);
+    _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total'}, 
+                        $totalsvsize) if $totalsvtype !~ /REF/;
     # Don't include 'REF_OR_SNP' when calculate total.
-    if ($totalsvtype !~ /REF_OR_SNP/) {
+    if ($totalsvtype !~ /REF/ and $totalsvtype !~ /SNP/) {
 
-        _SetValueToSummary(\$$numSpectrum{'~Population'}{'0.Total(NON_SNP_VAR)'}, 
-                            $totalsvsize);
-        # Calculate size spectrum
+        # Calculate non-snp variants' size spectrum
         my $bin = AsmvarCommon::SizeBinSp($totalsvsize);
         #my $bin = AsmvarCommon::SizeBin($totalsvsize, 10);
         $$sizeSpectrum{'~Population'}{$totalsvtype}{$bin} ++; #Just for Variant
