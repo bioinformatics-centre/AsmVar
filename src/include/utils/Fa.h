@@ -52,7 +52,13 @@ public:
 
             } else {
                 faId.assign ( tmp, 1, string::npos );
+                if (fa.count(faId)) {
+                    cerr << "[ERROR] Multiple fa id(" << faId 
+                         << ") in file: " << file << "\n" << endl;
+                    exit(1);
+                }
                 fa[faId].clear();
+
 				order2id[order] = faId;
 				++order;
             }
