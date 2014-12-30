@@ -369,7 +369,6 @@ void Variant::AGE_Realign(string referenceId) {
     // It's better to call MarkHete() after NormVu(), But still not a big deal
     // if call MarkHete() earlier than NormVu().
     MarkHete();
-
     return;
 }
 
@@ -390,9 +389,10 @@ void Variant::AGE_Realign(string referenceId, vector<VarUnit> &R) {
         // R[i] should be replace by 'v' after ReAlign!
         tarfa.CheckFaId(R[i].target.id);
         qryfa.CheckFaId(R[i].query.id);
+
         vector<VarUnit> v = R[i].ReAlignAndReCallVar(tarfa.fa[R[i].target.id], 
-                qryfa.fa[R[i].query.id], 
-                opt);
+                                                     qryfa.fa[R[i].query.id], 
+                                                     opt);
         // Not going to deal with the flankin region
         if ( !v.empty() && v[0].type.find("-AGE") == string::npos) { 
             // has variant in exci-reg

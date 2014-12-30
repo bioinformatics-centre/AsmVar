@@ -11,7 +11,7 @@ ASV_VariantDetector : $(obj)
 main.o : gzstream.h utility.h Variant.h
 VarUnit.o  : utility.h VarUnit.h AGEaligner.h Sequence.h Scorer.h Region.h
 AGEaligner.o : AGEaligner.h Sequence.h Scorer.h
-Variant.o  : Variant.h VarUnit.h vcf.h Region.h
+Variant.o  : Variant.h VarUnit.h vcf.h Region.h Fa.h
 Region.o   : Region.h
 vcf.o      : vcf.h utility.h
 utility.o  : utility.h
