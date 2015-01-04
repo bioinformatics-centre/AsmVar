@@ -65,7 +65,6 @@ sub GetSVtypeAndSizeForSample {
 
     my $size = length($altseq) - length($refseq);
     my ($svtype, $svsize);
-
     # The front number of svtype is used for sorting the output order
     if ($initSVtype =~ /INV/) { # Inversion
         ($svtype, $svsize) = ("5.INV", $initSVsize);

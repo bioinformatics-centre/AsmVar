@@ -88,8 +88,8 @@ def main(opt):
            vcfinfo['VQ'] = 'VQ=' + str(d.lod)
            vcfinfo['CU'] = 'CU=' + annoTexts[d.worstAnnotation]
 
-           for text in annoTexts: 
-               vcfinfo[text] = text + '=' + str('%.2f' % d.annotations[idx[text]])
+           #for text in annoTexts: 
+           #    vcfinfo[text] = text + '=' + str('%.2f' % d.annotations[idx[text]])
            col[7] = ';'.join(sorted(vcfinfo.values()))
            if d.lod < 0: d.lod = 0 # QUAL: donot allow value below 0
            col[5] = str(d.lod) # In fact QUAL field should use phred scala

@@ -264,7 +264,7 @@ sub LoadVarRegFromVcf {
         my @t = split;
         die "[ERROR] VCF FORMAT ERROR. The 'GT' field MUST BE present and always appear as the first field in $fn.\n" if ($t[8] !~ /^GT:/);
         ++$nummap; # Record the line order. It'll be use in Output
-        next if AsmvarVCFtools::IsNoGenotype(@t[9..$#t]);
+        next if AsmvarVCFtools::IsNoGenotype(\@t);
 
         my %format;
         my @f = split /:/, $t[8];
@@ -287,8 +287,10 @@ sub LoadVarRegFromVcf {
         $t[7] =~ s/;SPN=[^;]+//g;
         $t[7] .= ";SPN=$asmNum";
 
+        my $inb= AsmvarVCFtools::GetDataInSpInfo('InbCoeff', \$t[7]); # Get InbCoeff
+        # '-1' is Mark for delete if too much 'N', or inb is not in (-.7, .7)
+        my $ma = ($nr > 0.5 or $inb <= -0.7 or $inb >= 0.7) ? -1: 0;
         my $vq = AsmvarVCFtools::GetDataInSpInfo('VQ', \$t[7]); # Get variant score
-        my $ma = ($nr > 0.5) ? -1: 0; # '-1' is Mark for delete if too much 'N'
         push(@$info, [$ma, $nr, $vq, $asmNum, $nummap, $svtype, 
                       $svsize, $tId, $tStart, $tEnd, @t[0,1]]);
     }
