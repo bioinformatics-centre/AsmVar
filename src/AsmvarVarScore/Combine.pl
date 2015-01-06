@@ -59,8 +59,8 @@ while (<I>) {
 	++$score{3} if $tmp[5] >= 3;
 	++$score{4} if $tmp[5] >= 4;
 
-	my ($culprit) = $tmp[7] =~ /;CU=[^;]+/;
-	++$culprit{$culprit};
+	my ($cu) = $tmp[7] =~ /;CU=([^;]+)/;
+	++$culprit{$cu};
 
     print join "\t", @tmp; print "\n";
 }
