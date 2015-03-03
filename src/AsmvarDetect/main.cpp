@@ -102,8 +102,6 @@ int main ( int argc, char* argv[] ) {
             I >> tmp >> variant.target.id >> variant.target.start >> variant.target.end //Here variant.target.end is just the mapping length
               >> tmp >> tmp >> variant.tarSeq; 
             getline (I, tmp, '\n');
-// Just for urgency situation
-if (variant.target.id == "M") variant.target.id = "MT"; // Should be deleted after this time
 
             variant.target.end += variant.target.start; // Now variant.target.end is the end of mapping region
             ++variant.target.start;                     // variant.target.start is 0-base , shift to 1-base
