@@ -350,7 +350,7 @@ sub FindBestInSingleVariant {
     }
     my $bs = (sort{$a<=>$b} %{$hash{$bk}{$bt}})[0];
 
-# I can do here after genotyping process, but Donot random select 
+# I can do it here after genotyping process, but Donot random select 
 # befroe that or we'll catch format error in SVGenotype
     my $acbI = int(rand(scalar(@{$hash{$bk}{$bt}{$bs}}))); # my $acbI = 0;
 

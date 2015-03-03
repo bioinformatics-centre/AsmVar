@@ -818,7 +818,8 @@ void Variant::FilterReg(map< string,vector<Region> > tarregion, map<string, size
 void Variant::NormVu() { // Norm each variant
 
     for (map<string, vector<VarUnit> >::iterator it(allvariant.begin());
-            it != allvariant.end(); ++it) {
+         it != allvariant.end(); 
+         ++it) {
 
         for (size_t i(0); i < it->second.size(); ++i) {
 
