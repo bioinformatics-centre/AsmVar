@@ -28,7 +28,7 @@ One short shell ~/demo/AsmVarDetector/Test.sh can be run to check the correct in
 Running AsmVar workflow
 ---------------------------------------
 The demo shell  ./demo/Cookbook/scripts/DemoPipelineGuideline.sh. provides the example for application of Asmvar to detect, genotype and recalibrate the variation calls <br/>
-Due to the github storage limitations, the full demo including the output files can be found through this link https://www.dropbox.com/sh/j43z96bkl99f0mc/AACVNhhhWpSfnmSDJiSoiEqaa?dl=0 <br/>
+Due to the github storage limitations, the full demo including the output files can be found through this link https://www.dropbox.com/sh/fapzzvvo1whizmn/AAAeBsTSRmTyOn8zVJc24fgca?dl=0 <br/>
 We are currently improving the characterization modules and therefore will close the codes for those modules for a while before the 1st, July, 2015 <br/>
 
 There are 5 main steps about Asmvar workflow, <br/>
