@@ -57,5 +57,3 @@ Acknowledgement : Bioinformatics teams in GenomeDK consortium
 ## LICENSE 
 Released under the [MIT License](http://opensource.org/licenses/MIT)
 Copyright &copy; 2014-2015
-
-
