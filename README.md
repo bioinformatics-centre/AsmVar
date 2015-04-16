@@ -30,9 +30,8 @@ Dependency
 
 Installation
 ---------------------------------------
-$ cd src/AsmvarDetect
-$ make
-Note:
+	$ cd src/AsmvarDetect
+	$ make
 
 One short shell ~/demo/AsmVarDetector/Test.sh can be run to check the correct installation of AsmVar, you can use it to verify that your installation is working correctly. This shell will run automatically and the output files are t.age,t4.1025.vcf,t4.1025.svd,t4.1025.summary,t4.1025.gap.bed.
 
