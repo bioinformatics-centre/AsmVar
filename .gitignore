@@ -3,7 +3,6 @@ Trash
 obj
 bin
 data
-*.sh
 *.pyc
 */*.pyc
 *.o
@@ -13,6 +12,6 @@ data
 *.pdf
 *.png
 *.jpg
-demo/GigaDB/
+demo/GigaDB
 
 Trash
