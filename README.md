@@ -1,6 +1,7 @@
 AsmVar
 ==========
 
+
 AsmVar is a software for discovery, genotyping and characterization of structural variants and novel sequence at single nucleotide resolution from de novo assemblies on a population scale
 
 __Contributors:__ Shujia Huang, Siyang Liu, Junhua Rao & Weijian Ye (Contribute equally)  <br/>
