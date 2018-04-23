@@ -16,6 +16,9 @@ import string
 import sys
 
 import numpy as np
+import matplotlib
+import matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from matplotlib.colors import LogNorm
@@ -250,7 +253,7 @@ def DrawModel2 ( gmm, ppr ) :
     plt.scatter(ppr[:, 0], ppr[:, 1], .8)
 
     plt.axis('tight')
-    plt.show()
+    # plt.show()
 
 def DrawModel(figureFile, gmm, ppr, pp):
 
