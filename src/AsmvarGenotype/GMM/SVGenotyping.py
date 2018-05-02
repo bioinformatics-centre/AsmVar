@@ -18,14 +18,10 @@ import sys
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-
 import matplotlib.pyplot as plt
-import matplotlib.mlab as mlab
-from matplotlib.colors import LogNorm
-import random as rd
 
 import GMM2D as mixture
-#from sklearn import mixture
+
 
 def GetPPrate(fmat, formatInfo):
 
@@ -41,7 +37,9 @@ def GetPPrate(fmat, formatInfo):
             aa = string.atof(fi[fmat['AA']].split(',')[1])
         else:
             rr, aa = 0, 0
+
         r  = theta
+
         if rr + aa >  0: 
             r = rr/(rr + aa)
             trainIndx.append(i)
@@ -409,7 +407,6 @@ def main(opt):
 
         if f[-3:] == '.gz': 
             if len(opt.chroms) > 0:
-                # gzformat, I = True, os.popen("/home/siyang/Bin/software_pip/tabix-0.2.6/tabix -h %s %s " % (f, ' '.join(opt.chroms)))
                 gzformat, I = True, os.popen("tabix -h %s %s " % (f, ' '.join(opt.chroms)))
             else:
                 gzformat, I = True, os.popen("gzip -dc %s " % f)
@@ -463,7 +460,12 @@ def main(opt):
                 if col[6] == 'PASS': col[6] == '.'
 
                 trainIndx, ppr, pp = GetPPrate(fmat, col[9:])
-                if len(trainIndx) < 10: 
+                sample_size = len(col[9:])
+
+                if len(trainIndx) < 10:
+                    print >> sys.stderr, "[WARNING] Your effective sample size is less than 10. The Genotype quality may be low!\n"
+
+                if (sample_size < 10 and len(trainIndx) < sample_size):
 
                     gqSummary['No'] += 1.0
                     if col[6] == '.' or col[6] == 'PASS':
