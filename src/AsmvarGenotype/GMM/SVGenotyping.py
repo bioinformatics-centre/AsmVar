@@ -75,8 +75,6 @@ def UpdateInfoFromGMM(gmm, ppr, grey, red, green, blue, data, sam2col, family):
     predictProba = gmm.predict_proba(ppr)
     weights      = gmm.weights_
 
-    #print >> sys.stderr, '### Predict:', predict, '### PPR:\n', ppr
-
     genotypeQuality = []
     for p,i in enumerate(predict):
         pd = predictProba[p][i]
