@@ -397,7 +397,7 @@ def LoadFamily(file):
 def main(opt):
 
     gqSummary = {1: 0.0, 2: 0.0, 3: 0.0, 10: 0.0, 20: 0.0, 30: 0.0, 'sum': 0.0, 'Yes': 0.0, 'No': 0.0}
-    family    = LoadFamily(opt.family)
+    family = LoadFamily(opt.family)
     outPrefix = opt.outPrefix
 
     for f in infile: 
@@ -409,7 +409,8 @@ def main(opt):
 
         if f[-3:] == '.gz': 
             if len(opt.chroms) > 0:
-                gzformat, I = True, os.popen("/home/siyang/Bin/software_pip/tabix-0.2.6/tabix -h %s %s " % (f, ' '.join(opt.chroms)))
+                # gzformat, I = True, os.popen("/home/siyang/Bin/software_pip/tabix-0.2.6/tabix -h %s %s " % (f, ' '.join(opt.chroms)))
+                gzformat, I = True, os.popen("tabix -h %s %s " % (f, ' '.join(opt.chroms)))
             else:
                 gzformat, I = True, os.popen("gzip -dc %s " % f)
         else:
@@ -442,10 +443,6 @@ def main(opt):
                     outFailGtyHandle.write(line + '\n')
                     outHandle.write('##FILTER=<ID=FALSE_GENOTYPE,Description="False in genotype process">\n')
                     outFailGtyHandle.write('##FILTER=<ID=FALSE_GENOTYPE,Description="False in genotype process">\n')
-                    #outHandle.write('##INFO=<ID=K,Number=1,Type=String,Description="Number of genotype stats">\n')
-                    #outFailGtyHandle.write('##INFO=<ID=K,Number=1,Type=String,Description="Number of genotype stats">\n')
-                    #outHandle.write('##INFO=<ID=W,Number=1,Type=String,Description="The wieghts for each genotype stats. And the order is: HOM_REF,HETE_VAR,HOM_VAR">\n')
-                    #outFailGtyHandle.write('##INFO=<ID=W,Number=1,Type=String,Description="The wieghts for each genotype stats. And the order is: HOM_REF,HETE_VAR,HOM_VAR">\n')
                     outHandle.write('##INFO=<ID=InbCoeff,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">\n')
                     outFailGtyHandle.write('##INFO=<ID=InbCoeff,Number=1,Type=Float,Description="Inbreeding coefficient: 1.0 - hetCount/Expected_hetCount">\n')
                 elif re.search(r'^##', line):
@@ -550,23 +547,7 @@ def main(opt):
                         genotypeQuality[i] = 0
                     if 'FALSE_GENOTYPE' in col[6]: gnt[i] = './.'
 
-                """
-                size = re.search ( r';SVSIZE=([^;]+)', col[7] )
-                size = string.atoi(size.group(1))
-                if size < 2000 : 
-                    if clf.converged_ : svsize.append( size )
-                    # Calculate the bins length
-                    base = 10 ** int( np.log10(size) )
-                    bins = size / base
-                    if size % base != 0 : bins += 1 # Can increat 1!
-                    length = bins * base
-                    if length not in power : power[length] = [0,0]
-                    if clf.converged_ : power[length][0] += 1
-                    else              : power[length][1] += 1
-                    ###
-                """
-
-                if clf.converged_ and len(family) > 0: 
+                if clf.converged_ and len(family) > 0:
                     sm, sn, snum, _ = clf.Mendel(gnt, sam2col, family)
                     mdr_t += sm 
                     mde_t += sn
@@ -595,9 +576,13 @@ def main(opt):
         if gqSummary['Yes'] + gqSummary['No'] == 0: 
             gqSummary['Yes'] = 1.0
             gqSummary['No']  = 1e9
-        if gqSummary['Yes'] == 0: gqSummary['Yes'] = 1.0
+
+        if gqSummary['Yes'] == 0:
+            gqSummary['Yes'] = 1.0
+
         mderr_t = '-'
-        if mdr_t + mde_t > 0.0: mderr_t = mde_t/(mdr_t+mde_t)
+        if mdr_t + mde_t > 0.0:
+            mderr_t = mde_t/(mdr_t+mde_t)
 
         print >> sys.stderr, '\n******** Output Summary information ************************************\n'
         print >> sys.stderr, '# ** The count of positions which can be genotype:',int(gqSummary['Yes']),',',gqSummary['Yes']/(gqSummary['Yes']+gqSummary['No'])
@@ -605,30 +590,23 @@ def main(opt):
         print >> sys.stderr, '# ** (Just for the genotype positions)Proportion of 1 component : ', gqSummary[1] / gqSummary['Yes']
         print >> sys.stderr, '# ** (Just for the genotype positions)Proportion of 2 component : ', gqSummary[2] / gqSummary['Yes']
         print >> sys.stderr, '# ** (Just for the genotype positions)Proportion of 3 component : ', gqSummary[3] / gqSummary['Yes']
-        print >> sys.stderr, '# ** (Just for the genotype positions)The ratio of Homo-Ref(0/0): ', len( green ) / gqSummary['sum']
-        print >> sys.stderr, '# ** (Just for the genotype positions)The ratio of Hete-Var(0/1): ', len( red   ) / gqSummary['sum']
-        print >> sys.stderr, '# ** (Just for the genotype positions)The ratio of Homo-Var(1/1): ', len( blue  ) / gqSummary['sum']
+        print >> sys.stderr, '# ** (Just for the genotype positions)The ratio of Homo-Ref(0/0): ', len(green) / gqSummary['sum']
+        print >> sys.stderr, '# ** (Just for the genotype positions)The ratio of Hete-Var(0/1): ', len(red) / gqSummary['sum']
+        print >> sys.stderr, '# ** (Just for the genotype positions)The ratio of Homo-Var(1/1): ', len(blue) / gqSummary['sum']
         print >> sys.stderr, '# ** (Just for the genotype positions)Genotype Quality >= 10 : ', gqSummary[10] / gqSummary['sum']
         print >> sys.stderr, '# ** (Just for the genotype positions)Genotype Quality >= 20 : ', gqSummary[20] / gqSummary['sum']
         print >> sys.stderr, '# ** (Just for the genotype positions)Genotype Quality >= 30 : ', gqSummary[30] / gqSummary['sum']
 
-        DrawFig (figPrefix, np.array(alleleCount), np.array(red), np.array(green), np.array(blue))
-        """
-        DrawAC( figPrefix, 'Mendelian violation = ' + str( mderr ), np.array(red), np.array(green), np.array(blue), 
-                np.array([ [k, float(v[0])/(v[0]+v[1])] for k,v in sorted(power.items(), key = lambda d:d[0]) ]  ), 
-                np.array(alleleCount), 
-                np.array(ialleleCount), 
-                np.array( inbCoff ), np.array(svsize), 60 )
-        """
+        DrawFig(figPrefix, np.array(alleleCount), np.array(red), np.array(green), np.array(blue))
 
-################################
-################################
 
 if __name__ == '__main__':
 
     usage = "Usage : %prog [option] [vcfInfile] > Output"
     optp  = optparse.OptionParser(usage=usage)
-    optp.add_option("-c", "--chr", dest="chroms", metavar="CHR", help="process only specified chromosomes, separated by ','. [default: all]\nexample: --chroms=chr1,chr2", default=[])
+    optp.add_option("-c", "--chr", dest="chroms", metavar="CHR",
+                    help="process only specified chromosomes, separated by ','. "
+                         "[default: all]\nexample: --chroms=chr1,chr2", default=[])
     optp.add_option("-p", "--ped", dest="family", metavar="PED", help="Family information. ", default=[])
     optp.add_option("-f", "--fig", dest="figure", metavar="FIG", help="The prefix of figure about the GMM.", default=[])
     optp.add_option("-o", "--out", dest="outPrefix", metavar="OUT", help="The prefix of output. [out]", default = 'out')
@@ -636,14 +614,20 @@ if __name__ == '__main__':
     opt, infile = optp.parse_args()
 
     figPrefix = 'test'
-    if len(infile)     == 0: optp.error("Required at least one [vcfInfile]\n")
-    if len(opt.figure) > 0: figPrefix = opt.figure
-    if any(opt.chroms): opt.chroms = opt.chroms.split(',')
+    if len(infile) == 0:
+        optp.error("Required at least one [vcfInfile]\n")
+
+    if len(opt.figure) > 0:
+        figPrefix = opt.figure
+
+    if any(opt.chroms):
+        opt.chroms = opt.chroms.split(',')
 
     COMPONENT_NUM = 3        # The tyoe number of genotype
-    PRECISION     = 0.9999999999
+    PRECISION = 0.9999999999
 
     main(opt)
+
     print >> sys.stderr, '\n# [INFO] Closing the two Ouput files:\n  -- (1/4) %s' % (opt.outPrefix + '.vcf')
     print >> sys.stderr, '  -- (2/4) %s' % (opt.outPrefix + '.false_genotype.vcf')
     print >> sys.stderr, '  -- (3/4) %s' % (opt.figure + '.pdf')
