@@ -175,32 +175,25 @@ def UpdateInfoFromGMM(gmm, ppr, grey, red, green, blue, data, sam2col, family):
         data[9+i] = ':'.join(fi)
 
     if N == 0: N = 1
-    p = float(2.0 * refCount + hetCount) / (2.0 * (refCount + hetCount + homCount)) # expected reference allele frequency
-    q = 1.0 - p                              # expected alternative allele frequency
+
+    # expected reference allele frequency
+    p = float(2.0 * refCount + hetCount) / (2.0 * (refCount + hetCount + homCount))
+    q = 1.0 - p  # expected alternative allele frequency
     f = 1.0 - (hetCount / (2.0 * p * q * N)) # The hetCount VS expected of hetCount
 
-    """
-    if re.search(r';K=([^;]+)', data[7]): 
-        data[7] = re.sub(r';K=([^;]+)', ';K=' + str(len(g2c)), data[7])
-    else: 
-        data[7] += ';K=' + str(len(g2c))
-   
-    if re.search(r';W=([^;]+)', data[7]): 
-        data[7] = re.sub(r';W=([^;]+)', ';W=' + weight, data[7])
-    else: 
-        data[7] += ';W=' + weight
-    """
-
-    if re.search(r';InbCoeff=([^;]+)', data[7]): 
+    if re.search(r';InbCoeff=([^;]+)', data[7]):
         data[7] = re.sub(r';InbCoeff=([^;]+)', ';InbCoeff=%.2f' % f, data[7])
     else: 
         data[7] += ';InbCoeff=%.2f' % f
 
-    if homCount == N + 1 or refCount == N + 1: # The all sample are totally 1/1 or 0/0! 
+    # The all sample are totally 1/1 or 0/0!
+    if homCount == N + 1 or refCount == N + 1:
         if data[6] == '.' or data[6] == 'PASS':
             data[6] = 'FALSE_GENOTYPE'
+
         elif 'FALSE_GENOTYPE' not in data[6]:
             data[6] = 'FALSE_GENOTYPE;' + data[6]
+
         gmm.converged_ = False
 
     ng = set([])
@@ -229,9 +222,10 @@ def UpdateInfoFromGMM(gmm, ppr, grey, red, green, blue, data, sam2col, family):
                 else: 
                     blue.append([ppr[i]])
 
-    return np.array(genotypeQuality), np.array(gnt), ac, iac, f 
+    return np.array(genotypeQuality), np.array(gnt), ac, iac, f
 
-def DrawModel2 ( gmm, ppr ) :
+
+def DrawModel2(gmm, ppr) :
 
     #fig = plt.figure()
 
@@ -251,13 +245,12 @@ def DrawModel2 ( gmm, ppr ) :
     plt.axis('tight')
     # plt.show()
 
+
 def DrawModel(figureFile, gmm, ppr, pp):
 
     predict = gmm.predict(ppr)
-    mu      = gmm.means_
-    sigma   = gmm.covars_
+    mu = gmm.means_
     fig = plt.figure()
-    c2g = gmm.Label2Genotype()
 
     color1   = ['bo', 'ro', 'go']
     labels   = ['Hom','Het','Ref']
@@ -273,30 +266,23 @@ def DrawModel(figureFile, gmm, ppr, pp):
     plt.xlabel('Reference depth', fontsize=14)
     plt.ylabel('Alternate depth', fontsize=14)
 
-    """
-    color    = ['r','g','b']
-    for i,x in enumerate( (red, green, blue) ) :
-
-        n, bins, patches = plt.hist(x, num_bins, normed=1, facecolor=color[i], alpha=1.0 )
-        x = mu[i][0] + sigma[i][0] * np.random.randn(300)
-        n, bins, patches = plt.hist(x, num_bins, normed=1, facecolor=color[i], alpha=0.0 )
-        y = mlab.normpdf(bins, mu[i][0], sigma[i][0])
-        plt.plot( bins, y, color2[i], lw=2 )
-    """
-
     fig.savefig(figureFile + '.png')
     fig.savefig(figureFile + '.pdf')
 
 
-def DrawFig1 ( figureFile, title, red, green, blue, grey ) :
+def DrawFig1 (figureFile, title, red, green, blue, grey) :
 
     numbins = 50
     fig     = plt.figure(1)
     plt.title(title, fontsize=12)
     
-    if len( green ) > 0 : n, bins, patches = plt.hist(green[:,0], numbins, normed=1, facecolor='green' , alpha= .8 )
-    if len( blue  ) > 0 : n, bins, patches = plt.hist(blue[:,0] , numbins, normed=1, facecolor='blue'  , alpha= .8 )
-    if len( red   ) > 0 : n, bins, patches = plt.hist(red[:,0]  , numbins, normed=1, facecolor='red'   , alpha= .8 )
+    if len( green ) > 0 :
+        n, bins, patches = plt.hist(green[:,0], numbins, normed=1, facecolor='green' , alpha= .8 )
+    if len( blue  ) > 0 :
+        n, bins, patches = plt.hist(blue[:,0] , numbins, normed=1, facecolor='blue'  , alpha= .8 )
+    if len( red   ) > 0 :
+        n, bins, patches = plt.hist(red[:,0]  , numbins, normed=1, facecolor='red'   , alpha= .8 )
+
     plt.xlim( 0, 1.3)
     plt.ylabel('Normed Number', fontsize=16)
     plt.xlabel('PEP-Ratio VS Reference', fontsize=16)
@@ -326,9 +312,12 @@ def DrawAC ( figPrefix, title, green, blue, red, power, alleleCount, ialleleCoun
 
     plt.subplot(324)
     plt.title(title, fontsize=12)
-    if len( green ) > 0 : plt.hist(green[:,0], numbins, normed=1, facecolor='green' , color=['g'], label=['Het'], alpha= .8 )
-    if len( blue  ) > 0 : plt.hist(blue[:,0] , numbins, normed=1, facecolor='blue'  , color=['b'], label=['Hom'], alpha= .8 )
-    if len( red   ) > 0 : plt.hist(red[:,0]  , 30     , normed=1, facecolor='red'   , color=['r'], label=['Ref'], alpha= .8 )
+    if len( green ) > 0:
+        plt.hist(green[:,0], numbins, normed=1, facecolor='green' , color=['g'], label=['Het'], alpha= .8)
+    if len( blue  ) > 0:
+        plt.hist(blue[:,0], numbins, normed=1, facecolor='blue'  , color=['b'], label=['Hom'], alpha= .8)
+    if len( red   ) > 0:
+        plt.hist(red[:,0], 30, normed=1, facecolor='red'   , color=['r'], label=['Ref'], alpha= .8)
     plt.legend()
     plt.xlim( 0, 2.0)
     plt.ylabel('Normed Number', fontsize=12)
@@ -336,20 +325,20 @@ def DrawAC ( figPrefix, title, green, blue, red, power, alleleCount, ialleleCoun
 
     if len ( power ) > 0 :
         plt.subplot(313)
-        plt.bar( np.arange(len(power)), power[:,1], color = 'c' )
-        plt.xticks( np.arange(len(power)) + 0.5, power[:,0], rotation = 90 )
+        plt.bar( np.arange(len(power)), power[:,1], color = 'c')
+        plt.xticks( np.arange(len(power)) + 0.5, power[:,0], rotation = 90)
         plt.ylim(0.0, 1.2)
-        plt.xlabel( 'SV SIZE(bp)', fontsize=12 )
-        plt.ylabel( 'Proper of Genotype', fontsize=12 )
+        plt.xlabel('SV SIZE(bp)', fontsize=12)
+        plt.ylabel('Proper of Genotype', fontsize=12)
 
     fig.savefig(figPrefix + '.png')
     fig.savefig(figPrefix + '.pdf')
     #plt.show()
 
-def DrawFig ( figureFile, alleleCount, red, green, blue ) :
+def DrawFig(figureFile, alleleCount, red, green, blue):
 
     numbins = len(set(alleleCount))
-    fig = plt.figure( num=None, facecolor='w', edgecolor='k' )
+    fig = plt.figure(num=None, facecolor='w', edgecolor='k')
     plt.subplot(211)
     if len( alleleCount ) > 0 :
         plt.subplot(321)
@@ -360,9 +349,13 @@ def DrawFig ( figureFile, alleleCount, red, green, blue ) :
     plt.subplot(212)
     numbins = 60
     plt.title('Data Distribution', fontsize=14)
-    if len( green ) > 0 : plt.hist(green[:,0], numbins, histtype='bar', normed=1, facecolor='green', color=['g'], label=['Ref'], alpha= .8 )
-    if len( blue  ) > 0 : plt.hist(blue[:,0] , numbins, histtype='bar', normed=1, facecolor='blue' , color=['b'], label=['Hom'], alpha= .8 )
-    if len( red   ) > 0 : plt.hist(red[:,0]  , numbins, histtype='bar', normed=1, facecolor='red'  , color=['r'], label=['Het'], alpha= .8 )
+    if len(green) > 0:
+        plt.hist(green[:,0], numbins, histtype='bar', normed=1, facecolor='green', color=['g'], label=['Ref'], alpha= .8 )
+    if len(blue) > 0:
+        plt.hist(blue[:,0] , numbins, histtype='bar', normed=1, facecolor='blue' , color=['b'], label=['Hom'], alpha= .8 )
+    if len(red) > 0:
+        plt.hist(red[:,0]  , numbins, histtype='bar', normed=1, facecolor='red'  , color=['r'], label=['Het'], alpha= .8 )
+
     plt.legend()
     plt.ylabel('Normed Number', fontsize=14)
 
@@ -557,7 +550,6 @@ def main(opt):
                     outFailGtyHandle.write('\t'.join(col) + '\n')
                 else:
                     outHandle.write('\t'.join(col) + '\n')
-                #DrawModel(figPrefix, clf, ppr, pp)
 
                 if clf.converged_: 
                     gqSummary['Yes'] += 1.0
