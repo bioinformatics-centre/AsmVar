@@ -100,10 +100,8 @@ def main(opt):
             if not IsSNP(col[3], [col[4]]):
                 # Not SNP, INTERGAP ...
                 isAltAlign = True
-            	#if col[2]  == '.': col[2] = 'V_' + col[0] + '_' + col[1]
-                zr,za,zc,zi = ATA.Align(samInHandle, 
-                                        #samOutHandle, Don't output bam file
-                                        fa, 
+                zr,za,zc,zi = ATA.Align(samInHandle,
+                                        fa,
                                         col[0], 
                                         string.atoi(col[1]), 
                                         col[2], 
@@ -162,9 +160,7 @@ def main(opt):
 
     samInHandle.close()
     vcfOutHandle.close()
-    #samOutHandle.close()
-    #print >> sys.stderr, '# [INFO] Closing the two Ouput files :\n(1) %s\n(2) %s' % (outPrefix + '.bam', outPrefix + '.vcf') 
-    print >> sys.stderr, '# [INFO] Closing the two Ouput files :\n  -- %s' % (outPrefix + '.vcf') 
+    print >> sys.stderr, '# [INFO] Closing the two Ouput files :\n  -- %s' % (outPrefix + '.vcf')
 
 ########################################################################
 ########################################################################

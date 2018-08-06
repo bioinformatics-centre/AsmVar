@@ -6,10 +6,6 @@ Author : Shujia Huang
 Date   : 2014-03-25 14:29:08
 """
 import os
-import re
-import sys
-import string
-import pysam 
 
 def LoadFaSeq(file, refId = 'ALL'):
 
@@ -111,10 +107,10 @@ def Align(samInHandle, fa, id, position, varId, refseq, altseq, mapq = 20):
             qrySeq = altseq + fa[id][position+len(refseq)-1:position+len(refseq)+read.alignment.rlen-q]
 
             # [Debug]
-            #print >> sys.stderr, '[POS]', id, pos, read.alignment.pos+1, '\n[QRY]', fa[id][refPos:position], qrySeq, read.alignment.qstart, q,'\n[TAR]',fa[id][refPos:position],refSeq,'\n[SEQ]', read.alignment.seq, read.alignment.cigar, read.alignment.cigarstring, read.alignment.is_secondary, '\n'
+            # print '[POS]', id, pos, read.alignment.pos+1, '\n[QRY]', fa[id][refPos:position], qrySeq, read.alignment.qstart, q,'\n[TAR]',fa[id][refPos:position],refSeq,'\n[SEQ]', read.alignment.seq, read.alignment.cigar, read.alignment.cigarstring, read.alignment.is_secondary, '\n'
 
-            zr,rn = SumMismatchQuality(read.alignment.seq[q:], read.alignment.qual[q:], refSeq) # Reference
-            za,an = SumMismatchQuality(read.alignment.seq[q:], read.alignment.qual[q:], qrySeq) # Alternate
+            zr, _ = SumMismatchQuality(read.alignment.seq[q:], read.alignment.qual[q:], refSeq) # Reference
+            za, _ = SumMismatchQuality(read.alignment.seq[q:], read.alignment.qual[q:], qrySeq) # Alternate
 
             if zr == 0 and za == 0: 
                 com += 1 # Common perfect
