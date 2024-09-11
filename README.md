@@ -52,9 +52,11 @@ Contribution
 ------------
 The AsmVar is initially developed for the DanishPanGenome project in the GenomeDK platform. The AsmVar framework construction, applications, statistical methods and the evaluation protocols are established by [Siyang Liu](https://github.com/SiyangLiu) and [Shujia Huang](https://github.com/ShujiaHuang), Junhua Rao and [Weijian Ye](https://github.com/WeijianYe) led by [Siyang Liu](https://github.com/SiyangLiu) and [Shujia Huang](https://github.com/ShujiaHuang).  The coding contributions for different modules are written in the source code title. Most of the initial codes are written in C++, python and perl by [Shujia Huang](https://github.com/ShujiaHuang) and perl, python and R by [Siyang Liu](https://github.com/SiyangLiu)(All modules especially SV discovery and genotyping), Junhua Rao (especially SV mechanism), [Weijian Ye](https://github.com/WeijianYe) (especially Ancestral state and Novel sequence) . [Shujia Huang](https://github.com/ShujiaHuang) and [Siyang Liu](https://github.com/SiyangLiu) take charge of the software architecture and the efficiency of the algorithms. The work is supervised by [Anders Krogh](http://www.binf.ku.dk/staff/?pure=en/persons/8330) and Jun Wang.
 
-Please cite the paper:  Discovery, genotyping and characterization of structural variants and novel sequence at single nucleotide resolution from de novo assemblies on a population scale (manuscript in submission)
+Please cite the paper:  
 
-Acknowledgement : Bioinformatics teams in GenomeDK consortium
+- Siyang Liu, Shujia Huang, Junhua Rao, Weijian Ye, The Genome Denmark Consortium, Anders Krogh, Jun Wang, Discovery, genotyping and characterization of structural variation and novel sequence at single nucleotide resolution from de novo genome assemblies on a population scale, *GigaScience*, Volume 4, Issue 1, December 2015, s13742–015–0103–4, https://doi.org/10.1186/s13742-015-0103-4
+
+
 ## LICENSE 
 Released under the [MIT License](http://opensource.org/licenses/MIT)
 Copyright &copy; 2014-2015
